@@ -1,0 +1,12 @@
+version: "3.4"
+services:
+  projectathon6-miracum1:
+    build: .
+    volumes:
+      - ./errors:/errors
+      - ./Bundles:/Bundles
+      - ./Summary:/Summary
+      - ./Ergebnisse:/Ergebnisse
+      - ./config.yml:/config.yml
+#      - ./localca.pem:/usr/local/share/ca-certificates/localca.crt
+    image: "projectathon6-miracum1"  
