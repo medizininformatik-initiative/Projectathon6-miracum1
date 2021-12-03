@@ -1,5 +1,5 @@
 #load/install packages
-packages <- c("rprojroot","fhircrackr","config","dplyr","zoo","stringr","tidyr")
+packages <- c("fhircrackr","config","dplyr","zoo","stringr","tidyr")
 
 for(package in packages){
   
