@@ -74,7 +74,7 @@ Das Skript erzeugt mehrere Ordner im Projekt-Directory. Um für den Projectathon
 ### Ergebnisse
 Wenn die Abfrage erfolgreich durchgeführt wurde, sind hier zwei Gruppen von csv-Dateien zu finden.
 In der ersten Gruppe befinden sich 3 `.csv` Dateien mit den orignalen Quelldaten:
-- `Kohorte.csv` inkl. alle Patienten mit den Pflichtdatenfelder(patient_id, birth_date, gender, patient_zip)
+- `Kohorte.csv` inkl. alle Patienten mit den Pflichtdatenfelder(patient_id, birth_date, gender, patient_zip) Und Informationen über den Besuch des Patienten im Krankenhaus - Aufnahmedatum, ICD, Rang (Haupt-/Nebendiagnose) und verschiedene damit zusammenhängende Merkmale (intravenous lyse therapy (IVT) , Admission to the ICU, Admission to the stroke unit, Neurosurgery, Thrombectomy, Intrakraniell Stent)  und Kardiovaskuläre Risikofaktoren und metabolische Komorbiditäten
 - `Medication.csv` inkl. alle Resourcen bzgl. Patientenaufnahmen (encouter_id) und die erhaltene Medikation (code)
 - `Observations.csv` inkl. patient_id und encounter_id sowie LOINC-Codes (value & unit)
 
@@ -82,5 +82,7 @@ Analog dazu befinden sich in der zweiten Gruppe die zusammengefasste/aggregierte
 - `Cohort_Summary.csv` gruppiert für die Quartale (z.B. 2020/Q1, ...)
 - `Medication_Summary.csv` Anzahl der Fälle gruppierte nach Medikationstyp  
 - `Observation_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Laborwerte
+- `Procedure_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Procedures
+- `StrokeDiagnosis_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Stroke diagnosen ICD
 
 Diese sind benötigt um die möglichste größte und feature-reicshte homogene Kohrote über alle Standorten hinweg für die statistische Auswertung selektieren zu können. 
