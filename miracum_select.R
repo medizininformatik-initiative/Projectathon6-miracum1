@@ -316,19 +316,19 @@ df.medstatement <- medstat_table$medstat
 if(nrow(df.medstatement)>0){
   #process Medication statement  resources
   df.medstatement <- fhir_rm_indices(df.medstatement, brackets = brackets )
-  df.medstatement$encounter_id <-vsub("Encounter/", "", df.medstatement$encounter_id)
-  df.medstatement$patient_id <-vsub("Patient/", "", df.medstatement$patient_id) 
-  df.medstatement$medication_id <-vsub("Medication/", "", df.medstatement$medication_id) 
+  df.medstatement$encounter_id <-sub("Encounter/", "", df.medstatement$encounter_id)
+  df.medstatement$patient_id <-sub("Patient/", "", df.medstatement$patient_id) 
+  df.medstatement$medication_id <-sub("Medication/", "", df.medstatement$medication_id) 
   
   
   
   ###extract the actual medication using the IDs
   medication_ids <- unique(df.medstatement$medication_id)
   
-  
+  ids= paste(medication_ids, collapse = ",")
   med_request <- fhir_url(url = conf$serverbase,
                           resource = "Medication",
-                          parameters = c("_id" = unique(df.medstatement$medication_id))
+                          parameters = c("_id" = ids)
                           )
   
   med_bundle <- fhir_search(med_request,
