@@ -17,7 +17,7 @@ if(file.exists("config.yml")){
   conf <- config::get(file = "config_default.yml")
 }
 
-
+if(!(conf$ssl_verify_peer)){httr::set_config(httr::config(ssl_verifypeer = 0L))}
 
 brackets = c("[", "]")
 sep = " || "

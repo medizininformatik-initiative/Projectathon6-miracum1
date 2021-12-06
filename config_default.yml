@@ -3,3 +3,5 @@ default:
 # if you need to authenticate on your fhir server, set username and password
   username:        NULL
   password:        NULL
+## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
+  ssl_verify_peer: TRUE
