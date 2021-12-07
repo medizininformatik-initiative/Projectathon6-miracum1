@@ -1,5 +1,5 @@
 #load/install packages
-packages <- c("fhircrackr","config","dplyr","zoo","stringr","tidyr")
+packages <- c("fhircrackr","config","dplyr","zoo","stringr","tidyr","data.table")
 
 for(package in packages){
   
@@ -7,5 +7,6 @@ for(package in packages){
   
   if(!available){
     install.packages(package, quiet = TRUE)
+    available <- suppressWarnings(require(package, character.only = T))
   }
 }

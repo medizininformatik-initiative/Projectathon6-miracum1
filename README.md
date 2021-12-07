@@ -199,30 +199,35 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
  
         ICD10: I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!
           
- 2. Es lädt auch alle referenzierten **Patienten-**, **Condition-** und **Procedure**-Ressourcen durch die erhaltenen **Encounter**-Ressourcen herunter bei bei denen in *Schritt 1.* **Encounters** erhaltenen worden sind.
+ 2. Es lädt auch alle referenzierten **Patienten-**, **Condition-** Ressourcen durch die erhaltenen **Encounter**-Ressourcen herunter bei bei denen in *Schritt 1.* **Encounters** erhaltenen worden sind.
   
-        Request: [base]/Encounter?date=ge2015-01-01&_has:Condition:encounter:code=I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!&_include=Encounter:patient&_revinclude=Condition:encounter&_revinclude=Procedure:encounter&_parameter_count=500
+        Request: [base]/Encounter?date=ge2015-01-01&_has:diagnosis.code&_include=Encounter:patient&_include=Encounter:diagnosis
  
  3. Nachdem diese Ressourcen heruntergeladen wurden, wird die notwendige Verarbeitung mit dem `FHIRCrackR` Paket durchgeführt und in einen Datenframe mit relevanten Merkmalen für die Encounter mit der entsprechenden Diagnose umgewandelt.
  
  4. Die Liste der **Encounter-** und **Patienten-IDs** wird aus den extrahierten Ressourcen extrahiert und wird für das Herunterladen weiterer Ressourcen wie **Observation** und **Medikation** verwendet.
  
- 5. Die **Observation** Ressources werden für die Liste der **Encounter-IDs** und **LOINC-Codes** heruntergeladen, die im Folgenden aufgeführt sind:
+ 5. Die **Observation-** Ressources werden für die Liste der **Patient-IDS** und **LOINC-Codes** heruntergeladen. Zusätzlich werden die **Observation-** Ressources basierend auf das **Aufnahme-** und **Entlassdatum** miteinander gematcht.
  
-        Request: [base]Observation?encounter=xx&code=777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3,74201-5
-        *Note: xx indicates a placeholder for list of encounter ids*
-      
- 6. Das **medicationStatement** wird für die Liste der **Encounters** heruntergeladen, aus der die relevante **Medikamenten-ID** gewonnen wird, die dann zur Extraktion der eigentlichen **Medikamenten-**Ressourcen verwendet wird:
+        Request: [base]Observation?subject=xx&code=777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3,74201-5
+        *Note: xx indicates a placeholder for list of patient ids*
+               
+6. Ähnlich werden die **Procedure-** Ressources für die Liste der **Patient-IDS** heruntergeladen und basierend auf das **Aufnahme-** und **Entlassdatum** zusätzlich gematcht.
+ 
+        Request: [base]Procedure?subject=xx
+        *Note: xx indicates a placeholder for list of patient ids*  
+              
+ 7. Das **medicationStatement** wird für die Liste der **Encounters** heruntergeladen, aus der die relevante **Medikamenten-ID** gewonnen wird, die dann zur Extraktion der eigentlichen **Medikamenten-**Ressourcen verwendet wird:
 
         Request: [Base]/Medication?id=xx
         *Note: xx indicates a placeholder for list of encounter ids*
         
- 7. Um die früheren Komorbiditäten im Zusammenhang mit dem kardiovaskulären Risiko und den metabolischen Risiken zu erhalten, wird die **Condition**-Ressource für die Liste der Patienten extrahiert und die relevanten Merkmale werden auf der Grundlage der ICD10-Codes erstellt.
+8. Um die früheren Komorbiditäten im Zusammenhang mit dem kardiovaskulären Risiko und den metabolischen Risiken zu erhalten, wird die **Condition**-Ressource für die Liste der Patienten extrahiert und die relevanten Merkmale werden auf der Grundlage der ICD10-Codes erstellt.
 
         Request: [Base]/Condition?subject=xx        
-        *Note: xx indicates a placeholder for list of encounter ids*
+        *Note: xx indicates a placeholder for list of patient ids*
 
- 8. Wann alle diese Ressourcen heruntergeladen worden sind, werden in R verschiedene Data-Frames für die gesamten aggregierten Daten und auch verschiedene *Summaries* erstellt, und als `.csv` gespeichert werden. Die Einzelheiten dazu sind im obigen Abschnitt über die Ausgabe aufgeführt. 
+ 9. Wann alle diese Ressourcen heruntergeladen worden sind, werden in R verschiedene Data-Frames für die gesamten aggregierten Daten und auch verschiedene *Summaries* erstellt, und als `.csv` gespeichert werden. Die Einzelheiten dazu sind im obigen Abschnitt über die Ausgabe aufgeführt. 
          
 
 
