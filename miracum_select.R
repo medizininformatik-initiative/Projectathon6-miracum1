@@ -29,7 +29,7 @@ sep = " || "
 encounter_request <- fhir_url(url = conf$serverbase, 
                               resource = "Encounter", 
                               parameters = c("date" = "ge2015-01-01",
-                                             "diagnosis.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "diagnosis:Condition.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Encounter:patient",
                                              "_include"="Encounter:diagnosis"
                               ))
@@ -42,8 +42,6 @@ enc_bundles <- fhir_search(request = encounter_request, username = conf$user, pa
 
 end_time <- Sys.time()
 print(end_time - start_time)
-
-
 
 
 #############################
@@ -98,7 +96,6 @@ enc_tables <- fhir_crack(enc_bundles,
 
 
 
-
 if(nrow(enc_tables$enc) == 0){
   write("Could not find any encounter resource in the server for the required stroke condition. Query Stopped.", file ="errors/error_message.txt")
   stop("No Stroke encounters found - aborting.")
@@ -127,6 +124,7 @@ df.encounters <- fhir_rm_indices(df.encounters, brackets = brackets )
 df.encounters <- zoo:::na.locf(df.encounters, na.rm = F)
 df.encounters$condition_id <- sub("Condition/", "", df.encounters$condition_id)
 df.encounters$patient_id <- sub("Patient/", "", df.encounters$patient_id)
+
 df.encounters$admission_date <- as.POSIXct(df.encounters$admission_date,format="%Y-%m-%dT%H:%M:%S")
 df.encounters$discharge_date <- as.POSIXct(df.encounters$discharge_date,format="%Y-%m-%dT%H:%M:%S")
 
@@ -576,10 +574,15 @@ write.csv2(df.medstatement, paste0("Ergebnisse/Medications.csv"))
 #cohort summary
 if(nrow(df.cohort) > 0){
   df.cohort.trunc <- df.cohort.agg
-  df.cohort.trunc$year_quarter <-  ifelse(!is.na(df.cohort.trunc$admission_date), 
-                                          as.character(zoo:::as.yearqtr(df.cohort.trunc$admission_date, format = "%Y-%m-%d")), 
-                                          as.character(zoo:::as.yearqtr(df.cohort.trunc$recorded_date, format = "%Y-%m-%d"))
-                                          )
+  df.cohort.trunc$year_quarter <-  apply(X=data.frame(1:nrow(df.cohort.trunc)),MARGIN = 1,FUN = function(X){
+    ifelse(!is.na(df.cohort.trunc$admission_date[X]), 
+           as.character(zoo:::as.yearqtr(as.Date(df.cohort.trunc$admission_date[X]), format = "%Y-%m-%d")), 
+           as.character(zoo:::as.yearqtr(as.Date(df.cohort.trunc$recorded_date[X]), format = "%Y-%m-%d"))
+    )
+  })
+    
+    
+
   df.cohort.trunc[df.cohort.trunc=="NA"] = NA
   df.cohort.trunc.summary <- df.cohort.trunc %>%
     group_by(year_quarter) %>%
