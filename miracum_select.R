@@ -564,10 +564,10 @@ if(exists("df.conditions.previous.wide")){
 
 
 ###Export actual data 
-if(!dir.exists("Ergebnisse")){dir.create("Ergebnisse")}
-write.csv2(df.cohort, paste0("Ergebnisse/Kohorte.csv"))
-write.csv2(df.observation, paste0("Ergebnisse/Observations.csv"))
-write.csv2(df.medstatement, paste0("Ergebnisse/Medications.csv"))
+# if(!dir.exists("Ergebnisse")){dir.create("Ergebnisse")}
+# write.csv2(df.cohort, paste0("Ergebnisse/Kohorte.csv"))
+# write.csv2(df.observation, paste0("Ergebnisse/Observations.csv"))
+# write.csv2(df.medstatement, paste0("Ergebnisse/Medications.csv"))
 #################################################################################################
 
 ###generate summary data and export####
