@@ -49,7 +49,7 @@ DockerHub option will be updated
 --->
 
 **A) Image bauen mit Docker Compose:**
-1. Git-Respository klonen: `git clone https://github.com/NandhiniS08/Projectathon6-miracum1.git`
+1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
 4. Image bauen und Container starten: `docker compose up -d`
