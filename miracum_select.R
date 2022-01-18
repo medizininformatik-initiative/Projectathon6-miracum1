@@ -493,17 +493,40 @@ if(nrow(df.medstatement)>0){
   ###extract the actual medication using the IDs
   medication_ids <- unique(df.medstatement$medication_id)
   
-  ids= paste(medication_ids, collapse = ",")
-  med_request <- fhir_url(url = conf$serverbase,
-                          resource = "Medication",
-                          parameters = c("_id" = ids)
-  )
+  nchar_for_ids <- 1800 - nchar(conf$serverbase)
+  n <- length(medication_ids)
+  list <- split(medication_ids, ceiling(seq_along(medication_ids)/n)) 
+  nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)}) 
   
-  med_bundle <- fhir_search(med_request,
-                            username = conf$username,
-                            password = conf$password,
-                            log_errors = "errors/medication_error.xml")
+  #reduce the chunk size until number of characters is small enough
+  while(any(nchar > nchar_for_ids)){
+    n <- n/2
+    list <- split(medication_ids, ceiling(seq_along(medication_ids)/n))
+    nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
+  }
   
+  
+  
+  med_list  <- lapply(list, function(x){
+    
+    ids <- paste(x, collapse = ",")
+    
+    med_request <- fhir_url(url = conf$serverbase,
+                            resource = "Medication",
+                            parameters = c("_id" = ids)
+    )
+    
+    medication_bundle <- fhir_search(med_request,
+                                  username = conf$username,
+                                  password = conf$password,
+                                  log_errors = "errors/medication_error.xml")
+    
+  }) # lapply()
+  
+  
+  med_bundles <- fhircrackr:::fhir_bundle_list(unlist(med_list, recursive = F))
+  
+
   medication <- fhir_table_description(resource = "Medication",
                                        cols = c(medication_id = "id",
                                                 code = "code/coding/code",
@@ -515,7 +538,7 @@ if(nrow(df.medstatement)>0){
                                                           rm_empty_cols = FALSE)
   )
   
-  med_table <- fhir_crack(med_bundle,design = fhir_design(med = medication))
+  med_table <- fhir_crack(med_bundles,design = fhir_design(med = medication))
   
   
   
@@ -660,7 +683,7 @@ if(nrow(df.conditions.previous) > 0){
   #write.csv2(df.conditions.previous.summary, paste0("Summary/history_comorbidities_Summary.csv"))
   #df.conditions.previous.summary <- read.csv( paste0("Summary/history_comorbidities_Summary.csv"),sep = ";")
   openxlsx:::addWorksheet(wb, "Previous_Comorbidities")
-  writeDataTable(wb = wb,x = df.conditions.previous.summary,sheet = "Previous_Comorbidities", withFilter = FALSE)
+  openxlsx:::writeDataTable(wb = wb,x = df.conditions.previous.summary,sheet = "Previous_Comorbidities", withFilter = FALSE)
 }
 
 
@@ -671,8 +694,8 @@ if(nrow(df.observation) > 0){
     summarise(count_encounters = length(unique(encounter_id)) +sample(-5:5, 1,replace = TRUE)
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   #write.csv2(df.observation.summary, paste0("Summary/Observation_Summary.csv"))
-  addWorksheet(wb, "Lab_Values")
-  writeDataTable(wb = wb,x = df.observation.summary,sheet = "Lab_Values", withFilter = FALSE)
+  openxlsx:::addWorksheet(wb, "Lab_Values")
+  openxlsx:::writeDataTable(wb = wb,x = df.observation.summary,sheet = "Lab_Values", withFilter = FALSE)
 }
 
 
