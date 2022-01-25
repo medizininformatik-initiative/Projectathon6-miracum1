@@ -35,14 +35,37 @@ encounter_request <- fhir_url(url = conf$serverbase,
                               ))
 
 
+
 #download the bundles
 start_time <- Sys.time()
-enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
+enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml",max_bundles = 10)
 #fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
 
 end_time <- Sys.time()
 print(end_time - start_time)
 
+
+
+#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
+
+
+### extraction for covering the cases who doesn't have a link of condition in the encounter resource
+condition_request_2 <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject"
+                              ))
+
+
+#download the alternate bundles
+start_time <- Sys.time()
+con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
+
+
+end_time <- Sys.time()
+print(end_time - start_time)
 
 #############################
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
@@ -87,41 +110,47 @@ condition <- fhir_table_description(resource = "Condition",
 
 
 
+#combine both the bundles together and then crack it
 
-#flatten the resource
+combined_bundles <-fhircrackr:::fhir_bundle_list(append(enc_bundles, con_bundles))
 
-enc_tables <- fhir_crack(enc_bundles, 
+
+#flatten the resource based on the combined bundles 
+combined_tables <- fhir_crack(combined_bundles, 
                          design = fhir_design(enc = encounters, pat = patients, con = condition),
                          data.table = TRUE)
 
 
 
-if(nrow(enc_tables$enc) == 0){
+
+if(nrow(combined_tables$enc) == 0){
   write("Could not find any encounter resource in the server for the required stroke condition. Query Stopped.", file ="errors/error_message.txt")
   stop("No Stroke encounters found - aborting.")
 }
 
-if(nrow(enc_tables$pat) == 0){
+if(nrow(combined_tables$pat) == 0){
   write("Could not find any patient resource in the server for the required stroke condition. Query Stopped.", file ="errors/error_message.txt")
   stop("No Patients for stroke condition found - aborting.")
 }
 
+rm(combined_bundles,enc_bundles,con_bundles)
+
 
 ###############extract and process patient resource##############################
-df.patients <- enc_tables$pat
+df.patients <- combined_tables$pat
 df.patients <- fhir_rm_indices(df.patients, brackets = brackets )
-
+df.patients <- df.patients[!duplicated(df.patients),]
 
 
 ################extract encounter resource###############
 
-df.encounters <- enc_tables$enc
+df.encounters <- combined_tables$enc
 df.encounters <- fhir_melt(df.encounters,
-                           columns = c('encounter_id','admission_date','discharge_date', 'condition_id','patient_id' ,'rank','discharge_reason'),
+                           columns = c('condition_id' ,'rank'),
                            brackets = brackets, sep = sep, all_columns = TRUE)
 df.encounters <- fhir_rm_indices(df.encounters, brackets = brackets )
 
-df.encounters <- zoo:::na.locf(df.encounters, na.rm = F)
+
 df.encounters$condition_id <- sub("Condition/", "", df.encounters$condition_id)
 df.encounters$patient_id <- sub("Patient/", "", df.encounters$patient_id)
 
@@ -134,10 +163,15 @@ df.encounters.trunc <- df.encounters.trunc[!duplicated(df.encounters.trunc),]
 
 ####################extract the condition resources##################
 
-df.conditions <- enc_tables$con
+df.conditions <- combined_tables$con
+df.conditions <- fhir_melt(df.conditions, columns = c("icd", "system"), brackets = brackets, sep = sep, all_columns = TRUE)
+df.conditions <- fhir_melt(df.conditions, columns = c("icd", "system"), brackets = brackets, sep = sep, all_columns = TRUE)
+
 df.conditions <- fhir_rm_indices(df.conditions, brackets = brackets )
 df.conditions$encounter_id <- sub("Encounter/", "", df.conditions$encounter_id)
 df.conditions$patient_id <- sub("Patient/", "", df.conditions$patient_id)
+
+df.conditions <- df.conditions[grepl("icd-10", system)]
 
 icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9'
                ,'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9'
@@ -146,6 +180,17 @@ icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','
 df.conditions <- df.conditions[c(which(df.conditions$icd %in% icd_codes) )]
 
 df.conditions$recorded_date <- as.POSIXct(df.conditions$recorded_date ,format="%Y-%m-%dT%H:%M:%S")
+
+df.encounters.subset <-  df.encounters[,c("encounter_id", "condition_id")]
+setnames(df.encounters.subset,old = c("encounter_id", "condition_id"),new = c("encounter.encounter_id", "encounter.condition_id"))
+df.conditions <- merge.data.table(x = df.conditions, 
+                               y = df.encounters.subset ,
+                               by.x = "condition_id",
+                               by.y = "encounter.condition_id",
+                               all.x = TRUE)
+
+df.conditions[is.na(encounter_id),encounter_id:=encounter.encounter_id]
+df.conditions[, encounter.encounter_id:=NULL]
 
 
 ####################extract the procedure resources##################
