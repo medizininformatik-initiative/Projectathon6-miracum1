@@ -615,8 +615,8 @@ df.cohort.agg <- df.cohort%>%
   summarise(birthdate = unique(birthdate),
             gender = unique(gender),
             patient_zip = unique(patient_zip),
-            admission_date= as.character(unique(admission_date)),
-            discharge_date= as.character(unique(discharge_date)),
+            admission_date= (unique(admission_date)),
+            discharge_date= (unique(discharge_date)),
             icd = paste((icd), collapse = '/'),
             recorded_date = paste((recorded_date), collapse = '/'),
             rank = paste((rank), collapse = '/')
@@ -646,15 +646,19 @@ wb <-openxlsx:::createWorkbook()
 #cohort summary
 if(nrow(df.cohort) > 0){
   df.cohort.trunc <- df.cohort.agg
+  
+  df.cohort.trunc <- df.cohort.trunc[!with(df.cohort.trunc,is.na(admission_date)& is.na(recorded_date)),]
+  
   df.cohort.trunc$year_month <-  apply(X=data.frame(1:nrow(df.cohort.trunc)),MARGIN = 1,FUN = function(X){
-    ifelse(!is.na(df.cohort.trunc$admission_date[X]), 
-           as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$admission_date[X]), format = "%Y-%m-%d")), 
-           as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$recorded_date[X]), format = "%Y-%m-%d"))
+    ifelse(test = (!is.na(df.cohort.trunc$admission_date[X])), 
+            yes=    as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$admission_date[X]), format = "%Y-%m-%d")), 
+          no= as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$recorded_date[X]), format = "%Y-%m-%d"))
     )
   })
     
     
 
+  
   df.cohort.trunc[df.cohort.trunc=="NA"] = NA
   
   #year and monthly count
