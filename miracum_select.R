@@ -624,7 +624,7 @@ if(nrow(df.medstatement)>0){
 df.cohort1 <- left_join(df.conditions[condition_id %in% df.encounters$condition_id],df.encounters[!is.na(condition_id),c("condition_id","admission_date","discharge_date","rank","discharge_reason")],"condition_id")
 
 #join encounters to conditions that were not referenced in an encounter 
-df.cohort2 <- left_join(df.conditions[!condition_id %in% df.encounters$condition_id],unique(df.encounters[,c("admission_date","discharge_date","discharge_reason")]),"encounter_id")
+df.cohort2 <- left_join(df.conditions[!condition_id %in% df.encounters$condition_id],unique(df.encounters[,c("encounter_id","admission_date","discharge_date","discharge_reason")]),"encounter_id")
 
 #rbind them
 df.cohort <- rbind(df.cohort1, df.cohort2, fill=T)
