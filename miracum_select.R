@@ -65,7 +65,7 @@ if(!(conf$custom_search))
 condition_request_2 <- fhir_url(url = conf$serverbase, 
                               resource = "Condition", 
                               parameters = c("recorded-date" = "ge2015-01-01",
-                                             "icd-primaercode"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Condition:encounter",
                                              "_include"="Condition:subject"
                               ))
@@ -74,7 +74,7 @@ condition_request_2 <- fhir_url(url = conf$serverbase,
   condition_request_2 <- fhir_url(url = conf$serverbase, 
                               resource = "Condition", 
                               parameters = c("recorded-date" = "ge2015-01-01",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "icd-primaercode"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Condition:encounter",
                                              "_include"="Condition:subject"
                               ))
