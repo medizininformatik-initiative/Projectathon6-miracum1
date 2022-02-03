@@ -5,3 +5,5 @@ default:
   password:        NULL
 ## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
   ssl_verify_peer: TRUE
+## FALSE = If there is no star cross notation for diagnosis. True: If there is a star cross notation for diagnosis
+  custom_search: FALSE
