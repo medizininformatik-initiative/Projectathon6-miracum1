@@ -26,6 +26,8 @@ sep = " || "
 ############Data extraction#############################
 ##extract the condition resources of the list of stroke ICD's greather than 2015-01-01 and extract the associated patient, encounter, condition and procedure resource
 #configure the fhir search url
+if(!(conf$custom_search))
+ {  
 encounter_request <- fhir_url(url = conf$serverbase, 
                               resource = "Encounter", 
                               parameters = c("date" = "ge2015-01-01",
@@ -35,7 +37,15 @@ encounter_request <- fhir_url(url = conf$serverbase,
                               ))
 
 
-
+}else{
+  encounter_request <- fhir_url(url = conf$serverbase, 
+                              resource = "Encounter", 
+                              parameters = c("date" = "ge2015-01-01",
+                                             "diagnosis:Condition.icd-primaercode"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_include" = "Encounter:patient",
+                                             "_include"="Encounter:diagnosis"
+                              ))
+  }
 #download the bundles
 start_time <- Sys.time()
 enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml",max_bundles = 10)
@@ -50,15 +60,25 @@ print(end_time - start_time)
 
 
 ### extraction for covering the cases who doesn't have a link of condition in the encounter resource
+if(!(conf$custom_search))
+{
 condition_request_2 <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+                                             "icd-primaercode"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject"
+                              ))
+
+}else{
+  condition_request_2 <- fhir_url(url = conf$serverbase, 
                               resource = "Condition", 
                               parameters = c("recorded-date" = "ge2015-01-01",
                                              "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Condition:encounter",
                                              "_include"="Condition:subject"
                               ))
-
-
+  }
 #download the alternate bundles
 start_time <- Sys.time()
 con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
@@ -173,11 +193,8 @@ df.conditions$patient_id <- sub("Patient/", "", df.conditions$patient_id)
 
 df.conditions <- df.conditions[grepl("icd-10", system)]
 
-icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9'
-               ,'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9'
-               ,'I63.0','I63.1','I63.2','I63.3','I63.4','I63.5','I63.6','I63.8','I63.9','I67.80!')
-
-df.conditions <- df.conditions[c(which(df.conditions$icd %in% icd_codes) )]
+icd_codes <- c('I60.0|I60.1|I60.2|I60.3|I60.4|I60.5|I60.6|I60.7|I60.8|I60.9|I61.0|I61.1|I61.2|I61.3|I61.4|I61.5|I61.6|I61.8|I61.9|I63.0|I63.1|I63.2|I63.3|I63.4|I63.5|I63.6|I63.8|I63.9|I67.80!')
+df.conditions <- df.conditions[grepl(icd_codes, icd)]
 
 df.conditions$recorded_date <- as.POSIXct(df.conditions$recorded_date ,format="%Y-%m-%dT%H:%M:%S")
 
@@ -602,9 +619,20 @@ if(nrow(df.medstatement)>0){
 
 
 ####################################join all the resources ##################################################
-df.cohort <- left_join(df.conditions,df.encounters[,c("condition_id","admission_date","discharge_date","rank","discharge_reason")],"condition_id")
+
+#join encounters to conditions that were referenced in an encounter
+df.cohort1 <- left_join(df.conditions[condition_id %in% df.encounters$condition_id],df.encounters[!is.na(condition_id),c("condition_id","admission_date","discharge_date","rank","discharge_reason")],"condition_id")
+
+#join encounters to conditions that were not referenced in an encounter 
+df.cohort2 <- left_join(df.conditions[!condition_id %in% df.encounters$condition_id],unique(df.encounters[,c("admission_date","discharge_date","discharge_reason")]),"encounter_id")
+
+#rbind them
+df.cohort <- rbind(df.cohort1, df.cohort2, fill=T)
+#df.cohort <- left_join(df.conditions,df.encounters[,c("condition_id","admission_date","discharge_date","rank","discharge_reason")],"condition_id")
+#adding patient data
 df.cohort <- left_join(df.cohort,df.patients,"patient_id")
 
+#rearranging columns
 df.cohort <- df.cohort[,c("patient_id","birthdate","gender","patient_zip"
                           ,"encounter_id","admission_date","discharge_date","icd","system"
                           ,"recorded_date","rank")]
