@@ -1,0 +1,12 @@
+{
+  "resourceType": "SearchParameter",
+  "id": "Condition-icd-primaercode",
+  "url": "https://www.medizininformatik-initiative.de/fhir/SearchParameter/icd-primaercode",
+  "name": "icd-primaercode",
+  "status": "active",
+   "description": "Search for an icd code which is stored in an icd-10-gm-primaercode extension of the condition resource",
+  "code": "icd-primaercode",
+  "base": ["Condition"],
+  "type": "token",
+  "expression": "Condition.code.coding.extension('http://fhir.de/StructureDefinition/icd-10-gm-primaercode').value"
+}
