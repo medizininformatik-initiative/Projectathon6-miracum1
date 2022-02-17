@@ -39,16 +39,24 @@ Durch Öffnen des R-Projektes (`Projectathon6-miracum1.Rproj`) mit anschließend
 ## Ausführung im Docker Container
 Um die Abfrage in einem Docker Container laufen zu lassen gibt es zwei Möglichkeiten:
 
-<!--- 
-DockerHub option will be updated
 **A) Image von DockerHub ziehen:**
-1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
-2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
-3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen 
-4. Image downloaden und Container starten: `docker run --name projectathon6-miracum1 -v "$(pwd)/errors:/errors" -v "$(pwd)/Bundles:/Bundles" -v "$(pwd)/Summary:/Summary" -v "$(pwd)/Ergebnisse:/Ergebnisse" -v "$(pwd)/config.yml:/config.yml" NandhiniS08/projectathon6-miracum1`
---->
 
-**A) Image bauen mit Docker Compose:**
+1. Git-Repository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git Projectathon6-miracum1`
+2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
+3. Konfiguration lokal anpassen: `./config.R.default` nach `./config.R` kopieren und anpassen
+4. Image downloaden und Container starten:
+
+```bash
+docker run --name projectathon6-miracum1 \
+       -v "$(pwd)/errors:/errors" \
+       -v "$(pwd)/Bundles:/Bundles" \
+       -v "$(pwd)/Summary:/Summary" \
+       -v "$(pwd)/Ergebnisse:/Ergebnisse" \
+       -v "$(pwd)/config.R:/config.R" \
+       joundso/projectathon6-miracum1
+```
+
+**B) Image bauen mit Docker Compose:**
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
@@ -56,7 +64,7 @@ DockerHub option will be updated
 
 Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `docker compose start`.
 
-**B) Image bauen ohne Docker Compose**
+**C) Image bauen ohne Docker Compose**
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Image bauen: `docker build -t projectathon6-miracum1 .` 

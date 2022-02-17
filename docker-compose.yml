@@ -8,5 +8,5 @@ services:
       - ./Summary:/Summary
       - ./Ergebnisse:/Ergebnisse
       - ./config.yml:/config.yml
-#      - ./localca.pem:/usr/local/share/ca-certificates/localca.crt
-    image: "projectathon6-miracum1"  
+    #      - ./localca.pem:/usr/local/share/ca-certificates/localca.crt
+    image: "joundso/projectathon6-miracum1"
