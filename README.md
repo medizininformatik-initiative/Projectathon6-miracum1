@@ -68,7 +68,7 @@ Erklärung:
 -  `-v "$(pwd)/config.yml:/config.yml""` bindet die lokal veränderte Variante des config-Files ein. Wenn dieses geändert wird, reicht es, den Container neu zu stoppen und starten (`docker stop Projectathon6-miracum1`, `config.yml` ändern, dann `docker start Projectathon6-miracum1`), ein erneutes `docker build` ist nicht nötig.
 
 **C) Direkt Download vom DockerHub**
-Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des [Changelogs] (##### Feb 17, 2022) vom `dockerhub` herunterladen.
+Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des [Changelogs](#####-Feb-17,-2022) vom `dockerhub` herunterladen.
 
 
 ## Output 
