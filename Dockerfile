@@ -4,16 +4,23 @@ FROM rocker/r-ver:latest
 LABEL Description="PJT#6 miracum1"
 LABEL Maintainer="nandhini.santhanam@medma.uni-heidelberg.de"
 
-RUN mkdir -p /Ergebnisse
-RUN mkdir -p /errors
-RUN mkdir -p /Bundles
+RUN mkdir -p /Ergebnisse && \
+  mkdir -p /errors && \
+  mkdir -p /Bundles
 
-RUN apt-get update -qq && apt-get install -yqq \
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   libxml2-dev \
-  libssl-dev curl
+  libssl-dev curl && \
+  ## clear caches:
+  rm -rf /var/lib/apt/lists/* && \
+  rm -rf /tmp/* && \
+  apt-get clean && apt-get autoclean && apt-get autoremove -y
 
 RUN install2.r --error --deps TRUE \
-  fhircrackr
+  fhircrackr && \
+  ## clear caches:
+  rm -rf /tmp/downloaded_packages && \
+  rm -rf /var/lib/apt/lists/*
 
 COPY config_default.yml config_default.yml
 COPY miracum_select.R miracum_select.R
