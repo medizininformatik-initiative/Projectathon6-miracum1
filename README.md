@@ -226,35 +226,31 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
  9. Wann alle diese Ressourcen heruntergeladen worden sind, werden in R verschiedene Data-Frames für die gesamten aggregierten Daten und auch verschiedene *Summaries* erstellt, und als `.csv` gespeichert werden. Die Einzelheiten dazu sind im obigen Abschnitt über die Ausgabe aufgeführt. 
          
+---
 
+## Changelog
 
-#### Changelog
+### Major changes
 
-Major changes
+##### Feb 17, 2022
+Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download vom R-Packete & Dependencies (Abel Stolz; RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40), weil wir aktuell den Docker-Container lokal selbst bauen. 
+
+Anmerkung: Das Docker-Image sollte für Sites verfügbar sein, die nicht in der Lage sind, selbst zu bauen. Siehe auch [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/3). 
+
+Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers (@NandhiniS08 | @MeMatt) erstellt.
 
 ##### Jan 27, 2022
-Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt
+Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt.
 
 ##### Jan 25, 2022
-Änderung: Logik beim herunterladen von Conditions geändert: Es werden jetzt alle Conditions zu den untersuchten Patienten gezogen und anschließend so gefiltert, dass nur Conditions übrig bleiben, die zu den gewünschten Encountern gehören. 
+Änderung: Logik beim herunterladen von Conditions geändert. Es werden jetzt alle Conditions zu den untersuchten Patienten gezogen und anschließend so gefiltert, dass nur Conditions übrig bleiben, die zu den gewünschten Encountern gehören. 
 
-
-Erklärung: Damit ist es jetzt irrelevant, ob der Encounter auf die Condition verlinkt oder die Condition auf den Encounter verlinkt. Das Skript funktioniert, solange mindestens eine der Richtungen gegeben ist. Diese Änderung wurde implementiert, weil sich herausstellt, dass die Linkrichtung in den verschiedenen DIZen zu heterogen ist, als das man sich auf eine von beiden verlassen könnte.
-
+Erklärung: Damit ist es jetzt irrelevant, ob der Encounter auf die Condition verlinkt oder die Condition auf den Encounter verlinkt. Das Skript funktioniert, solange mindestens eine der Richtungen gegeben ist. Diese Änderung wurde implementiert, weil es sich herausgestellt hat, dass die Linkrichtung in den verschiedenen DIZen heterogen und unterschiedlich gelöst ist. 
 
 ##### Jan 18, 2022
-Änderung: Problem, wenn die Medikamenten-ID sehr hoch ist. URL-Länge zu hoch Problem von Erlangen gemeldet. Medikamenten-ID wird aufgeteilt und Ressourcen werden in Teilen heruntergeladen 
+Änderung: Problem, wenn multiple Medikamenten-IDs gefiltert werden, wird die URL-Länge der FHIR Query zu lang. Dieses Problem hat Erlangen gemeldet. Die Medikamenten-IDs werden aufgeteilt und die Ressourcen werden in Teilen heruntergeladen.
 
-
-Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die für andere Ressourcen-Downloads implementiert ist). Der Fehler tritt auf der lokalen Seite nicht auf, da die Medikationsdaten sehr gering sind.
-
-
-##### Jan 18, 2022
-Änderung: Problem, wenn die Medikamenten-ID sehr hoch ist. URL-Länge zu hoch Problem von Erlangen gemeldet. Medikamenten-ID wird aufgeteilt und Ressourcen werden in Teilen heruntergeladen 
-
-
-Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die für andere Ressourcen-Downloads implementiert ist). Der Fehler tritt auf der lokalen Seite nicht auf, da die Medikationsdaten sehr gering sind.
-
+Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die für andere Ressourcen-Downloads implementiert ist). Der Fehler trat auf der lokalen Seite nicht auf, da die Medikationsdaten sehr gering sind.
 
 
 ##### Jan 11, 2022
