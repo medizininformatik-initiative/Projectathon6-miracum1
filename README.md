@@ -68,7 +68,7 @@ Erklärung:
 -  `-v "$(pwd)/config.yml:/config.yml""` bindet die lokal veränderte Variante des config-Files ein. Wenn dieses geändert wird, reicht es, den Container neu zu stoppen und starten (`docker stop Projectathon6-miracum1`, `config.yml` ändern, dann `docker start Projectathon6-miracum1`), ein erneutes `docker build` ist nicht nötig.
 
 **C) Direkt Download vom DockerHub**
-Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des [Changelogs](#feb-17-2022) vom `dockerhub` herunterladen.
+Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen.
 
 
 ## Output 
@@ -234,6 +234,15 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 ## Changelog
 
 ### Major changes
+
+##### Feb 18, 2022
+Rückmeldung von Leipzing: Fehlermeldung bei R package install `Warning: unable to access index for repository https://packagemanager.rstudio.com/cran/__linux__/focal/latest/src/contrib: cannot open URL ...`
+
+Bei WE-STORM werden zur Run time des Containers durch das R-Skript (`install2.r`) weitere R-Pakete (`fhircrackr, config, dplyr, zoo, didyr, data.table, openxlsx`) nachinstalliert, deise benötigen weitere Pakete als Abhängigkeiten, welche standardgemäß von CRAN geladen werden.  
+
+Zwischenlösung: (@joundso)[https://github.com/joundso] docker image auf (dockerhub)[https://hub.docker.com/r/joundso/projectathon6-miracum1] nachgebaut mit `--deps TRUE` flag somit alle R Pakete bereits miteingebaut sind. 
+
+Falls der Skript ausführende Server keine Internetverbindung hat [siehe Feb 17](#feb-17-2022) kann der o.g. updated container vom dockerhub `docker pull joundso/projectathon6-miracum1:latest` benutzt werden.
 
 ##### Feb 17, 2022
 Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download vom R-Packete & Dependencies (Abel Stolz; `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), weil wir aktuell den Docker-Container lokal selbst bauen. 
