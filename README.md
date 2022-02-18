@@ -1,5 +1,5 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 01.12.21
+Datum: 31.01.22
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -75,25 +75,25 @@ Erklärung:
 
 -  `-v "$(pwd)/config.yml:/config.yml""` bindet die lokal veränderte Variante des config-Files ein. Wenn dieses geändert wird, reicht es, den Container neu zu stoppen und starten (`docker stop Projectathon6-miracum1`, `config.yml` ändern, dann `docker start Projectathon6-miracum1`), ein erneutes `docker build` ist nicht nötig.
 
+**C) Direkt Download vom DockerHub**
+Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des [Changelogs](#feb-17-2022) vom `dockerhub` herunterladen.
+
 
 ## Output 
 Das Skript erzeugt mehrere Ordner im Projekt-Directory. Um für den Projectathon eine möglichst einfache übersichtliche Lösung zu bekommen, werden alle files, die darin erzeugt werden bei mehrmaligem Ausführen ggf. einfach überschrieben.
 
-### Ergebnisse
-Wenn die Abfrage erfolgreich durchgeführt wurde, sind hier zwei Gruppen von csv-Dateien zu finden.
-In der ersten Gruppe befinden sich 3 `.csv` Dateien mit den orignalen Quelldaten:
-- `Kohorte.csv` inkl. alle Patienten mit den Pflichtdatenfelder(patient_id, birth_date, gender, patient_zip) Und Informationen über den Besuch des Patienten im Krankenhaus - Aufnahmedatum, ICD, Rang (Haupt-/Nebendiagnose) und verschiedene damit zusammenhängende Merkmale (intravenous lyse therapy (IVT) , Admission to the ICU, Admission to the stroke unit, Neurosurgery, Thrombectomy, Intrakraniell Stent)  und Kardiovaskuläre Risikofaktoren und metabolische Komorbiditäten
-- `Medication.csv` inkl. alle Resourcen bzgl. Patientenaufnahmen (encouter_id) und die erhaltene Medikation (code)
-- `Observations.csv` inkl. patient_id und encounter_id sowie LOINC-Codes (value & unit)
+Wenn die Abfrage erfolgreich durchgeführt wurde, wird die folgende Zusammenfassung in Excel erstellt 
 ### Summary
-Analog dazu befinden sich in der zweiten Gruppe die zusammengefasste/aggregierte Count-Daten der obigen Tabellen: 
-- `Cohort_Summary.csv` gruppiert für die Quartale (z.B. 2020/Q1, ...)
-- `Medication_Summary.csv` Anzahl der Fälle gruppierte nach Medikationstyp  
-- `Observation_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Laborwerte
-- `Procedure_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Procedures
-- `StrokeDiagnosis_Summary.csv` Anzahl der Fälle gruppierte entsprechend der verfügbaren Stroke diagnosen ICD
 
-Diese sind benötigt um die möglichste größte und feature-reicshte homogene Kohrote über alle Standorten hinweg für die statistische Auswertung selektieren zu können. 
+- `Cohort_Feature_availability` Dieses Blatt zeigt den Prozentsatz der verfügbaren Merkmale für jeden Monat in der Kohorte. Diese Tabelle enthält die wichtigsten Merkmale, die für das Modell benötigt werden
+- `MultiplePatientVisit: ` Hier wird die Zuordnung zwischen der Anzahl der Patienten und ihrer Besuche dargestellt
+- `PLZ` Hier wird die Anzahl der Begegnungen in jeder PLZ angegeben (gefiltert größer oder gleich 5). Dies hilft uns bei der Identifizierung der wichtigsten PLZ in der Kohorte für den Abgleich mit den Wetterstationen.
+- `Stroke_ICD_Summary` Dies gibt die Anzahl der Begegnungen mit einem entsprechenden ICD an und auch den Prozentsatz, den dieser in der Gesamtkohorte ausmacht, der ebenfalls mit etwas Rauschen addiert wird.
+- `Different Procedures` Für die identifizierte Kohorte werden hier die verschiedenen Verfahren, die für die verschiedenen Begegnungen durchgeführt wurden, und ihr prozentualer Anteil an der Gesamtkohorte angegeben.
+- `Previous comorbidities` Anzahl der Fälle gruppierte entsprechend der verfügbaren Stroke diagnosen ICDFür die identifizierte Kohorte werden hier die früheren Komorbiditäten für die verschiedenen Begegnungen und ihr prozentualer Anteil an der Gesamtkohorte angegeben.
+- `LabValues` Für die identifizierte Kohorte werden hier die Labormethoden angegeben, die bei verschiedenen Untersuchungen gemessen wurden (basierend auf LOINC-Code), sowie deren prozentualer Anteil an der Gesamtkohorte.
+- `Medication` Für die identifizierte Kohorte werden hier die bei verschiedenen Untersuchungen verabreichten Medikamente und ihr prozentualer Anteil an der Gesamtkohorte angegeben.
+Diese sind benötigt um die Different Procedures größte und feature-reicshte homogene Kohrote über alle Standorten hinweg für die statistische Auswertung selektieren zu können. 
 
 ## Verwendete Codesysteme
   Dieses System wird für den Download per FHIR Search verwendet
@@ -237,8 +237,48 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
  9. Wann alle diese Ressourcen heruntergeladen worden sind, werden in R verschiedene Data-Frames für die gesamten aggregierten Daten und auch verschiedene *Summaries* erstellt, und als `.csv` gespeichert werden. Die Einzelheiten dazu sind im obigen Abschnitt über die Ausgabe aufgeführt. 
          
+---
+
+## Changelog
+
+### Major changes
+
+##### Feb 17, 2022
+Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download vom R-Packete & Dependencies (Abel Stolz; `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), weil wir aktuell den Docker-Container lokal selbst bauen. 
+
+Anmerkung: Das Docker-Image sollte für Sites verfügbar sein, die nicht in der Lage sind, selbst zu bauen. Siehe auch [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/3). 
+
+Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers (@NandhiniS08 | @MeMatt) erstellt.
+
+##### Jan 27, 2022
+Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt.
+
+##### Jan 25, 2022
+Änderung: Logik beim herunterladen von Conditions geändert. Es werden jetzt alle Conditions zu den untersuchten Patienten gezogen und anschließend so gefiltert, dass nur Conditions übrig bleiben, die zu den gewünschten Encountern gehören. 
+
+Erklärung: Damit ist es jetzt irrelevant, ob der Encounter auf die Condition verlinkt oder die Condition auf den Encounter verlinkt. Das Skript funktioniert, solange mindestens eine der Richtungen gegeben ist. Diese Änderung wurde implementiert, weil es sich herausgestellt hat, dass die Linkrichtung in den verschiedenen DIZen heterogen und unterschiedlich gelöst ist. 
+
+##### Jan 18, 2022
+Änderung: Problem, wenn multiple Medikamenten-IDs gefiltert werden, wird die URL-Länge der FHIR Query zu lang. Dieses Problem hat Erlangen gemeldet. Die Medikamenten-IDs werden aufgeteilt und die Ressourcen werden in Teilen heruntergeladen.
+
+Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die für andere Ressourcen-Downloads implementiert ist). Der Fehler trat auf der lokalen Seite nicht auf, da die Medikationsdaten sehr gering sind.
 
 
+##### Jan 11, 2022
+Änderung: Anpassung des Formats und des Inhalts der Excel-Zusammenfassung gemäß einem Vorschlag der UAC.
 
+
+##### Dec 10, 2021
+Änderung: Anpassung der FHIR-Suchparameter für den Diagnosecode 
+
+
+##### Dec 7, 2021
+Änderung: Extraction based on subject_id and admission and discharge date
+
+##### Dec 6, 2021
+Änderung: Adapted SSL option in config and adapted the readme
+
+##### Dec 2,3, 2021
+Änderung: minor changes on readme and removed saving bundles 
 
 
