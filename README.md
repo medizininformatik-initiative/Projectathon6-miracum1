@@ -240,7 +240,7 @@ Rückmeldung von Leipzing: Fehlermeldung bei R package install `Warning: unable 
 
 Bei WE-STORM werden zur Run time des Containers durch das R-Skript (`install2.r`) weitere R-Pakete (`fhircrackr, config, dplyr, zoo, didyr, data.table, openxlsx`) nachinstalliert, deise benötigen weitere Pakete als Abhängigkeiten, welche standardgemäß von CRAN geladen werden.  
 
-Zwischenlösung: (@joundso)[https://github.com/joundso] docker image auf (dockerhub)[https://hub.docker.com/r/joundso/projectathon6-miracum1] nachgebaut mit `--deps TRUE` flag somit alle R Pakete bereits miteingebaut sind. 
+Zwischenlösung: [@joundso](https://github.com/joundso) docker image auf [dockerhub](https://hub.docker.com/r/joundso/projectathon6-miracum1) nachgebaut mit `--deps TRUE` flag somit alle R Pakete bereits miteingebaut sind. 
 
 Falls der Skript ausführende Server keine Internetverbindung hat [siehe Feb 17](#feb-17-2022) kann der o.g. updated container vom dockerhub `docker pull joundso/projectathon6-miracum1:latest` benutzt werden.
 
