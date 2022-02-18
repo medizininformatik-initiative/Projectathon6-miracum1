@@ -13,6 +13,7 @@ RUN mkdir -p /Ergebnisse && \
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   curl \
+  ## `libpq-dev` for RPostgres (one of the deps/suggests of the packages):
   libpq-dev \
   libssl-dev \
   libxml2-dev && \
