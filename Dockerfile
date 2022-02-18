@@ -4,6 +4,9 @@ FROM rocker/r-ver:latest
 LABEL Description="PJT#6 miracum1"
 LABEL Maintainer="nandhini.santhanam@medma.uni-heidelberg.de"
 
+## build ARGs
+ARG NCPUS=${NCPUS:--1}
+
 RUN mkdir -p /Ergebnisse && \
   mkdir -p /errors && \
   mkdir -p /Bundles
@@ -16,8 +19,15 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   rm -rf /tmp/* && \
   apt-get clean && apt-get autoclean && apt-get autoremove -y
 
-RUN install2.r --error --deps TRUE \
-  fhircrackr && \
+RUN install2.r --error --skipinstalled -n $NCPUS \
+  fhircrackr \
+  config \
+  dplyr \
+  zoo \
+  stringr \
+  tidyr \
+  data.table \
+  openxlsx && \
   ## clear caches:
   rm -rf /tmp/downloaded_packages && \
   rm -rf /var/lib/apt/lists/*
