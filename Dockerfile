@@ -12,14 +12,16 @@ RUN mkdir -p /Ergebnisse && \
   mkdir -p /Bundles
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
-  libxml2-dev \
-  libssl-dev curl && \
+  curl \
+  libpq-dev \
+  libssl-dev \
+  libxml2-dev && \
   ## clear caches:
   rm -rf /var/lib/apt/lists/* && \
   rm -rf /tmp/* && \
   apt-get clean && apt-get autoclean && apt-get autoremove -y
 
-RUN install2.r --error --skipinstalled -n $NCPUS \
+RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
   fhircrackr \
   config \
   dplyr \
