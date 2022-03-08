@@ -38,7 +38,7 @@ encounter_request <- fhir_url(url = conf$serverbase,
 
 #download the bundles
 start_time <- Sys.time()
-enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml",max_bundles = 10)
+enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
 #fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
 
 end_time <- Sys.time()
