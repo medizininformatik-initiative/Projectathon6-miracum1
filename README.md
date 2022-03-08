@@ -236,6 +236,9 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
 ### Major changes
 
+#### Mar 08, 2022
+Maxbundles-Argument aus dem Encounter-Bundle-Downlaod entfernt, das am 25. Januar versehentlich hinzugefügt wurde (Überbleibsel aus einer Debug-Session)
+
 ##### Feb 18, 2022
 Rückmeldung von Leipzing: Fehlermeldung bei R package install `Warning: unable to access index for repository https://packagemanager.rstudio.com/cran/__linux__/focal/latest/src/contrib: cannot open URL ...`
 
