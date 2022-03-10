@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+config.yml
+
+## Do not push result folders:
+/Summary/
+/errors/
+
+## Ignore all log-related files:
+**/*[Ll]og*
+**/*.log
