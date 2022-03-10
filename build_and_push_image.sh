@@ -13,7 +13,7 @@ printf "Building images with version tag $VERSION_TAG"
 printf "\n##################################\n"
 
 printf "\n\nPlease insert your login credentials to registry: $REGISTRY_PREFIX ...\n"
-docker login
+#docker login
 
 IMAGE_NAME=projectathon6-miracum1
 printf "\n\n##################################\n"
@@ -28,8 +28,8 @@ printf "\n\nBuilding $REGISTRY_PREFIX/$IMAGE_NAME image (latest):\n"
 docker build \
     --progress=plain \
     --no-cache=${docker_build_no_cache} \
-    --label "org.label-schema.name=joundso/$IMAGE_NAME" \
-    --label "org.label-schema.vsc-url=https://github.com/joundso/Projectathon6-miracum1" \
+    --label "org.label-schema.name=nandhinis08/$IMAGE_NAME" \
+    --label "org.label-schema.vsc-url=https://github.com/medizininformatik-initiative/Projectathon6-miracum1" \
     --label "org.label-schema.vcs-ref=$(git rev-parse HEAD)" \
     --label "org.label-schema.version=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
     -f ./Dockerfile \

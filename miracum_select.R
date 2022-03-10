@@ -21,6 +21,11 @@ if(file.exists("config.yml")){
 
 if(!(conf$ssl_verify_peer)){httr::set_config(httr::config(ssl_verifypeer = 0L))}
 
+#update proxy configs
+if((conf$http_proxy)!= ""){Sys.setenv(http_proxy  = conf$http_proxy)}
+if((conf$https_proxy)!= ""){Sys.setenv(https_proxy  = conf$https_proxy)}
+if((conf$no_proxy)!= ""){Sys.setenv(no_proxy  = conf$no_proxy)}
+
 brackets = c("[", "]")
 sep = " || "
 ############Data extraction#############################

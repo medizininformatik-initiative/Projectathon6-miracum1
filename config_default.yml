@@ -5,3 +5,7 @@ default:
   password:        NULL
 ## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
   ssl_verify_peer: TRUE
+##Proxy configs
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
