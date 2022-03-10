@@ -16,7 +16,7 @@ Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in ei
 
 2. Auf diesem Rechner muss R (aber nicht notwendigerweise RStudio) als genutzte Laufzeitumgebung installiert sein.
 
-3. Die mitgelieferte Datei `./config_default.yml` muss nach `./config.yml` kopiert werden und lokal angepasst werden (serverbase, ggf. Authentifizierung - Username and password); Erklärungen dazu finden sich direkt in dieser Datei. Eine Authentifizierung mit Basic Authentication. Dafür müssen in `config.yml` die Variable `authentication` und die zugehörigen Zugangsdaten (`password`/`username`) angepasst werden.
+3. Die mitgelieferte Datei `./config_default.yml` muss nach `./config.yml` kopiert werden und lokal angepasst werden (serverbase, ggf. Authentifizierung - Username and password, proxy configs); Erklärungen dazu finden sich direkt in dieser Datei. Eine Authentifizierung mit Basic Authentication. Dafür müssen in `config.yml` die Variable `authentication` und die zugehörigen Zugangsdaten (`password`/`username`) angepasst werden.
   
 
 4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet soll, muss in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
@@ -43,7 +43,7 @@ Um die Abfrage in einem Docker Container laufen zu lassen gibt es zwei Möglichk
 
 1. Git-Repository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git Projectathon6-miracum1`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
-3. Konfiguration lokal anpassen: `./config.R.default` nach `./config.R` kopieren und anpassen
+3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
 4. Image downloaden und Container starten:
 
 ```bash
@@ -52,8 +52,8 @@ docker run --name projectathon6-miracum1 \
        -v "$(pwd)/Bundles:/Bundles" \
        -v "$(pwd)/Summary:/Summary" \
        -v "$(pwd)/Ergebnisse:/Ergebnisse" \
-       -v "$(pwd)/config.R:/config.R" \
-       joundso/projectathon6-miracum1
+       -v "$(pwd)/config.yml:/config.yml" \
+       nandhinis08/projectathon6-miracum1
 ```
 
 **B) Image bauen mit Docker Compose:**
@@ -243,6 +243,9 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 ## Changelog
 
 ### Major changes
+#### Mar 10, 2022
+Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in miracum_select.R eingefügt, um es in R-Session zu verwenden
+
 
 #### Mar 08, 2022
 Maxbundles-Argument aus dem Encounter-Bundle-Downlaod entfernt, das am 25. Januar versehentlich hinzugefügt wurde (Überbleibsel aus einer Debug-Session)
