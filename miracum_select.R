@@ -26,50 +26,15 @@ sep = " || "
 ############Data extraction#############################
 ##extract the condition resources of the list of stroke ICD's greather than 2015-01-01 and extract the associated patient, encounter, condition and procedure resource
 #configure the fhir search url
-encounter_request <- fhir_url(url = conf$serverbase, 
-                              resource = "Encounter", 
+encounter_request <- fhir_url(url = conf$serverbase,
+                              resource = "Encounter",
                               parameters = c("date" = "ge2015-01-01",
                                              "diagnosis:Condition.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Encounter:patient",
                                              "_include"="Encounter:diagnosis"
                               ))
 
-
-
-#download the bundles
-start_time <- Sys.time()
-enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
-#fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
-
-end_time <- Sys.time()
-print(end_time - start_time)
-
-
-
-#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
-
-
-### extraction for covering the cases who doesn't have a link of condition in the encounter resource
-condition_request_2 <- fhir_url(url = conf$serverbase, 
-                              resource = "Condition", 
-                              parameters = c("recorded-date" = "ge2015-01-01",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_include" = "Condition:encounter",
-                                             "_include"="Condition:subject"
-                              ))
-
-
-#download the alternate bundles
-start_time <- Sys.time()
-con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
-
-
-end_time <- Sys.time()
-print(end_time - start_time)
-
-#############################
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
-
 patients <- fhir_table_description(resource = "Patient",
                                    cols = c(patient_id = "id",
                                             gender        = "gender",
@@ -109,19 +74,76 @@ condition <- fhir_table_description(resource = "Condition",
 )
 
 
+#download the bundles bit by bit and crack them immediately
+start_time <- Sys.time()
+combined_tables <- list(enc=data.table(), pat = data.table(), con = data.table())
 
-#combine both the bundles together and then crack it
+while(!is.null(encounter_request)&&length(encounter_request)>0){
+  enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, 
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+  
+  enc_tables <- fhir_crack(enc_bundles, 
+                design = fhir_design(enc = encounters, pat = patients, con = condition),
+                data.table = TRUE)
+  
+  combined_tables <- lapply(names(combined_tables), 
+                       function(name){
+                           rbind(combined_tables[[name]], enc_tables[[name]], fill=TRUE)
+                       })
+  
+  names(combined_tables) <- names(enc_tables)
+  
+  encounter_request <- fhir_next_bundle_url()
+}
+#fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
+rm(enc_bundles, enc_tables)
 
-combined_bundles <-fhircrackr:::fhir_bundle_list(append(enc_bundles, con_bundles))
-
-
-#flatten the resource based on the combined bundles 
-combined_tables <- fhir_crack(combined_bundles, 
-                         design = fhir_design(enc = encounters, pat = patients, con = condition),
-                         data.table = TRUE)
+end_time <- Sys.time()
+print(end_time - start_time)
 
 
 
+#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
+
+
+### extraction for covering the cases who doesn't have a link of condition in the encounter resource
+condition_request_2 <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject"
+                              ))
+
+#Download in 100er batches and crack immediately, then append to combined tables from above
+start_time <- Sys.time()
+while(!is.null(condition_request_2)&&length(condition_request_2)>0){
+  con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, 
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+  
+  con_tables <- fhir_crack(con_bundles, 
+                           design = fhir_design(enc = encounters, pat = patients, con = condition),
+                           data.table = TRUE)
+  
+  combined_tables <- lapply(names(combined_tables), 
+                            function(name){
+                              rbind(combined_tables[[name]], con_tables[[name]], fill=TRUE)
+                            })
+  
+  names(combined_tables) <- names(con_tables)
+  
+  #get rid of duplicates
+  combined_tables$enc <- unique(combined_tables$enc)
+  combined_tables$con <- unique(combined_tables$con)
+  combined_tables$pat <- unique(combined_tables$pat)
+  
+  condition_request_2 <- fhir_next_bundle_url()
+}
+
+end_time <- Sys.time()
+print(end_time - start_time)
+
+#############################
 
 if(nrow(combined_tables$enc) == 0){
   write("Could not find any encounter resource in the server for the required stroke condition. Query Stopped.", file ="errors/error_message.txt")
@@ -133,7 +155,7 @@ if(nrow(combined_tables$pat) == 0){
   stop("No Patients for stroke condition found - aborting.")
 }
 
-rm(combined_bundles,enc_bundles,con_bundles)
+rm(con_bundles,con_tables)
 
 
 ###############extract and process patient resource##############################
