@@ -262,11 +262,9 @@ procedure_list  <- lapply(list, function(x){
                              log_errors = "errors/Procedure_error.xml")
   
   
-  proc_pat_table <- fhir_crack(procedure_bundles,design = procedure)
+  proc_pat_table <- fhir_crack(proc_bundles,design = procedure)
   df.procedure <- rbind(df.procedure, proc_pat_table, fill=TRUE)
 })
-
-rm(proc_bundles, df.procedure)
 
 if(nrow(df.procedure) > 0){
   df.procedure <- fhir_rm_indices(df.procedure, brackets = brackets )
@@ -370,15 +368,10 @@ observation_list  <- lapply(list, function(x){
                              password = conf$password,
                              log_errors = "errors/Observations_error.xml")
 
-  obs_table <- fhir_crack(observation_bundles, design = observation)
+  obs_table <- fhir_crack(obs_bundles, design = observation)
   df.observation <- rbind(df.observation, obs_table, fill=TRUE)
   
 })
-
-rm(obs_bundles, obs_table)
-
-
-
 
 #process observations_raw resources
 if(nrow(df.observation) > 0){
@@ -426,7 +419,7 @@ condition_list  <- lapply(list, function(x){
                               password = conf$password,
                               log_errors = "errors/diagnosis_error.xml")
   
-  cond_table <- fhir_crack(condition_bundles,design = condition)
+  cond_table <- fhir_crack(cond_bundles,design = condition)
   df.conditions.previous <- rbind(df.conditions.previous, cond_table, fill=TRUE)
   
 }) # lapply
@@ -539,7 +532,7 @@ medstat_list  <- lapply(list, function(x){
                                 password = conf$password,
                                 log_errors = "errors/MedicationStatement_error.xml")
   
-  medstat_table <- fhir_crack(medstat_bundles,design = medstat)
+  medstat_table <- fhir_crack(medstat_bundle,design = medstat)
   df.medstatement <- rbind(df.medstatement, medstat_table, fill=TRUE)
   
 }) # lapply()
