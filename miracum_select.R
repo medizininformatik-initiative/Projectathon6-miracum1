@@ -246,7 +246,7 @@ procedure <- fhir_table_description(resource = "Procedure",
                                                        rm_empty_cols = FALSE)
 )
 
-df.procedure <- data.table()
+df.procedure <<- data.table()
 
 procedure_list  <- lapply(list, function(x){
   
@@ -263,7 +263,7 @@ procedure_list  <- lapply(list, function(x){
   
   
   proc_pat_table <- fhir_crack(proc_bundles,design = procedure)
-  df.procedure <- rbind(df.procedure, proc_pat_table, fill=TRUE)
+  df.procedure <<- rbind(df.procedure, proc_pat_table, fill=TRUE)
 })
 
 if(nrow(df.procedure) > 0){
@@ -352,7 +352,7 @@ observation <- fhir_table_description(resource = "Observation",
                                                          rm_empty_cols = FALSE)
 )
 
-df.observation <- data.table()
+df.observation <<- data.table()
 
 observation_list  <- lapply(list, function(x){
   
@@ -369,7 +369,7 @@ observation_list  <- lapply(list, function(x){
                              log_errors = "errors/Observations_error.xml")
 
   obs_table <- fhir_crack(obs_bundles, design = observation)
-  df.observation <- rbind(df.observation, obs_table, fill=TRUE)
+  df.observation <<- rbind(df.observation, obs_table, fill=TRUE)
   
 })
 
@@ -404,7 +404,7 @@ condition <- fhir_table_description(resource = "Condition",
                                                        rm_empty_cols = FALSE)
 )
 
-df.conditions.previous <- data.table()
+df.conditions.previous <<- data.table()
 
 condition_list  <- lapply(list, function(x){
   
@@ -420,7 +420,7 @@ condition_list  <- lapply(list, function(x){
                               log_errors = "errors/diagnosis_error.xml")
   
   cond_table <- fhir_crack(cond_bundles,design = condition)
-  df.conditions.previous <- rbind(df.conditions.previous, cond_table, fill=TRUE)
+  df.conditions.previous <<- rbind(df.conditions.previous, cond_table, fill=TRUE)
   
 }) # lapply
 
@@ -516,7 +516,7 @@ medstat <- fhir_table_description(resource = "MedicationStatement",
                                                      rm_empty_cols = FALSE)
 )
 
-df.medstatement <- data.table()
+df.medstatement <<- data.table()
 
 medstat_list  <- lapply(list, function(x){
   
@@ -533,7 +533,7 @@ medstat_list  <- lapply(list, function(x){
                                 log_errors = "errors/MedicationStatement_error.xml")
   
   medstat_table <- fhir_crack(medstat_bundle,design = medstat)
-  df.medstatement <- rbind(df.medstatement, medstat_table, fill=TRUE)
+  df.medstatement <<- rbind(df.medstatement, medstat_table, fill=TRUE)
   
 }) # lapply()
 
@@ -573,7 +573,7 @@ if(nrow(df.medstatement)>0){
                                                           brackets = brackets,
                                                           rm_empty_cols = FALSE)
   )
-  df.medication <- data.table()
+  df.medication <<- data.table()
   
   med_list  <- lapply(list, function(x){
     
@@ -588,9 +588,10 @@ if(nrow(df.medstatement)>0){
                                   username = conf$username,
                                   password = conf$password,
                                   log_errors = "errors/medication_error.xml")
+
     
-    med_table <- fhir_crack(med_bundles,design = fhir_design(medication))
-    df.medication <- rbind(df.medication, med_table)
+    med_table <- fhir_crack(medication_bundle,design = medication)
+    df.medication <<- rbind(df.medication, med_table)
   }) # lapply()
   
   if(nrow(df.medication >0 )){
