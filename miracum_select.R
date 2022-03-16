@@ -31,50 +31,15 @@ sep = " || "
 ############Data extraction#############################
 ##extract the condition resources of the list of stroke ICD's greather than 2015-01-01 and extract the associated patient, encounter, condition and procedure resource
 #configure the fhir search url
-encounter_request <- fhir_url(url = conf$serverbase, 
-                              resource = "Encounter", 
+encounter_request <- fhir_url(url = conf$serverbase,
+                              resource = "Encounter",
                               parameters = c("date" = "ge2015-01-01",
                                              "diagnosis:Condition.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
                                              "_include" = "Encounter:patient",
                                              "_include"="Encounter:diagnosis"
                               ))
 
-
-
-#download the bundles
-start_time <- Sys.time()
-enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
-#fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
-
-end_time <- Sys.time()
-print(end_time - start_time)
-
-
-
-#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
-
-
-### extraction for covering the cases who doesn't have a link of condition in the encounter resource
-condition_request_2 <- fhir_url(url = conf$serverbase, 
-                              resource = "Condition", 
-                              parameters = c("recorded-date" = "ge2015-01-01",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_include" = "Condition:encounter",
-                                             "_include"="Condition:subject"
-                              ))
-
-
-#download the alternate bundles
-start_time <- Sys.time()
-con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, verbose = 2,log_errors = "errors/encounter_error.xml")
-
-
-end_time <- Sys.time()
-print(end_time - start_time)
-
-#############################
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
-
 patients <- fhir_table_description(resource = "Patient",
                                    cols = c(patient_id = "id",
                                             gender        = "gender",
@@ -114,19 +79,76 @@ condition <- fhir_table_description(resource = "Condition",
 )
 
 
+#download the bundles bit by bit and crack them immediately
+start_time <- Sys.time()
+combined_tables <- list(enc=data.table(), pat = data.table(), con = data.table())
 
-#combine both the bundles together and then crack it
+while(!is.null(encounter_request)&&length(encounter_request)>0){
+  enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, 
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+  
+  enc_tables <- fhir_crack(enc_bundles, 
+                design = fhir_design(enc = encounters, pat = patients, con = condition),
+                data.table = TRUE)
+  
+  combined_tables <- lapply(names(combined_tables), 
+                       function(name){
+                           rbind(combined_tables[[name]], enc_tables[[name]], fill=TRUE)
+                       })
+  
+  names(combined_tables) <- names(enc_tables)
+  
+  encounter_request <- fhir_next_bundle_url()
+}
+#fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
+rm(enc_bundles, enc_tables)
 
-combined_bundles <-fhircrackr:::fhir_bundle_list(append(enc_bundles, con_bundles))
-
-
-#flatten the resource based on the combined bundles 
-combined_tables <- fhir_crack(combined_bundles, 
-                         design = fhir_design(enc = encounters, pat = patients, con = condition),
-                         data.table = TRUE)
+end_time <- Sys.time()
+print(end_time - start_time)
 
 
 
+#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
+
+
+### extraction for covering the cases who doesn't have a link of condition in the encounter resource
+condition_request_2 <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject"
+                              ))
+
+#Download in 100er batches and crack immediately, then append to combined tables from above
+start_time <- Sys.time()
+while(!is.null(condition_request_2)&&length(condition_request_2)>0){
+  con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, 
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+  
+  con_tables <- fhir_crack(con_bundles, 
+                           design = fhir_design(enc = encounters, pat = patients, con = condition),
+                           data.table = TRUE)
+  
+  combined_tables <- lapply(names(combined_tables), 
+                            function(name){
+                              rbind(combined_tables[[name]], con_tables[[name]], fill=TRUE)
+                            })
+  
+  names(combined_tables) <- names(con_tables)
+  
+  #get rid of duplicates
+  combined_tables$enc <- unique(combined_tables$enc)
+  combined_tables$con <- unique(combined_tables$con)
+  combined_tables$pat <- unique(combined_tables$pat)
+  
+  condition_request_2 <- fhir_next_bundle_url()
+}
+
+end_time <- Sys.time()
+print(end_time - start_time)
+
+#############################
 
 if(nrow(combined_tables$enc) == 0){
   write("Could not find any encounter resource in the server for the required stroke condition. Query Stopped.", file ="errors/error_message.txt")
@@ -138,7 +160,7 @@ if(nrow(combined_tables$pat) == 0){
   stop("No Patients for stroke condition found - aborting.")
 }
 
-rm(combined_bundles,enc_bundles,con_bundles)
+rm(con_bundles,con_tables)
 
 
 ###############extract and process patient resource##############################
@@ -217,6 +239,19 @@ while(any(nchar > nchar_for_ids)){
   nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
 }
 
+procedure <- fhir_table_description(resource = "Procedure",
+                                    cols = c(procedure_id = "id",
+                                             performed_date= "performedDateTime",
+                                             ops = "code/coding/code",
+                                             system         = "code/coding/system",
+                                             #  encounter_id = "encounter/reference",
+                                             patient_id     = "subject/reference"),
+                                    style = fhir_style(sep=sep,
+                                                       brackets = brackets,
+                                                       rm_empty_cols = FALSE)
+)
+
+df.procedure <<- data.table()
 
 procedure_list  <- lapply(list, function(x){
   
@@ -231,25 +266,10 @@ procedure_list  <- lapply(list, function(x){
                              password = conf$password,
                              log_errors = "errors/Procedure_error.xml")
   
+  
+  proc_pat_table <- fhir_crack(proc_bundles,design = procedure)
+  df.procedure <<- rbind(df.procedure, proc_pat_table, fill=TRUE)
 })
-
-#bring procedure results together, save and flatten
-procedure_bundles <- fhircrackr:::fhir_bundle_list(unlist(procedure_list, recursive = F))
-procedure <- fhir_table_description(resource = "Procedure",
-                                    cols = c(procedure_id = "id",
-                                             performed_date= "performedDateTime",
-                                             ops = "code/coding/code",
-                                             system         = "code/coding/system",
-                                           #  encounter_id = "encounter/reference",
-                                             patient_id     = "subject/reference"),
-                                    style = fhir_style(sep=sep,
-                                                       brackets = brackets,
-                                                       rm_empty_cols = FALSE)
-)
-
-proc_pat_table <- fhir_crack(procedure_bundles,design = fhir_design(pro = procedure))
-df.procedure <- proc_pat_table$pro
-
 
 if(nrow(df.procedure) > 0){
   df.procedure <- fhir_rm_indices(df.procedure, brackets = brackets )
@@ -322,29 +342,6 @@ if(nrow(df.procedure) > 0){
 #######################################################################################################################
 #extract observation resource for the required patient ids and loinc codes
 
-observation_list  <- lapply(list, function(x){
-  
-  ids <- paste(x, collapse = ",")
-  #777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3
-  obs_request <- fhir_url(url = conf$serverbase,
-                          resource = "Observation",
-                          parameters = c(subject = ids
-                                         ,"code" = "777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3,74201-5"))
-  
-  obs_bundles <- fhir_search(obs_request,
-                             username = conf$username,
-                             password = conf$password,
-                             log_errors = "errors/Observations_error.xml")
-  
-})
-
-
-
-
-#bring observation results together, save and flatten
-observation_bundles <- fhircrackr:::fhir_bundle_list(unlist(observation_list, recursive = F))
-#fhir_save(bundles = observation_bundles, directory = "Bundles/observations")
-
 observation <- fhir_table_description(resource = "Observation",
                                       cols = c(observation_id = "id",
                                                effective_date= "effectiveDateTime",
@@ -360,9 +357,26 @@ observation <- fhir_table_description(resource = "Observation",
                                                          rm_empty_cols = FALSE)
 )
 
+df.observation <<- data.table()
 
-obs_table <- fhir_crack(observation_bundles,design = fhir_design(obs = observation))
-df.observation <- obs_table$obs
+observation_list  <- lapply(list, function(x){
+  
+  ids <- paste(x, collapse = ",")
+  #777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3
+  obs_request <- fhir_url(url = conf$serverbase,
+                          resource = "Observation",
+                          parameters = c(subject = ids
+                                         ,"code" = "777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3,74201-5"))
+  
+  obs_bundles <- fhir_search(obs_request,
+                             username = conf$username,
+                             password = conf$password,
+                             log_errors = "errors/Observations_error.xml")
+
+  obs_table <- fhir_crack(obs_bundles, design = observation)
+  df.observation <<- rbind(df.observation, obs_table, fill=TRUE)
+  
+})
 
 #process observations_raw resources
 if(nrow(df.observation) > 0){
@@ -384,6 +398,18 @@ if(nrow(df.observation) > 0){
 #######################################################################################################################
 #extract the diagnosis resource based on patient ids
 
+condition <- fhir_table_description(resource = "Condition",
+                                    cols = c(condition_id = "id",
+                                             recorded_date= "recordedDate",
+                                             icd = "code/coding/code",
+                                             system         = "code/coding/system",
+                                             patient_id     = "subject/reference"),
+                                    style = fhir_style(sep=sep,
+                                                       brackets = brackets,
+                                                       rm_empty_cols = FALSE)
+)
+
+df.conditions.previous <<- data.table()
 
 condition_list  <- lapply(list, function(x){
   
@@ -398,25 +424,11 @@ condition_list  <- lapply(list, function(x){
                               password = conf$password,
                               log_errors = "errors/diagnosis_error.xml")
   
+  cond_table <- fhir_crack(cond_bundles,design = condition)
+  df.conditions.previous <<- rbind(df.conditions.previous, cond_table, fill=TRUE)
+  
 }) # lapply
 
-
-condition_bundles <- fhircrackr:::fhir_bundle_list(unlist(condition_list, recursive = F))
-#fhir_save(bundles = observation_bundles, directory = "Bundles/conditions")
-
-condition <- fhir_table_description(resource = "Condition",
-                                    cols = c(condition_id = "id",
-                                             recorded_date= "recordedDate",
-                                             icd = "code/coding/code",
-                                             system         = "code/coding/system",
-                                             patient_id     = "subject/reference"),
-                                    style = fhir_style(sep=sep,
-                                                       brackets = brackets,
-                                                       rm_empty_cols = FALSE)
-)
-
-cond_table <- fhir_crack(condition_bundles,design = fhir_design(con = condition))
-df.conditions.previous <- cond_table$con
 
 if(nrow(df.conditions.previous) > 0){
   #process observations_raw resources
@@ -496,6 +508,21 @@ while(any(nchar > nchar_for_ids)){
   nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
 }
 
+
+#extract medicationstatements
+medstat <- fhir_table_description(resource = "MedicationStatement",
+                                  cols = c(MedicationStatement_id = "id",
+                                           effective_date= "effectiveDateTime",
+                                           medication_id = "medicationReference/reference",
+                                           encounter_id = "context/reference",
+                                           patient_id     = "subject/reference"),
+                                  style = fhir_style(sep=sep,
+                                                     brackets = brackets,
+                                                     rm_empty_cols = FALSE)
+)
+
+df.medstatement <<- data.table()
+
 medstat_list  <- lapply(list, function(x){
   
   ids <- paste(x, collapse = ",")
@@ -510,26 +537,11 @@ medstat_list  <- lapply(list, function(x){
                                 password = conf$password,
                                 log_errors = "errors/MedicationStatement_error.xml")
   
+  medstat_table <- fhir_crack(medstat_bundle,design = medstat)
+  df.medstatement <<- rbind(df.medstatement, medstat_table, fill=TRUE)
+  
 }) # lapply()
 
-
-medstat_bundles <- fhircrackr:::fhir_bundle_list(unlist(medstat_list, recursive = F))
-#fhir_save(bundles = observation_bundles, directory = "Bundles/observations")
-
-
-medstat <- fhir_table_description(resource = "MedicationStatement",
-                                  cols = c(MedicationStatement_id = "id",
-                                           effective_date= "effectiveDateTime",
-                                           medication_id = "medicationReference/reference",
-                                           encounter_id = "context/reference",
-                                           patient_id     = "subject/reference"),
-                                  style = fhir_style(sep=sep,
-                                                     brackets = brackets,
-                                                     rm_empty_cols = FALSE)
-)
-
-medstat_table <- fhir_crack(medstat_bundles,design = fhir_design(medstat = medstat))
-df.medstatement <- medstat_table$medstat
 
 if(nrow(df.medstatement)>0){
   #process Medication statement  resources
@@ -555,7 +567,18 @@ if(nrow(df.medstatement)>0){
     nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
   }
   
-  
+  #extract Medications
+  medication <- fhir_table_description(resource = "Medication",
+                                       cols = c(medication_id = "id",
+                                                code = "code/coding/code",
+                                                system = "code/coding/system"
+                                                #,display = "code/coding/display"
+                                       ),
+                                       style = fhir_style(sep=sep,
+                                                          brackets = brackets,
+                                                          rm_empty_cols = FALSE)
+  )
+  df.medication <<- data.table()
   
   med_list  <- lapply(list, function(x){
     
@@ -570,32 +593,12 @@ if(nrow(df.medstatement)>0){
                                   username = conf$username,
                                   password = conf$password,
                                   log_errors = "errors/medication_error.xml")
+
     
+    med_table <- fhir_crack(medication_bundle,design = medication)
+    df.medication <<- rbind(df.medication, med_table)
   }) # lapply()
   
-  
-  med_bundles <- fhircrackr:::fhir_bundle_list(unlist(med_list, recursive = F))
-  
-
-  medication <- fhir_table_description(resource = "Medication",
-                                       cols = c(medication_id = "id",
-                                                code = "code/coding/code",
-                                                system = "code/coding/system"
-                                                #,display = "code/coding/display"
-                                       ),
-                                       style = fhir_style(sep=sep,
-                                                          brackets = brackets,
-                                                          rm_empty_cols = FALSE)
-  )
-  
-  med_table <- fhir_crack(med_bundles,design = fhir_design(med = medication))
-  
-  
-  
-  
-  
-  
-  df.medication <- med_table$med
   if(nrow(df.medication >0 )){
     
     #process Medication statement  resources
