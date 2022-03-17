@@ -705,7 +705,7 @@ if(nrow(df.cohort) > 0){
   df.conditions.summary <- df.conditions %>%
     group_by(icd) %>%
     summarise(count_encounters = length(unique(encounter_id)) 
-          ,count_encounters = count_encounters  + sample(-5:5, 1,replace = TRUE)
+          ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %")
               )
   #write.csv2(df.conditions.summary, paste0("Summary/StrokeDiagnosis_Summary.csv"))
@@ -720,7 +720,8 @@ if(nrow(df.procedure) > 0){
   #count for different procedures performed in case
   df.procedure.summary <- df.procedure %>%
     group_by(features) %>%
-    summarise(count_encounters = length(unique(encounter_id))+ sample(-5:5, 1,replace = TRUE)
+    summarise(count_encounters = length(unique(encounter_id))
+              ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   #write.csv2(df.procedure.summary, paste0("Summary/Procedure_Summary.csv"))
   openxlsx:::addWorksheet(wb, "Different_Procedures")
@@ -735,7 +736,8 @@ if(nrow(df.conditions.previous) > 0){
   #previous comorbities summary
   df.conditions.previous.summary <- df.conditions.previous %>%
     group_by(features) %>%
-    summarise(count_encounters = length(unique(encounter_id)) +sample(-5:5, 1,replace = TRUE)
+    summarise(count_encounters = length(unique(encounter_id)) 
+              ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   #write.csv2(df.conditions.previous.summary, paste0("Summary/history_comorbidities_Summary.csv"))
   #df.conditions.previous.summary <- read.csv( paste0("Summary/history_comorbidities_Summary.csv"),sep = ";")
@@ -748,7 +750,8 @@ if(nrow(df.conditions.previous) > 0){
 if(nrow(df.observation) > 0){
   df.observation.summary <- df.observation%>%
     group_by(loinc_code) %>%
-    summarise(count_encounters = length(unique(encounter_id)) +sample(-5:5, 1,replace = TRUE)
+    summarise(count_encounters = length(unique(encounter_id)) 
+              ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   #write.csv2(df.observation.summary, paste0("Summary/Observation_Summary.csv"))
   openxlsx:::addWorksheet(wb, "Lab_Values")
@@ -760,7 +763,8 @@ if(nrow(df.observation) > 0){
 if(nrow(df.medstatement) > 0){
   df.med.summary <- df.medstatement%>%
     group_by(code) %>%
-    summarise(count_encounters = length(unique(encounter_id)) +sample(0:5, 1,replace = TRUE)
+    summarise(count_encounters = length(unique(encounter_id)) 
+              ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   
   #write.csv2(df.med.summary, paste0("Summary/Medication_Summary.csv"))
