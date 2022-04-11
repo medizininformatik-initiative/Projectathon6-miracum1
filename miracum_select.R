@@ -1,12 +1,14 @@
 ### Preparation
 
+start <- Sys.time()
+
 #load/install a packages
 source("install_R_packages.R")
 
 library(data.table)
 
 #create directories
-#if(!dir.exists("Ergebnisse")){dir.create("Ergebnisse")}
+
 if(!dir.exists("Summary")){dir.create("Summary")}
 if(!dir.exists("errors")){dir.create("errors")}
 if(!dir.exists("Bundles")){dir.create("Bundles")}
@@ -362,7 +364,9 @@ df.observation <<- data.table()
 observation_list  <- lapply(list, function(x){
   
   ids <- paste(x, collapse = ",")
-  #777-3,6301-6,3173-2,2160-0,2089-1,2085-9,7799-0,4548-4,2345-7,2093-3
+  
+  
+  ##
   obs_request <- fhir_url(url = conf$serverbase,
                           resource = "Observation",
                           parameters = c(subject = ids
@@ -772,8 +776,18 @@ if(nrow(df.medstatement) > 0){
   openxlsx:::writeDataTable(wb = wb,x = df.med.summary,sheet = "Medication", withFilter = FALSE)
 }
 
+#export the summary
 openxlsx:::saveWorkbook(wb, "Summary/Summary_Step1_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
 
+###logging
+runtime <- Sys.time() - start
 
+con <- file("Summary/miracum_select.log")
+write(paste0(
+  "miracum_select.R finished at ", Sys.time(), ".\n",
+  "Extracted ", length(unique(df.cohort$encounter_id)), " Encounters based on ", length(unique(df.cohort$patient_id)), " Patients.\n", 
+  "R script execution took ", round(runtime, 2), " ", attr(runtime, "units"), "."
+), file = con)
+close(con)
 
 
