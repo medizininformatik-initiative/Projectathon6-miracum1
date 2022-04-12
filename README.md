@@ -3,7 +3,7 @@ Datum: 12.04.22
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
-Dieses Project führt die Select-Anfrage für das MIRACUM ("WE-STORM") Projekt im Rahmen des 6. Projectathons aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
+Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt im Rahmen des [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
