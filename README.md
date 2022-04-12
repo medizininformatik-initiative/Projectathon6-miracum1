@@ -247,11 +247,11 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 #### Apr 12, 2022
 Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
 
-Updated LOINC Codes
-Die LOINC Codes für die Laborparameter mussten aufgrund der unterschiedlichen Kodierung der Laborparameter zwischen den Standorten erweitert werden. Hierfür haben wir die Referenztabelle mit Top 300 LOINC Codes entsprechend der Liste im KDS Basismodule, 03 Modul Laborbefunde `2021-08-08_MII_TOP_300_LOINC.xlsx` verwendet.
+**Updated LOINC Codes:**
+ Die LOINC Codes für die Laborparameter mussten aufgrund der unterschiedlichen Kodierung der Laborparameter zwischen den Standorten erweitert werden. Hierfür haben wir die Referenztabelle mit Top 300 LOINC Codes entsprechend der Liste im KDS Basismodule, 03 Modul Laborbefunde `2021-08-08_MII_TOP_300_LOINC.xlsx` verwendet.
 
-Updated DockerHub Link
-Ein neues [dockerhub](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) Image wurde mit den neuen Updates vom 12.04.2022 erstellt. 
+**Updated DockerHub Link:**
+ Ein neues [dockerhub](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) Image wurde mit den neuen Updates vom 12.04.2022 erstellt. 
 Wenn dieses Image lokal nachgebaut wird soll dies mit `--deps TRUE` Flag passieren, somit alle R Pakete bereits miteingebaut werden. 
 
 #### Mar 10, 2022
