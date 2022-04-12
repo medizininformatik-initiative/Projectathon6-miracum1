@@ -244,7 +244,7 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 ## Changelog
 
 ### Major changes
-#### April 12, 2022
+#### Apr 12, 2022
 Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
 
 Updated LOINC Codes
