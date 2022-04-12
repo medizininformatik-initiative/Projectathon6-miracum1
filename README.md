@@ -1,5 +1,5 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 11.04.22
+Datum: 12.04.22
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -77,7 +77,8 @@ Erklärung:
 
 **C) Direkt Download vom DockerHub**
 
-Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen.
+Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen. 
+Der DockerHub Link wurde angepasst, bitte entsprechend des Changelogs die letzte Version [Apr 12](#apr-12-2022) nutzen. 
 
 
 ## Output 
@@ -243,8 +244,15 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 ## Changelog
 
 ### Major changes
-#### April 11, 2022
-Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile "Summary/miracum_select.log" erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
+#### April 12, 2022
+Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
+
+Updated LOINC Codes
+Die LOINC Codes für die Laborparameter mussten aufgrund der unterschiedlichen Kodierung der Laborparameter zwischen den Standorten erweitert werden. Hierfür haben wir die Referenztabelle mit Top 300 LOINC Codes entsprechend der Liste im KDS Basismodule, 03 Modul Laborbefunde `2021-08-08_MII_TOP_300_LOINC.xlsx` verwendet.
+
+Updated DockerHub Link
+Ein neues [dockerhub](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) Image wurde mit den neuen Updates vom 12.04.2022 erstellt. 
+Wenn dieses Image lokal nachgebaut wird soll dies mit `--deps TRUE` Flag passieren, somit alle R Pakete bereits miteingebaut werden. 
 
 #### Mar 10, 2022
 Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in miracum_select.R eingefügt, um es in R-Session zu verwenden
