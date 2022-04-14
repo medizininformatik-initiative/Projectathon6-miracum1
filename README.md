@@ -247,15 +247,15 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
 #### Apr 14, 2022
 
-**Datentransfer**
+**Datentransfer:**
 Für den zentralen Datentransfer der Ergebnisse der SELECT-Abfrage (`Summary/Summary_Step1_MIRACUM_WESTORM.xlsx`) soll der Prozess-Skript für den Dateityp (".xlsx") angepasst werden. 
 Der Hintergrund dafür ist, dass der Projectathon Prozess prüft den tatsächlichen MimeType der Base64 codierten Datei gegen den deklarierten MimeType. Daher muss der deklarierte MimeType in den `DocumentReference` und `Binary Ressourcen` dazu passen bzw. identisch sein. Für eine `.xlsx` Datei wie folgt: `<contentType value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>`.
 
 Die Repository für das **MII Projectathon Data Transfer process** befindet sich unter [MII DSF Processes](https://github.com/medizininformatik-initiative/mii-dsf-processes). 
 
-@wetret (Reto Wettstein) hat bereits einen erfolgreichen Test mit den [Folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
+Als Beispiel, [@wetret] (Reto Wettstein) hat bereits einen erfolgreichen Test mit dem [folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
 
-Vielen Dank an @wetret (Reto Wettstein) und @hhund (Hauke Hund) sowie Christian Gierschner für den Support. 
+Vielen Dank an [@wetret] (Reto Wettstein) und [@hhund] (Hauke Hund) sowie Christian Gierschner für den Support. 
 
 #### Apr 12, 2022
 Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
@@ -268,7 +268,7 @@ Vielen Dank an @wetret (Reto Wettstein) und @hhund (Hauke Hund) sowie Christian 
 Wenn dieses Image lokal nachgebaut wird soll dies mit `--deps TRUE` Flag passieren, somit alle R Pakete bereits miteingebaut werden. 
 
 #### Mar 10, 2022
-Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in miracum_select.R eingefügt, um es in R-Session zu verwenden
+Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in `miracum_select.R` eingefügt, um es in R-Session zu verwenden
 
 
 #### Mar 08, 2022
@@ -288,7 +288,7 @@ Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download 
 
 Anmerkung: Das Docker-Image sollte für Sites verfügbar sein, die nicht in der Lage sind, selbst zu bauen. Siehe auch [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/3). 
 
-Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers (@NandhiniS08 | @MeMatt) erstellt.
+Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers ([@nandhiniS08] | [@mematt]) erstellt.
 
 ##### Jan 27, 2022
 Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt.
