@@ -60,8 +60,10 @@ encounters <- fhir_table_description(resource = "Encounter",
                                               discharge_date= "period/end",
                                               condition_id ="diagnosis/condition/reference",
                                               patient_id = "subject/reference",
-                                              rank = "diagnosis/rank",
-                                              discharge_reason = "hospitalization/dischargeDisposition/coding/code"),
+                                              patient_type_fhir_class ="class/code",
+                                              diagnosis_use = "diagnosis/use/coding/code",
+                                              discharge_reason = "hospitalization/dischargeDisposition/coding/code",
+                                              rank = "diagnosis/rank"),
                                      style = fhir_style(sep=sep,
                                                         brackets = brackets,
                                                         rm_empty_cols = FALSE)
@@ -175,7 +177,7 @@ df.patients <- df.patients[!duplicated(df.patients),]
 
 df.encounters <- combined_tables$enc
 df.encounters <- fhir_melt(df.encounters,
-                           columns = c('condition_id' ,'rank'),
+                           columns = c('condition_id' ,'rank','diagnosis_use'),
                            brackets = brackets, sep = sep, all_columns = TRUE)
 df.encounters <- fhir_rm_indices(df.encounters, brackets = brackets )
 
@@ -614,25 +616,37 @@ if(nrow(df.medstatement)>0){
 
 
 ####################################join all the resources ##################################################
-df.cohort <- left_join(df.conditions,df.encounters[,c("condition_id","admission_date","discharge_date","rank","discharge_reason")],"condition_id")
+#df.cohort <- left_join(df.conditions,df.encounters[,c("condition_id","admission_date","discharge_date","patient_type","rank","discharge_reason")],"condition_id")
+#join encounters to conditions that were referenced in an encounter
+df.cohort1 <- left_join(df.conditions[condition_id %in% df.encounters$condition_id],df.encounters[!is.na(condition_id),c("condition_id","admission_date","discharge_date","patient_type_fhir_class","rank","diagnosis_use","discharge_reason")],"condition_id")
+
+#join encounters to conditions that were not referenced in an encounter 
+df.cohort2 <- left_join(df.conditions[!condition_id %in% df.encounters$condition_id],unique(df.encounters[,c("encounter_id","admission_date","discharge_date","patient_type_fhir_class","discharge_reason")]),"encounter_id")
+
+#rbind them
+df.cohort <- rbind(df.cohort1, df.cohort2, fill=T)
+
 df.cohort <- left_join(df.cohort,df.patients,"patient_id")
 
 df.cohort <- df.cohort[,c("patient_id","birthdate","gender","patient_zip"
-                          ,"encounter_id","admission_date","discharge_date","icd","system"
-                          ,"recorded_date","rank")]
+                          ,"encounter_id","admission_date","discharge_date"
+                          ,"recorded_date","icd","system"
+                          ,"patient_type_fhir_class","rank","diagnosis_use")]
+
+df.cohort$icd_family <- substr(df.cohort$icd,1,3)
 
 
-df.cohort.agg <- df.cohort%>%
-  group_by(patient_id,encounter_id)%>%
-  summarise(birthdate = unique(birthdate),
-            gender = unique(gender),
-            patient_zip = unique(patient_zip),
-            admission_date= (unique(admission_date)),
-            discharge_date= (unique(discharge_date)),
-            icd = paste((icd), collapse = '/'),
-            recorded_date = paste((recorded_date), collapse = '/'),
-            rank = paste((rank), collapse = '/')
-            ) 
+df.cohort <- df.cohort%>%
+        group_by(patient_id,encounter_id)%>%
+        mutate(rank_indicator = min(rank))
+
+#update rank mapping
+rank_dict <- c("Primary","Secondary",NA)
+names(rank_dict) <- c(1,2,NA)
+df.cohort$rank_indicator <- rank_dict[ as.character(df.cohort$rank_indicator) ]
+
+
+
 
 if(exists("df.procedure.wide")){
   df.cohort <- left_join(df.cohort,subset(df.procedure.wide,select = -c(patient_id)),"encounter_id")
@@ -643,36 +657,23 @@ if(exists("df.conditions.previous.wide")){
 }
 
 
-###Export actual data 
-# if(!dir.exists("Ergebnisse")){dir.create("Ergebnisse")}
-# write.csv2(df.cohort, paste0("Ergebnisse/Kohorte.csv"))
-# write.csv2(df.observation, paste0("Ergebnisse/Observations.csv"))
-# write.csv2(df.medstatement, paste0("Ergebnisse/Medications.csv"))
-#################################################################################################
 
 ###generate summary data and export####
 
 #export to excel
-
+df.cohort <- distinct(df.cohort)
 wb <-openxlsx:::createWorkbook()
-#cohort summary
+###########################cohort summary###########################
 if(nrow(df.cohort) > 0){
-  df.cohort.trunc <- df.cohort.agg
-  
+  df.cohort.trunc <- subset(df.cohort,select = c("patient_id", "encounter_id","birthdate" 
+                                                     ,"gender","patient_zip", "admission_date"
+                                                     ,"discharge_date","recorded_date"
+                                                     ,"icd" ,"patient_type_fhir_class"
+                                                     ,"rank","diagnosis_use"))
   df.cohort.trunc <- df.cohort.trunc[!with(df.cohort.trunc,is.na(admission_date)& is.na(recorded_date)),]
   df.cohort.trunc$year_month <- substr(coalesce(as.character(df.cohort.trunc$admission_date),as.character(df.cohort.trunc$recorded_date)),1,7)
-  # df.cohort.trunc$year_month <-  apply(X=data.frame(1:nrow(df.cohort.trunc)),MARGIN = 1,FUN = function(X){
-  #   ifelse(test = (!is.na(df.cohort.trunc$admission_date[X])), 
-  #           yes=    as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$admission_date[X]), format = "%Y-%m-%d")), 
-  #         no= as.character(zoo:::as.yearmon(as.Date(df.cohort.trunc$recorded_date[X]), format = "%Y-%m-%d"))
-  #   )
-  # })
-    
-    
 
-  
-  #df.cohort.trunc[df.cohort.trunc=="NA"] = NA
-  
+#1. ################################################################################
   #year and monthly count
   df.cohort.trunc.summary <- df.cohort.trunc %>%
     group_by(year_month) %>%
@@ -680,58 +681,132 @@ if(nrow(df.cohort) > 0){
   
   openxlsx:::addWorksheet(wb, "Cohort_Feature_Availability")
   openxlsx:::writeDataTable(wb = wb,x = df.cohort.trunc.summary,sheet = "Cohort_Feature_Availability", withFilter = FALSE)
-  #write.csv2(df.cohort.trunc.summary, paste0("Summary/Cohort_Summary.csv"))
+
+#2. ################################################################################
+#summary based on patient class(IMP/AMB) and diag use 
+  patclass.diaguse <- df.cohort%>%
+    group_by(patient_type_fhir_class
+             ,diagnosis_use = diagnosis_use)%>%
+    summarise(count_unique_patient = length(unique(patient_id)), 
+              count_unique_encounters = length(unique(encounter_id)),
+              all_encounters = length(encounter_id),
+              diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
+              diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
+              diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
+              )
   
+  openxlsx:::addWorksheet(wb, "PatientClass_DiagnosisUse")
+  openxlsx:::writeDataTable(wb = wb,x = patclass.diaguse,sheet = "PatientClass_DiagnosisUse", withFilter = FALSE)
   
-  #df for counting admission for each patient
-  df.pat.cases <- df.cohort.trunc%>%
-                  group_by(patient_id)%>%
-    summarise(Count_Encounters = length(unique(encounter_id)))%>%
-    group_by(Count_Encounters)%>%
-    summarise(Number_Of_Patients = length(unique(patient_id)))
-    #arrange(desc(count_encounters))
-  df.pat.cases$Number_Of_Patients[c(which(df.pat.cases$Number_Of_Patients < 5))] <- "< 5"
+#3. #################################################################################    
+  #summary based on patient class(IMP/AMB) and diag rank   
+  patclas.rank <- df.cohort%>%
+    group_by(patient_type_fhir_class
+             ,diagnosis_rank = rank_indicator)%>%
+    summarise(count_unique_patient = length(unique(patient_id)), 
+              count_unique_encounters = length(unique(encounter_id)),
+              all_encounters = length(encounter_id),
+              diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
+              diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
+              diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
+    )                   
+  openxlsx:::addWorksheet(wb, "PatientClass_Rank")
+  openxlsx:::writeDataTable(wb = wb,x = patclas.rank,sheet = "PatientClass_Rank", withFilter = FALSE)
+
+#4. ################################################################################
+  #summary based on patient class(IMP/AMB), diag use and diag rank 
+  patclass.rank.diaguse <- df.cohort%>%
+    group_by(patient_type_fhir_class
+             ,diagnosis_rank = rank_indicator
+             ,diagnosis_use = diagnosis_use)%>%
+    summarise(count_unique_patient = length(unique(patient_id)), 
+              count_unique_encounters = length(unique(encounter_id)),
+              all_encounters = length(encounter_id),
+              diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
+              diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
+              diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
+              ) 
+  
+  openxlsx:::addWorksheet(wb, "PatientClass_Rank_DiagnosisUse")
+  openxlsx:::writeDataTable(wb = wb,x = patclass.rank.diaguse,sheet = "PatientClass_Rank_DiagnosisUse", withFilter = FALSE)
+
+#5. #################################################################################  
+  #summary based on number of visits and diag rank for patients
+  df.pat.cases <- df.cohort%>%
+    group_by(patient_id)%>%
+    summarise(diag_rank = paste(sort(unique(rank_indicator)), collapse = ',') 
+              ,number_of_visits =length(unique((encounter_id))))%>%
+    group_by(diag_rank,number_of_visits)%>%
+    summarise(count_unique_patient = length(unique(patient_id)))
   openxlsx:::addWorksheet(wb, "Multiple_Patient_Visit")
   openxlsx:::writeDataTable(wb = wb,x = df.pat.cases,sheet = "Multiple_Patient_Visit", withFilter = FALSE)
-  
+
+#6. #################################################################################    
   # count of cases from each PLZ
   df.plz <- df.cohort.trunc %>%
               group_by(patient_zip)%>%
-    summarise(Count_Encounters = length(unique(encounter_id)))%>%
-      arrange(desc(Count_Encounters))
+    summarise(count_encounters = length(unique(encounter_id)))%>%
+      arrange(desc(count_encounters))
   
-  df.plz$Count_Encounters[c(which(df.plz$Count_Encounters < 5))] <- "< 5"
+  df.plz$count_encounters[c(which(df.plz$count_encounters < 5))] <- "< 5"
   
   openxlsx:::addWorksheet(wb, "PLZ")
   openxlsx:::writeDataTable(wb = wb,x = df.plz,sheet = "PLZ", withFilter = FALSE)
-  
-  #group by and get count fro each ICD
-  df.conditions.summary <- df.conditions %>%
+
+#7. #################################################################################    
+  #group by and get count for each ICD
+  df.conditions.summary <- df.cohort %>%
     group_by(icd) %>%
     summarise(count_encounters = length(unique(encounter_id)) 
           ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
-              ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %")
+          ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %")
               )
-  #write.csv2(df.conditions.summary, paste0("Summary/StrokeDiagnosis_Summary.csv"))
-  
+
   openxlsx:::addWorksheet(wb, "Stroke_ICD_Summary")
   openxlsx:::writeDataTable(wb = wb,x = df.conditions.summary,sheet = "Stroke_ICD_Summary", withFilter = FALSE)
+
+#7. #################################################################################    
+#Summary based on ICD count, Rank and encounters
+
+ICD.rank <- df.cohort%>%
+    group_by(encounter_id,rank_indicator)%>%
+    summarise(icd_counts= length(unique(icd)))%>%
+    group_by(icd_counts,rank_indicator)%>%summarise(encounters= length(unique(encounter_id)))
+openxlsx:::addWorksheet(wb, "ICD_Rank_Summary")
+openxlsx:::writeDataTable(wb = wb,x = ICD.rank,sheet = "ICD_Rank_Summary", withFilter = FALSE)
+
+#8. ################################################################################# 
+  #Monthly counts for different ICDS
+df.cohort$year_month <- substr(coalesce(as.character(df.cohort$admission_date),as.character(df.cohort$recorded_date)),1,7)
+monthly <- df.cohort%>%
+  group_by(year_month)%>%
+  summarise(count_unique_patient = length(unique(patient_id)), 
+            count_unique_encounters = length(unique(encounter_id)),
+            all_encounters = length(encounter_id),
+            diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
+            diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
+            diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
+  ) 
+monthly[,c(2:7)] <- lapply(monthly[,c(2:7)], function(x) ifelse(x<5, "< 5", x))
+openxlsx:::addWorksheet(wb, "Monthly_Summary")
+openxlsx:::writeDataTable(wb = wb,x = monthly,sheet = "Monthly_Summary", withFilter = FALSE)
 }
 
+#9. #################################################################################  
 #Procedure Summary
 if(nrow(df.procedure) > 0){
   
   #count for different procedures performed in case
   df.procedure.summary <- df.procedure %>%
-    group_by(features) %>%
+    group_by(procedures = features) %>%
     summarise(count_encounters = length(unique(encounter_id))
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
-  #write.csv2(df.procedure.summary, paste0("Summary/Procedure_Summary.csv"))
+  
   openxlsx:::addWorksheet(wb, "Different_Procedures")
   openxlsx:::writeDataTable(wb = wb,x = df.procedure.summary,sheet = "Different_Procedures", withFilter = FALSE)
 }
-
+#10. #################################################################################  
 
 #Previous Condition Summary
 if(nrow(df.conditions.previous) > 0){
@@ -739,17 +814,16 @@ if(nrow(df.conditions.previous) > 0){
   
   #previous comorbities summary
   df.conditions.previous.summary <- df.conditions.previous %>%
-    group_by(features) %>%
+    group_by(comorbidities = features) %>%
     summarise(count_encounters = length(unique(encounter_id)) 
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
-  #write.csv2(df.conditions.previous.summary, paste0("Summary/history_comorbidities_Summary.csv"))
-  #df.conditions.previous.summary <- read.csv( paste0("Summary/history_comorbidities_Summary.csv"),sep = ";")
+  
   openxlsx:::addWorksheet(wb, "Previous_Comorbidities")
   openxlsx:::writeDataTable(wb = wb,x = df.conditions.previous.summary,sheet = "Previous_Comorbidities", withFilter = FALSE)
 }
 
-
+#11. #################################################################################  
 #observation summary
 if(nrow(df.observation) > 0){
   df.observation.summary <- df.observation%>%
@@ -757,12 +831,12 @@ if(nrow(df.observation) > 0){
     summarise(count_encounters = length(unique(encounter_id)) 
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
-  #write.csv2(df.observation.summary, paste0("Summary/Observation_Summary.csv"))
+  
   openxlsx:::addWorksheet(wb, "Lab_Values")
   openxlsx:::writeDataTable(wb = wb,x = df.observation.summary,sheet = "Lab_Values", withFilter = FALSE)
 }
 
-
+#12. #################################################################################  
 #medication summary
 if(nrow(df.medstatement) > 0){
   df.med.summary <- df.medstatement%>%
@@ -771,15 +845,15 @@ if(nrow(df.medstatement) > 0){
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   
-  #write.csv2(df.med.summary, paste0("Summary/Medication_Summary.csv"))
   openxlsx:::addWorksheet(wb, "Medication")
   openxlsx:::writeDataTable(wb = wb,x = df.med.summary,sheet = "Medication", withFilter = FALSE)
 }
 
+##################################################################################  
 #export the summary
 openxlsx:::saveWorkbook(wb, "Summary/Summary_Step1_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
 
-###logging
+###logging run time##################################################################################  
 runtime <- Sys.time() - start
 
 con <- file("Summary/miracum_select.log")
