@@ -1,9 +1,9 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 11.04.22
+Datum: 21.04.2022
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
-Dieses Project führt die Select-Anfrage für das MIRACUM ("WE-STORM") Projekt im Rahmen des 6. Projectathons aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
+Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt im Rahmen des [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
@@ -77,7 +77,8 @@ Erklärung:
 
 **C) Direkt Download vom DockerHub**
 
-Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen.
+Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen. 
+Der DockerHub Link wurde angepasst, bitte entsprechend des Changelogs die letzte Version [Apr 12](#apr-12-2022) nutzen. 
 
 
 ## Output 
@@ -243,11 +244,35 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 ## Changelog
 
 ### Major changes
-#### April 11, 2022
-Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile "Summary/miracum_select.log" erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
+
+#### Apr 21, 2022
+
+Wir haben die Scripts updated um stationäre und ambulante Fälle, je nach vorliegende FHIR-Elemente (`.class`, `.rank`, `.use`) bzw. Kondierung des jeweiligen DIZ besser unterscheiden zu können. Aktuell basieren diese Scripts auf lokale (Mannheimer DIZ-Daten) somit müssen diese noch vor dem finalen Einsatz (Step 1, SELECT-Abfrage), extern getestet werden. Diese Tests sind noch aussstehend, daher bitte den Script noch nicht nutzen.  
+
+#### Apr 14, 2022
+
+**Datentransfer:**
+Für den zentralen Datentransfer der Ergebnisse der SELECT-Abfrage (`Summary/Summary_Step1_MIRACUM_WESTORM.xlsx`) soll der Prozess-Skript für den Dateityp (".xlsx") angepasst werden. 
+Der Hintergrund dafür ist, dass der Projectathon Prozess prüft den tatsächlichen `MimeType` der Base64 codierten Datei gegen den deklarierten `MimeType. Daher muss der deklarierte MimeType in den `DocumentReference` und `Binary Ressourcen` dazu passen bzw. identisch sein. Für eine `.xlsx` Datei wie folgt: `<contentType value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>`.
+
+Die Repository für das **MII Projectathon Data Transfer process** befindet sich unter [MII DSF Processes](https://github.com/medizininformatik-initiative/mii-dsf-processes). 
+
+Als Beispiel, [@wetret](https://github.com/wetret) (Reto Wettstein) hat bereits einen erfolgreichen Test mit dem [folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
+
+Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund](https://github.com/hhund) (Hauke Hund) sowie Christian Gierschner für den Support. 
+
+#### Apr 12, 2022
+Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
+
+**Updated LOINC Codes:**
+ Die LOINC Codes für die Laborparameter mussten aufgrund der unterschiedlichen Kodierung der Laborparameter zwischen den Standorten erweitert werden. Hierfür haben wir die Referenztabelle mit Top 300 LOINC Codes entsprechend der Liste im KDS Basismodule, 03 Modul Laborbefunde `2021-08-08_MII_TOP_300_LOINC.xlsx` verwendet.
+
+**Updated DockerHub Link:**
+ Ein neues [dockerhub](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) Image wurde mit den neuen Updates vom 12.04.2022 erstellt. 
+Wenn dieses Image lokal nachgebaut wird soll dies mit `--deps TRUE` Flag passieren, somit alle R Pakete bereits miteingebaut werden. 
 
 #### Mar 10, 2022
-Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in miracum_select.R eingefügt, um es in R-Session zu verwenden
+Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in `miracum_select.R` eingefügt, um es in R-Session zu verwenden
 
 
 #### Mar 08, 2022
@@ -267,7 +292,7 @@ Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download 
 
 Anmerkung: Das Docker-Image sollte für Sites verfügbar sein, die nicht in der Lage sind, selbst zu bauen. Siehe auch [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/3). 
 
-Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers (@NandhiniS08 | @MeMatt) erstellt.
+Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers ([@nandhiniS08] | [@mematt]) erstellt.
 
 ##### Jan 27, 2022
 Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt.
