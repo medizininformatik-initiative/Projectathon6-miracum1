@@ -641,10 +641,10 @@ df.cohort <- df.cohort%>%
         mutate(rank_indicator = min(rank))
 
 #update rank mapping
-rank_dict <- c("Primary","Secondary",NA)
-names(rank_dict) <- c(1,2,NA)
-df.cohort$rank_indicator <- rank_dict[ as.character(df.cohort$rank_indicator) ]
 
+
+df.cohort$rank_indicator[c(which(df.cohort$rank_indicator ==1 ))] <- "Primary" 
+df.cohort$rank_indicator[c(which(df.cohort$rank_indicator ==2 ))] <- "Secondary" 
 
 
 
