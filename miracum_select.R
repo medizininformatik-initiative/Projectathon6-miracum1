@@ -694,7 +694,7 @@ if(nrow(df.cohort) > 0){
               diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
               diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
               )
-  
+  patclass.diaguse[is.na(patclass.diaguse)] <- "NA"
   openxlsx:::addWorksheet(wb, "PatientClass_DiagnosisUse")
   openxlsx:::writeDataTable(wb = wb,x = patclass.diaguse,sheet = "PatientClass_DiagnosisUse", withFilter = FALSE)
   
@@ -709,7 +709,8 @@ if(nrow(df.cohort) > 0){
               diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
               diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
               diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
-    )                   
+    )   
+  patclas.rank[is.na(patclas.rank)] <- "NA"
   openxlsx:::addWorksheet(wb, "PatientClass_Rank")
   openxlsx:::writeDataTable(wb = wb,x = patclas.rank,sheet = "PatientClass_Rank", withFilter = FALSE)
 
@@ -726,7 +727,7 @@ if(nrow(df.cohort) > 0){
               diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
               diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
               ) 
-  
+  patclass.rank.diaguse[is.na(patclass.rank.diaguse)] <- "NA"
   openxlsx:::addWorksheet(wb, "PatientClass_Rank_DiagnosisUse")
   openxlsx:::writeDataTable(wb = wb,x = patclass.rank.diaguse,sheet = "PatientClass_Rank_DiagnosisUse", withFilter = FALSE)
 
@@ -738,6 +739,8 @@ if(nrow(df.cohort) > 0){
               ,number_of_visits =length(unique((encounter_id))))%>%
     group_by(diag_rank,number_of_visits)%>%
     summarise(count_unique_patient = length(unique(patient_id)))
+  
+  df.pat.cases[is.na(df.pat.cases)] <- "NA"
   openxlsx:::addWorksheet(wb, "Multiple_Patient_Visit")
   openxlsx:::writeDataTable(wb = wb,x = df.pat.cases,sheet = "Multiple_Patient_Visit", withFilter = FALSE)
 
@@ -749,7 +752,7 @@ if(nrow(df.cohort) > 0){
       arrange(desc(count_encounters))
   
   df.plz$count_encounters[c(which(df.plz$count_encounters < 5))] <- "< 5"
-  
+  df.plz[is.na(df.plz)] <- "NA"
   openxlsx:::addWorksheet(wb, "PLZ")
   openxlsx:::writeDataTable(wb = wb,x = df.plz,sheet = "PLZ", withFilter = FALSE)
 
@@ -761,7 +764,7 @@ if(nrow(df.cohort) > 0){
           ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
           ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %")
               )
-
+  df.conditions.summary[is.na(df.conditions.summary)] <- "NA"
   openxlsx:::addWorksheet(wb, "Stroke_ICD_Summary")
   openxlsx:::writeDataTable(wb = wb,x = df.conditions.summary,sheet = "Stroke_ICD_Summary", withFilter = FALSE)
 
@@ -772,22 +775,25 @@ ICD.rank <- df.cohort%>%
     group_by(encounter_id,rank_indicator)%>%
     summarise(icd_counts= length(unique(icd)))%>%
     group_by(icd_counts,rank_indicator)%>%summarise(encounters= length(unique(encounter_id)))
+
+  ICD.rank[is.na(ICD.rank)] <- "NA"  
 openxlsx:::addWorksheet(wb, "ICD_Rank_Summary")
 openxlsx:::writeDataTable(wb = wb,x = ICD.rank,sheet = "ICD_Rank_Summary", withFilter = FALSE)
 
 #8. ################################################################################# 
   #Monthly counts for different ICDS
-df.cohort$year_month <- substr(coalesce(as.character(df.cohort$admission_date),as.character(df.cohort$recorded_date)),1,7)
-monthly <- df.cohort%>%
-  group_by(year_month)%>%
-  summarise(count_unique_patient = length(unique(patient_id)), 
-            count_unique_encounters = length(unique(encounter_id)),
-            all_encounters = length(encounter_id),
-            diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
-            diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
-            diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
-  ) 
-monthly[,c(2:7)] <- lapply(monthly[,c(2:7)], function(x) ifelse(x<5, "< 5", x))
+  df.cohort$year_month <- substr(coalesce(as.character(df.cohort$admission_date),as.character(df.cohort$recorded_date)),1,7)
+  monthly <- df.cohort%>%
+    group_by(year_month)%>%
+    summarise(count_unique_patient = length(unique(patient_id)), 
+              count_unique_encounters = length(unique(encounter_id)),
+              all_encounters = length(encounter_id),
+              diag_i60_encounters = length(unique(encounter_id[which(icd_family == 'I60')])),
+              diag_i61_encounters = length(unique(encounter_id[which(icd_family == 'I61')])),
+              diag_i63_encounters = length(unique(encounter_id[which(icd_family == 'I63')]))
+    ) 
+  monthly[,c(2:7)] <- lapply(monthly[,c(2:7)], function(x) ifelse(x<5, "< 5", x))
+  monthly[is.na(monthly)] <- "NA"
 openxlsx:::addWorksheet(wb, "Monthly_Summary")
 openxlsx:::writeDataTable(wb = wb,x = monthly,sheet = "Monthly_Summary", withFilter = FALSE)
 }
@@ -802,7 +808,7 @@ if(nrow(df.procedure) > 0){
     summarise(count_encounters = length(unique(encounter_id))
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
-  
+  df.procedure.summary[is.na(df.procedure.summary)] <- "NA"
   openxlsx:::addWorksheet(wb, "Different_Procedures")
   openxlsx:::writeDataTable(wb = wb,x = df.procedure.summary,sheet = "Different_Procedures", withFilter = FALSE)
 }
@@ -819,6 +825,8 @@ if(nrow(df.conditions.previous) > 0){
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   
+  df.conditions.previous.summary[is.na(df.conditions.previous.summary)] <- "NA"
+  
   openxlsx:::addWorksheet(wb, "Previous_Comorbidities")
   openxlsx:::writeDataTable(wb = wb,x = df.conditions.previous.summary,sheet = "Previous_Comorbidities", withFilter = FALSE)
 }
@@ -832,6 +840,7 @@ if(nrow(df.observation) > 0){
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
   
+  df.observation.summary[is.na(df.observation.summary)] <- "NA"
   openxlsx:::addWorksheet(wb, "Lab_Values")
   openxlsx:::writeDataTable(wb = wb,x = df.observation.summary,sheet = "Lab_Values", withFilter = FALSE)
 }
@@ -844,7 +853,7 @@ if(nrow(df.medstatement) > 0){
     summarise(count_encounters = length(unique(encounter_id)) 
               ,count_encounters = count_encounters  + ifelse(test = count_encounters>5,sample(-5:5, 1,replace = TRUE),sample(0:5, 1,replace = TRUE))
               ,percent_encounters = paste0(ceiling(count_encounters/length(unique(df.cohort.trunc$encounter_id))*100)," %"))
-  
+  df.med.summary[is.na(df.med.summary)] <- "NA"
   openxlsx:::addWorksheet(wb, "Medication")
   openxlsx:::writeDataTable(wb = wb,x = df.med.summary,sheet = "Medication", withFilter = FALSE)
 }
