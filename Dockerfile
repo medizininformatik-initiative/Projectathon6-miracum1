@@ -35,7 +35,7 @@ RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
   rm -rf /tmp/downloaded_packages && \
   rm -rf /var/lib/apt/lists/*
 
-COPY config_default.yml config_default.yml
+# COPY config_default.yml config_default.yml
 COPY miracum_select.R miracum_select.R
 COPY install_R_packages.R install_R_packages.R
 

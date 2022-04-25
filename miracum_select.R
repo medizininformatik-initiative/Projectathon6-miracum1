@@ -346,6 +346,20 @@ if(nrow(df.procedure) > 0){
 #######################################################################################################################
 #extract observation resource for the required patient ids and loinc codes
 
+patient_ids <- unique(df.encounters$patient_id)
+nchar_loincs <- nchar(c("777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0,48067-3,48065-7,2160-0,14682-9,62238-1,50210-4,77147-7,50384-7,2951-2,2823-3,2075-0,2601-3,14798-3,2498-4,3034-6,2276-4,20567-4,789-8,26453-1,790-6,787-2,30428-7,718-7,59260-0,55782-7,20509-6,20570-8,4544-3,71833-8,31100-1,2093-3,14647-2,18262-6,69419-0,2089-1,49132-4,13457-7,22748-8,39469-2,2085-9,14646-4,49130-8,2571-8,14927-8,1751-7,61151-7,2862-1,61152-5,54347-0,2345-7,14749-6,2339-0,2341-6,2340-8,15074-8,41651-1,39481-7,41652-9,39480-9,17856-6,4549-2,59261-8,4548-4,17855-8"))
+nchar_for_ids <- 1800 - (nchar(conf$serverbase)+nchar_loincs)
+n <- length(patient_ids)
+list <- split(patient_ids, ceiling(seq_along(patient_ids)/n)) 
+nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)}) 
+
+#reduce the chunk size until number of characters is small enough
+while(any(nchar > nchar_for_ids)){
+  n <- n/2
+  list <- split(patient_ids, ceiling(seq_along(patient_ids)/n))
+  nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
+}
+
 observation <- fhir_table_description(resource = "Observation",
                                       cols = c(observation_id = "id",
                                                effective_date= "effectiveDateTime",
@@ -363,7 +377,51 @@ observation <- fhir_table_description(resource = "Observation",
 
 df.observation <<- data.table()
 
-observation_list  <- lapply(list, function(x){
+time_tmp_start <- Sys.time()
+
+# observation_list  <- lapply(list, function(x){
+for (name in names(list)) {
+  x <- list[[name]]
+  
+  time_tmp_elapsed <-
+    difftime(Sys.time(), time_tmp_start, units = "secs")
+  time_tmp_elapsed_print <-
+    ifelse(
+      test = time_tmp_elapsed > 60,
+      yes = ifelse(
+        test = time_tmp_elapsed > 3600,
+        yes = paste0(round(time_tmp_elapsed / 3600, digits = 2), " h"),
+        no = paste0(round(time_tmp_elapsed / 60, digits = 2), " min")
+      ),
+      no = paste0(round(time_tmp_elapsed, digits = 2), " sec")
+    )
+  time_tmp_remaining <-
+    (time_tmp_elapsed / as.numeric(name)) * (length(list) - as.numeric(name))
+  time_tmp_remaining_print <- ifelse(
+    test = time_tmp_remaining > 60,
+    yes = ifelse(
+      test = time_tmp_remaining > 3600,
+      yes = paste0(round(time_tmp_remaining / 3600, digits = 2), " h"),
+      no = paste0(round(time_tmp_remaining / 60, digits = 2), " min")
+    ),
+    no = paste0(round(time_tmp_remaining, digits = 2), " sec")
+  )
+  print(
+    paste0(
+      "Iteration ",
+      name,
+      " of ",
+      length(list),
+      " (",
+      round((as.numeric(name) / length(list)) * 100, digits = 2),
+      " %), Time elapsed: ",
+      time_tmp_elapsed_print,
+      " (Remaining: ~ ",
+      time_tmp_remaining_print,
+      ")"
+    )
+  )
+  
   
   ids <- paste(x, collapse = ",")
   
@@ -373,7 +431,7 @@ observation_list  <- lapply(list, function(x){
                           resource = "Observation",
                           parameters = c(subject = ids
                                          ,"code" = "777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0,48067-3,48065-7,2160-0,14682-9,62238-1,50210-4,77147-7,50384-7,2951-2,2823-3,2075-0,2601-3,14798-3,2498-4,3034-6,2276-4,20567-4,789-8,26453-1,790-6,787-2,30428-7,718-7,59260-0,55782-7,20509-6,20570-8,4544-3,71833-8,31100-1,2093-3,14647-2,18262-6,69419-0,2089-1,49132-4,13457-7,22748-8,39469-2,2085-9,14646-4,49130-8,2571-8,14927-8,1751-7,61151-7,2862-1,61152-5,54347-0,2345-7,14749-6,2339-0,2341-6,2340-8,15074-8,41651-1,39481-7,41652-9,39480-9,17856-6,4549-2,59261-8,4548-4,17855-8"))
-  
+                                         # ,"code" = "777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0"))
   obs_bundles <- fhir_search(obs_request,
                              username = conf$username,
                              password = conf$password,
@@ -382,7 +440,8 @@ observation_list  <- lapply(list, function(x){
   obs_table <- fhir_crack(obs_bundles, design = observation)
   df.observation <<- rbind(df.observation, obs_table, fill=TRUE)
   
-})
+}
+# )
 
 #process observations_raw resources
 if(nrow(df.observation) > 0){
