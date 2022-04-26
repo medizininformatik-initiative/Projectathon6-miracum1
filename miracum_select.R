@@ -156,7 +156,7 @@ df.encounters$patient_id <- sub("Patient/", "", df.encounters$patient_id)
 df.encounters$admission_date <- as.POSIXct(df.encounters$admission_date,format="%Y-%m-%dT%H:%M:%S")
 df.encounters$discharge_date <- as.POSIXct(df.encounters$discharge_date,format="%Y-%m-%dT%H:%M:%S")
 df.encounters <- df.encounters[!duplicated(df.encounters),]
-
+df.encounters <- df.encounters[c(which(df.encounters$admission_date >= '2015-01-01')),]
 
 df.encounters.trunc <- subset(df.encounters,select = c(patient_id,encounter_id,admission_date,discharge_date))
 df.encounters.trunc <- df.encounters.trunc[!duplicated(df.encounters.trunc),]
