@@ -466,6 +466,20 @@ if(nrow(df.observation) > 0){
 #######################################################################################################################
 #extract the diagnosis resource based on patient ids
 
+patient_ids <- unique(df.encounters$patient_id)
+nchar_for_ids <- 1800 - nchar(conf$serverbase)
+n <- length(patient_ids)
+list <- split(patient_ids, ceiling(seq_along(patient_ids)/n)) 
+nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)}) 
+
+#reduce the chunk size until number of characters is small enough
+while(any(nchar > nchar_for_ids)){
+  n <- n/2
+  list <- split(patient_ids, ceiling(seq_along(patient_ids)/n))
+  nchar <- sapply(list, function(x){sum(nchar(x))+(length(x)-1)})
+}
+
+
 condition <- fhir_table_description(resource = "Condition",
                                     cols = c(condition_id = "id",
                                              recorded_date= "recordedDate",
