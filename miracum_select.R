@@ -31,14 +31,18 @@ if((conf$no_proxy)!= ""){Sys.setenv(no_proxy  = conf$no_proxy)}
 brackets = c("[", "]")
 sep = " || "
 ############Data extraction#############################
-##extract the condition resources of the list of stroke ICD's greather than 2015-01-01 and extract the associated patient, encounter, condition and procedure resource
+##extract the condition resources of the list of stroke ICD's greater than 2015-01-01 and extract the associated patient and encounter resource
+#To get encounters where condition is only referenced in encounter Encounter:diagnosis
+#To get encounters where encounter is referenced in condition  Condition:encounter
+
 #configure the fhir search url
-encounter_request <- fhir_url(url = conf$serverbase,
-                              resource = "Encounter",
-                              parameters = c("date" = "ge2015-01-01",
-                                             "diagnosis:Condition.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_include" = "Encounter:patient",
-                                             "_include"="Encounter:diagnosis"
+encounter_request <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "_revinclude"="Encounter:diagnosis",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject"
                               ))
 
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
@@ -101,6 +105,10 @@ while(!is.null(encounter_request)&&length(encounter_request)>0){
                        })
   
   names(combined_tables) <- names(enc_tables)
+  #get rid of duplicates
+  combined_tables$enc <- unique(combined_tables$enc)
+  combined_tables$con <- unique(combined_tables$con)
+  combined_tables$pat <- unique(combined_tables$pat)
   
   encounter_request <- fhir_next_bundle_url()
 }
@@ -111,46 +119,6 @@ end_time <- Sys.time()
 print(end_time - start_time)
 
 
-
-#extract condition resource based on the list of ICD and include Condition:encounter, Condition:subject/patient
-
-
-### extraction for covering the cases who doesn't have a link of condition in the encounter resource
-condition_request_2 <- fhir_url(url = conf$serverbase, 
-                              resource = "Condition", 
-                              parameters = c("recorded-date" = "ge2015-01-01",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_include" = "Condition:encounter",
-                                             "_include"="Condition:subject"
-                              ))
-
-#Download in 100er batches and crack immediately, then append to combined tables from above
-start_time <- Sys.time()
-while(!is.null(condition_request_2)&&length(condition_request_2)>0){
-  con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password, 
-                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
-  
-  con_tables <- fhir_crack(con_bundles, 
-                           design = fhir_design(enc = encounters, pat = patients, con = condition),
-                           data.table = TRUE)
-  
-  combined_tables <- lapply(names(combined_tables), 
-                            function(name){
-                              rbind(combined_tables[[name]], con_tables[[name]], fill=TRUE)
-                            })
-  
-  names(combined_tables) <- names(con_tables)
-  
-  #get rid of duplicates
-  combined_tables$enc <- unique(combined_tables$enc)
-  combined_tables$con <- unique(combined_tables$con)
-  combined_tables$pat <- unique(combined_tables$pat)
-  
-  condition_request_2 <- fhir_next_bundle_url()
-}
-
-end_time <- Sys.time()
-print(end_time - start_time)
 
 #############################
 
@@ -164,7 +132,7 @@ if(nrow(combined_tables$pat) == 0){
   stop("No Patients for stroke condition found - aborting.")
 }
 
-rm(con_bundles,con_tables)
+#rm(con_bundles,con_tables)
 
 
 ###############extract and process patient resource##############################
@@ -187,6 +155,8 @@ df.encounters$patient_id <- sub("Patient/", "", df.encounters$patient_id)
 
 df.encounters$admission_date <- as.POSIXct(df.encounters$admission_date,format="%Y-%m-%dT%H:%M:%S")
 df.encounters$discharge_date <- as.POSIXct(df.encounters$discharge_date,format="%Y-%m-%dT%H:%M:%S")
+df.encounters <- df.encounters[!duplicated(df.encounters),]
+
 
 df.encounters.trunc <- subset(df.encounters,select = c(patient_id,encounter_id,admission_date,discharge_date))
 df.encounters.trunc <- df.encounters.trunc[!duplicated(df.encounters.trunc),]
@@ -211,6 +181,8 @@ icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','
 df.conditions <- df.conditions[c(which(df.conditions$icd %in% icd_codes) )]
 
 df.conditions$recorded_date <- as.POSIXct(df.conditions$recorded_date ,format="%Y-%m-%dT%H:%M:%S")
+df.conditions <- df.conditions[!duplicated(df.conditions),]
+
 
 df.encounters.subset <-  df.encounters[,c("encounter_id", "condition_id")]
 setnames(df.encounters.subset,old = c("encounter_id", "condition_id"),new = c("encounter.encounter_id", "encounter.condition_id"))
