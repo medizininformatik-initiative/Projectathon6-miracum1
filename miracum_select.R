@@ -675,13 +675,13 @@ if(nrow(df.medstatement)>0){
                                   username = conf$username,
                                   password = conf$password,
                                   log_errors = "errors/medication_error.xml")
-
     
+  
     med_table <- fhir_crack(medication_bundle,design = medication)
     df.medication <<- rbind(df.medication, med_table)
   }) # lapply()
   
-  if(nrow(df.medication >0 )){
+  if(nrow(df.medication) >0 ){
     
     #process Medication statement  resources
     df.medication <- fhir_rm_indices(df.medication, brackets = brackets )
@@ -923,7 +923,7 @@ if(nrow(df.observation) > 0){
 
 #12. #################################################################################  
 #medication summary
-if(nrow(df.medstatement) > 0){
+if(nrow(df.medication) > 0){
   df.med.summary <- df.medstatement%>%
     group_by(code) %>%
     summarise(count_encounters = length(unique(encounter_id)) 
