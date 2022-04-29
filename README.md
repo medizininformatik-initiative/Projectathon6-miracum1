@@ -9,16 +9,28 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 
 ## Table of Contents 
 
+  * [1. Verwendung](## Verwendung)
+  * [1.1. Ausführung in R](### Ausführung in R)
+  * [1.1.1. Vor der ersten Nutzung](#### Vor der ersten Nutzung)
+  * [1.1.1.1. Batch-Datei/Shell-Skript](##### Batch-Datei/Shell-Skript)
+  * [1.1.1.2. R/RStudio](#### R/RStudio)
+  * [2. Ausführung im Docker Container](### Ausführung im Docker Container)
+  * [2.1. DockerHub](#### A) Image von DockerHub ziehen)
+  * [2.2. Docker Compose](#### B) Image bauen mit Docker Compose)
+  * [2.3. Ohne Docker Compose](#### C) Image bauen ohne Docker Compose)
+  * [2.4. DockerHub Direkt Download](#### D) Direkt Download vom DockerHub)
+  * [3. Output](## Output)
+  * [3.1 Summary](### Summary)
+  * [4. Verwendete Codesysteme](## Verwendete Codesysteme)
+  * [5. Verwendete Profile/Datenelemente](## Verwendete Profile/Datenelemente)
+  * [6. Konzeptioneller Ablauf der Abfrage](## Konzeptioneller Ablauf der Abfrage)
+  * [7. Datentransfer](## Data Transfer)
+  * [8. Changelog](## Changelog)
 
-  * [1. Verwendung]
-  * [2  Ausführung in R]
-  * [3 Ausführung im Docker Container]
-  * [4 Output - summary]
-  * [5 Verwendete Profile/Datenelemente]
-  * [6 Konzeptioneller Ablauf der Abfrage]
-  * [8. Changelog]
-  * [1.5 Overview](#15-overview)
-
+<--! 
+[Apr 12](#apr-12-2022)
+comment it out  
+-->
 
 ## Verwendung
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
@@ -34,8 +46,7 @@ Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in ei
 
 4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet soll, muss in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
 
-
-#### Start des Skripts
+##### Start des Skripts
 Beim ersten Start des Skripts wird überprüft, ob die zur Ausführung notwendigen R-Pakete ("rprojroot","fhircrackr","config","dplyr","zoo","stringr","tidyr") vorhanden sind. Ist dies nicht der Fall, werden diese Pakete nachinstalliert – dieser Prozess kann einige Zeit in Anspruch nehmen.
 
 ##### Batch-Datei/Shell-Skript
@@ -49,11 +60,10 @@ _Debugging/Error:_ Im Falle eines Berechtigungsfehlers soll der folgende Befehl 
 #### R/RStudio
 Durch Öffnen des R-Projektes (`Projectathon6-miracum1.Rproj`) mit anschließendem Ausführen der Datei `miracum_select.R` innerhalb von R/RStudio. Auch hier werden beim ersten Ausführen ggf. notwendige R-Pakete nachinstalliert.
 
-## Ausführung im Docker Container
+### Ausführung im Docker Container
 Um die Abfrage in einem Docker Container laufen zu lassen gibt es zwei Möglichkeiten:
 
-**A) Image von DockerHub ziehen:**
-
+#### A) Image von DockerHub ziehen:
 1. Git-Repository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git Projectathon6-miracum1`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
@@ -69,7 +79,7 @@ docker run --name projectathon6-miracum1 \
        nandhinis08/projectathon6-miracum1
 ```
 
-**B) Image bauen mit Docker Compose:**
+#### B) Image bauen mit Docker Compose: 
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
@@ -77,7 +87,7 @@ docker run --name projectathon6-miracum1 \
 
 Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `docker compose start`.
 
-**C) Image bauen ohne Docker Compose**
+#### C) Image bauen ohne Docker Compose:
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository: `cd Projectathon6-miracum1`
 3. Image bauen: `docker build -t projectathon6-miracum1 .` 
@@ -88,18 +98,18 @@ Erklärung:
 
 -  `-v "$(pwd)/config.yml:/config.yml""` bindet die lokal veränderte Variante des config-Files ein. Wenn dieses geändert wird, reicht es, den Container neu zu stoppen und starten (`docker stop Projectathon6-miracum1`, `config.yml` ändern, dann `docker start Projectathon6-miracum1`), ein erneutes `docker build` ist nicht nötig.
 
-**C) Direkt Download vom DockerHub**
-
+#### D) Direkt Download vom DockerHub:
 Falls ein Error beim lokalen Builden des Containers auftreten soll (e.g. `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), bitte entsprechend des Changelogs [Feb 17](#feb-17-2022) und [Feb 18](#feb-18-2022) den neusten pre-built container vom `dockerhub` herunterladen. 
 Der DockerHub Link wurde angepasst, bitte entsprechend des Changelogs die letzte Version [Apr 12](#apr-12-2022) nutzen. 
 
+---
 
 ## Output 
 Das Skript erzeugt mehrere Ordner im Projekt-Directory. Um für den Projectathon eine möglichst einfache übersichtliche Lösung zu bekommen, werden alle files, die darin erzeugt werden bei mehrmaligem Ausführen ggf. einfach überschrieben.
 
 Wenn die Abfrage erfolgreich durchgeführt wurde, wird die folgende Zusammenfassung in Excel erstellt 
-### Summary
 
+### Summary
 - `Cohort_Feature_availability` Dieses Blatt zeigt den Prozentsatz der verfügbaren Merkmale für jeden Monat in der Kohorte. Diese Tabelle enthält die wichtigsten Merkmale, die für das Modell benötigt werden
 - `MultiplePatientVisit: ` Hier wird die Zuordnung zwischen der Anzahl der Patienten und ihrer Besuche dargestellt
 - `PLZ` Hier wird die Anzahl der Begegnungen in jeder PLZ angegeben (gefiltert größer oder gleich 5). Dies hilft uns bei der Identifizierung der wichtigsten PLZ in der Kohorte für den Abgleich mit den Wetterstationen.
@@ -116,7 +126,6 @@ Diese sind benötigt um die Different Procedures größte und feature-reicshte h
 - http://fhir.de/CodeSystem/dimdi/ops für Procedure.code.coding.system
 - http://loinc.org für Observation.code.coding.system
 - http://fhir.de/CodeSystem/dimdi/atc für Medication.code.coding.system
-
 
 ## Verwendete Profile/Datenelemente
 Die Abfragen werden auf der Grundlage der MII-Profile für die entsprechenden Ressourcen geschrieben. Die Skripte sind mit der neuesten Version der verfügbaren Hauptversionen kompatibel. Im Folgenden wird für jeden verwendeten Ressourcentyp beschrieben, welche Elemente für die FHIR-Suchanfrage an den Server verwendet werden (diese Elemente müssen vorhanden sein, damit kein Fehler ausgelöst wird) und welche Elemente im Skript extrahiert und in die Ergebnistabellen geschrieben werden.
@@ -150,6 +159,7 @@ Extrahierte Elemente:
 * Encounter.diagnosis.condition.reference
 * Encounter.diagnosis.rank
 * Encounter.hospitalization.dischargeDisposition.coding.code
+
 ### Modul Diagnose: Condition
 Profil: https://www.medizininformatik-initiative.de/fhir/core/modul-diagnose/StructureDefinition/Diagnose
 
@@ -215,6 +225,7 @@ Extrahierte Elemente:
 * Medication.code.coding.code
 * Medication.code.coding.system
 
+---
 
 ## Konzeptioneller Ablauf der Abfrage
 Im Prinzip läuft das Drehbuch wie folgt ab:
@@ -266,7 +277,6 @@ Als Beispiel, [@wetret](https://github.com/wetret) (Reto Wettstein) hat bereits 
 
 Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund](https://github.com/hhund) (Hauke Hund) sowie Christian Gierschner für den Support. 
 
-
 ---
 
 ## Changelog
@@ -275,28 +285,38 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 #### Apr 29, 2022
 
-** Freigabe der SELECT-Query (STEP1) **
-Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet. Die erforderlichen Anpassungen sind ebenfalls abgeschlossen. Vielen Dank für die schnelle Zusammenarbeit, Vorschläge und die Aktualisierung des Status so schnell wie möglich. 
- 
-Julia Palm UK Jena (HAPI) (https://github.com/palmjulia)
-Jonathan Mang UK Erlangen (HAPI) (https://github.com/joundso)
-Noemi Deppenwiese UK Erlangen (HAPI)
-Thomas Gansland UK Erlangen (HAPI)
-Raffael Bild  TUM (IBM HAPI & BLAZE) (https://github.com/RaffaelBild)
-Stephanie Biergans UK Tübingen (IBM HAPI) minor changes 
+##### Freigabe der Step 1, SELECT-Query
+Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet (e.g. Erlangen, Jena, Mannheim, TU-München, Tübingen). Die erforderlichen Anpassungen sind ebenfalls abgeschlossen. 
 
-Für die HAPI basierte Scripte kann der Master Branch ge-pullt werden. 
-Für BLAZE angepasste Scripte kann der `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden.
-
-Die DockerHub Images sind jeweils für HAPI(add link) und BLAZE(add link) bei über die Links verfügbar. Diese kann je nach Server/Proxy Settings eine einfache Lösung bieten (siehe Change log add date). 
+Vielen Dank für die gute Zusammenarbeit, Eure Zeit und Unterstützung sowie die Anregungen und Verbesserungs Vorschläge, insbesondere an:  
  
-Der Geschwindigkeitslimitierende Faktor ist der Download der Observations (Labor Module). Für Standorte mit vielen Labordaten erhöht sich die Zeit. 
-Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
-Time range (BLAZE): 46 mins (cohort sizes: ~6-9k)
+* [Julia Palm](https://github.com/palmjulia), UK Jena (HAPI) 
+* [Jonathan Mang](https://github.com/joundso), UK Erlangen (HAPI) 
+* [Thomas Ganslandt], UK Erlangen (HAPI)
+* [Noemi Deppenwiese], UK Erlangen (HAPI)
+* [Raffael Bild](https://github.com/RaffaelBild), TUM (IBM HAPI & BLAZE)
+* [Stephanie Biergans], UK Tübingen (IBM HAPI & Blaze) 
+* [Alexander Kiel](https://github.com/alexanderkiel), Uni Leipzig ([blaze](https://github.com/samply/blaze) [v0.17.0](https://github.com/samply/blaze/releases/tag/v0.17.0) update with chaining)
+
+**Github Pull**
+1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `Master Branch` ge-pullt werden. 
+2. Für [blaze](https://github.com/samply/blaze) angepasste Scripte können der `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden. 
+  * Diese wurden für `v0.16.x`(noch ohne chained search parameters) angepasst.
+
+**Dockerhub**
+Die [dockerhub](https://hub.docker.com/) Images sind für jeweils
+* [HAPI-type](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) und 
+* [blaze](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1-blaze) FHIR Server über die Links verfügbar. Diese können je nach Server/Proxy Settings eine einfachere Lösung bieten (siehe Changelogs [Apr 12](#apr-12-2022) & [Feb 18](#feb-18-2022)). 
+
+**Performance**
+Der Geschwindigkeitslimitierende Faktor ist der Download der Observations ([Labor Module](### Modul Labor)). Für Standorte mit vielen Labordaten erhöht sich die Zeit (vor allem auf HAPI FHIR). 
+  + Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
+  + Time range (blaze): 46 mins (cohort sizes: ~6-9k)
 
 #### Apr 27, 2022
 
-Der Download von resourcen wird angepasst, um die Verkettung von Filtern zu entfernen. 
+Für blaze Servers wird der Download von Resourcen angepasst, um die Verkettung (chaining) aus dem Filtering-Process der HAPI Scripte zu entfernen ([siehe Issue hier](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/5)). 
+
 #### Apr 21, 2022
 
 Wir haben die Scripts updated um stationäre und ambulante Fälle, je nach vorliegende FHIR-Elemente (`.class`, `.rank`, `.use`) bzw. Kondierung des jeweiligen DIZ besser unterscheiden zu können. Aktuell basieren diese Scripts auf lokale (Mannheimer DIZ-Daten) somit müssen diese noch vor dem finalen Einsatz (Step 1, SELECT-Abfrage), extern getestet werden. Diese Tests sind noch aussstehend, daher bitte den Script noch nicht nutzen.  
