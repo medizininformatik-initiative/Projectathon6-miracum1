@@ -9,16 +9,16 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 
 ## Table of Contents 
 
-{%  
-- [1. Introduction](#1-introduction)
-  * [1.1 Purpose](#11-purpose)
-  * [1.2 Scope](#12-scope)
-  * [1.3 Acronyms](#13-acronyms)
-  * [1.4 References](#14-references)
-    + [1.4.1 Internal References](#141-internal-references)
-    + [1.4.2 External References](#142-external-references)
+
+  * [1. Verwendung]
+  * [2  Ausführung in R]
+  * [3 Ausführung im Docker Container]
+  * [4 Output - summary]
+  * [5 Verwendete Profile/Datenelemente]
+  * [6 Konzeptioneller Ablauf der Abfrage]
+  * [8. Changelog]
   * [1.5 Overview](#15-overview)
-%}
+
 
 ## Verwendung
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
@@ -256,7 +256,16 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
 ## Datentransfer 
 
-% Also, add change log element hier % 
+**Datentransfer:**
+Für den zentralen Datentransfer der Ergebnisse der SELECT-Abfrage (`Summary/Summary_Step1_MIRACUM_WESTORM.xlsx`) soll der Prozess-Skript für den Dateityp (".xlsx") angepasst werden. 
+Der Hintergrund dafür ist, dass der Projectathon Prozess prüft den tatsächlichen `MimeType` der Base64 codierten Datei gegen den deklarierten `MimeType. Daher muss der deklarierte MimeType in den `DocumentReference` und `Binary Ressourcen` dazu passen bzw. identisch sein. Für eine `.xlsx` Datei wie folgt: `<contentType value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>`.
+
+Die Repository für das **MII Projectathon Data Transfer process** befindet sich unter [MII DSF Processes](https://github.com/medizininformatik-initiative/mii-dsf-processes). 
+
+Als Beispiel, [@wetret](https://github.com/wetret) (Reto Wettstein) hat bereits einen erfolgreichen Test mit dem [folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
+
+Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund](https://github.com/hhund) (Hauke Hund) sowie Christian Gierschner für den Support. 
+
 
 ---
 
@@ -289,18 +298,6 @@ Time range (BLAZE): 46 mins (cohort sizes: ~6-9k)
 #### Apr 21, 2022
 
 Wir haben die Scripts updated um stationäre und ambulante Fälle, je nach vorliegende FHIR-Elemente (`.class`, `.rank`, `.use`) bzw. Kondierung des jeweiligen DIZ besser unterscheiden zu können. Aktuell basieren diese Scripts auf lokale (Mannheimer DIZ-Daten) somit müssen diese noch vor dem finalen Einsatz (Step 1, SELECT-Abfrage), extern getestet werden. Diese Tests sind noch aussstehend, daher bitte den Script noch nicht nutzen.  
-
-#### Apr 14, 2022
-
-**Datentransfer:**
-Für den zentralen Datentransfer der Ergebnisse der SELECT-Abfrage (`Summary/Summary_Step1_MIRACUM_WESTORM.xlsx`) soll der Prozess-Skript für den Dateityp (".xlsx") angepasst werden. 
-Der Hintergrund dafür ist, dass der Projectathon Prozess prüft den tatsächlichen `MimeType` der Base64 codierten Datei gegen den deklarierten `MimeType. Daher muss der deklarierte MimeType in den `DocumentReference` und `Binary Ressourcen` dazu passen bzw. identisch sein. Für eine `.xlsx` Datei wie folgt: `<contentType value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>`.
-
-Die Repository für das **MII Projectathon Data Transfer process** befindet sich unter [MII DSF Processes](https://github.com/medizininformatik-initiative/mii-dsf-processes). 
-
-Als Beispiel, [@wetret](https://github.com/wetret) (Reto Wettstein) hat bereits einen erfolgreichen Test mit dem [folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
-
-Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund](https://github.com/hhund) (Hauke Hund) sowie Christian Gierschner für den Support. 
 
 #### Apr 12, 2022
 Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
