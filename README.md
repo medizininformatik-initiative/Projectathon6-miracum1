@@ -1,11 +1,24 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 21.04.2022
+Datum: 29.04.2022
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
 Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt im Rahmen des [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
+
+## Table of Contents 
+
+
+  * [1. Verwendung]
+  * [2  Ausführung in R]
+  * [3 Ausführung im Docker Container]
+  * [4 Output - summary]
+  * [5 Verwendete Profile/Datenelemente]
+  * [6 Konzeptioneller Ablauf der Abfrage]
+  * [8. Changelog]
+  * [1.5 Overview](#15-overview)
+
 
 ## Verwendung
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
@@ -238,18 +251,10 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
         *Note: xx indicates a placeholder for list of patient ids*
 
  9. Wann alle diese Ressourcen heruntergeladen worden sind, werden in R verschiedene Data-Frames für die gesamten aggregierten Daten und auch verschiedene *Summaries* erstellt, und als `.csv` gespeichert werden. Die Einzelheiten dazu sind im obigen Abschnitt über die Ausgabe aufgeführt. 
-         
+       
 ---
 
-## Changelog
-
-### Major changes
-
-#### Apr 21, 2022
-
-Wir haben die Scripts updated um stationäre und ambulante Fälle, je nach vorliegende FHIR-Elemente (`.class`, `.rank`, `.use`) bzw. Kondierung des jeweiligen DIZ besser unterscheiden zu können. Aktuell basieren diese Scripts auf lokale (Mannheimer DIZ-Daten) somit müssen diese noch vor dem finalen Einsatz (Step 1, SELECT-Abfrage), extern getestet werden. Diese Tests sind noch aussstehend, daher bitte den Script noch nicht nutzen.  
-
-#### Apr 14, 2022
+## Datentransfer 
 
 **Datentransfer:**
 Für den zentralen Datentransfer der Ergebnisse der SELECT-Abfrage (`Summary/Summary_Step1_MIRACUM_WESTORM.xlsx`) soll der Prozess-Skript für den Dateityp (".xlsx") angepasst werden. 
@@ -260,6 +265,41 @@ Die Repository für das **MII Projectathon Data Transfer process** befindet sich
 Als Beispiel, [@wetret](https://github.com/wetret) (Reto Wettstein) hat bereits einen erfolgreichen Test mit dem [folgenden Skript (`DicFhirStore_WE-STORM.xml`; lines 23 & 38)](https://github.com/medizininformatik-initiative/mii-dsf-processes/blob/main/mii-dsf-process-projectathon-data-transfer/src/test/resources/fhir/Bundle/DicFhirStore_WE-STORM.xml) durchgeführt. 
 
 Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund](https://github.com/hhund) (Hauke Hund) sowie Christian Gierschner für den Support. 
+
+
+---
+
+## Changelog
+
+### Major changes
+
+#### Apr 29, 2022
+
+** Freigabe der SELECT-Query (STEP1) **
+Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet. Die erforderlichen Anpassungen sind ebenfalls abgeschlossen. Vielen Dank für die schnelle Zusammenarbeit, Vorschläge und die Aktualisierung des Status so schnell wie möglich. 
+ 
+Julia Palm UK Jena (HAPI) (https://github.com/palmjulia)
+Jonathan Mang UK Erlangen (HAPI) (https://github.com/joundso)
+Noemi Deppenwiese UK Erlangen (HAPI)
+Thomas Gansland UK Erlangen (HAPI)
+Raffael Bild  TUM (IBM HAPI & BLAZE) (https://github.com/RaffaelBild)
+Stephanie Biergans UK Tübingen (IBM HAPI) minor changes 
+
+Für die HAPI basierte Scripte kann der Master Branch ge-pullt werden. 
+Für BLAZE angepasste Scripte kann der `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden.
+
+Die DockerHub Images sind jeweils für HAPI(add link) und BLAZE(add link) bei über die Links verfügbar. Diese kann je nach Server/Proxy Settings eine einfache Lösung bieten (siehe Change log add date). 
+ 
+Der Geschwindigkeitslimitierende Faktor ist der Download der Observations (Labor Module). Für Standorte mit vielen Labordaten erhöht sich die Zeit. 
+Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
+Time range (BLAZE): 46 mins (cohort sizes: ~6-9k)
+
+#### Apr 27, 2022
+
+Der Download von resourcen wird angepasst, um die Verkettung von Filtern zu entfernen. 
+#### Apr 21, 2022
+
+Wir haben die Scripts updated um stationäre und ambulante Fälle, je nach vorliegende FHIR-Elemente (`.class`, `.rank`, `.use`) bzw. Kondierung des jeweiligen DIZ besser unterscheiden zu können. Aktuell basieren diese Scripts auf lokale (Mannheimer DIZ-Daten) somit müssen diese noch vor dem finalen Einsatz (Step 1, SELECT-Abfrage), extern getestet werden. Diese Tests sind noch aussstehend, daher bitte den Script noch nicht nutzen.  
 
 #### Apr 12, 2022
 Änderung: Zusätzlich zu den Ergebnis-Tabellen wird nun ein Textfile `"Summary/miracum_select.log"` erzeugt, welches die Anzahl der extrahierten Fälle, Patienten und die Laufzeit des R-Skriptes dokumentiert. Das log-file muss nicht geteilt werden, es dient den DIZen nur als Hilfestellung für die Einschätzung von Laufzeiten und Ergebnismengen. 
