@@ -293,17 +293,17 @@ Vielen Dank für die gute Zusammenarbeit, Eure Zeit und Unterstützung sowie die
 * [Stephanie Biergans], UK Tübingen (IBM HAPI & Blaze) 
 * [Alexander Kiel](https://github.com/alexanderkiel), Uni Leipzig ([blaze](https://github.com/samply/blaze) [v0.17.0](https://github.com/samply/blaze/releases/tag/v0.17.0) update with chaining)
 
-**Github Pull**
+##### Github Pull
 1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `Master Branch` ge-pullt werden. 
 2. Für [blaze](https://github.com/samply/blaze) angepasste Scripte können der `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden. 
   * Diese wurden für `v0.16.x`(noch ohne chained search parameters) angepasst.
 
-**Dockerhub**
-Die [dockerhub](https://hub.docker.com/) Images sind für jeweils
+##### Dockerhub
+Die [dockerhub](https://hub.docker.com/) Images sind für jeweils:
 * [HAPI-type](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1) und 
 * [blaze](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1-blaze) FHIR Server über die Links verfügbar. Diese können je nach Server/Proxy Settings eine einfachere Lösung bieten (siehe Changelogs [Apr 12](#apr-12-2022) & [Feb 18](#feb-18-2022)). 
 
-**Performance**
+##### Performance
 Der Geschwindigkeitslimitierende Faktor ist der Download der Observations ([Labor Module](### Modul Labor)). Für Standorte mit vielen Labordaten erhöht sich die Zeit (vor allem auf HAPI FHIR). 
   + Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
   + Time range (blaze): 46 mins (cohort sizes: ~6-9k)
