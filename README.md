@@ -9,28 +9,23 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 
 ## Table of Contents 
 
-  * [1. Verwendung](## Verwendung)
-  * [1.1. Ausführung in R](### Ausführung in R)
-  * [1.1.1. Vor der ersten Nutzung](#### Vor der ersten Nutzung)
-  * [1.1.1.1. Batch-Datei/Shell-Skript](##### Batch-Datei/Shell-Skript)
-  * [1.1.1.2. R/RStudio](#### R/RStudio)
-  * [2. Ausführung im Docker Container](### Ausführung im Docker Container)
-  * [2.1. DockerHub](#### A) Image von DockerHub ziehen)
-  * [2.2. Docker Compose](#### B) Image bauen mit Docker Compose)
-  * [2.3. Ohne Docker Compose](#### C) Image bauen ohne Docker Compose)
-  * [2.4. DockerHub Direkt Download](#### D) Direkt Download vom DockerHub)
-  * [3. Output](## Output)
-  * [3.1 Summary](### Summary)
-  * [4. Verwendete Codesysteme](## Verwendete Codesysteme)
-  * [5. Verwendete Profile/Datenelemente](## Verwendete Profile/Datenelemente)
-  * [6. Konzeptioneller Ablauf der Abfrage](## Konzeptioneller Ablauf der Abfrage)
-  * [7. Datentransfer](## Data Transfer)
-  * [8. Changelog](## Changelog)
-
-<--! 
-[Apr 12](#apr-12-2022)
-comment it out  
--->
+  * [1. Verwendung](#verwendung)
+  * [1.1. Ausführung in R](#ausführung-in-R)
+  * [1.1.1. Vor der ersten Nutzung](#vor-der-ersten-utzung)
+  * [1.1.1.1. Batch-Datei/Shell-Skript](#batch-dateishell-skript)
+  * [1.1.1.2. R/RStudio](#rrstudio)
+  * [2. Ausführung im Docker Container](#ausführung-im-docker-container)
+  * [2.1. DockerHub](#a-image-von-dockerhub-ziehen)
+  * [2.2. Docker Compose](#b-image-bauen-mit-docker-compose)
+  * [2.3. Ohne Docker Compose](#c-image-bauen-ohne-docker-compose)
+  * [2.4. DockerHub Direkt Download](#d-direkt-download-vom-dockerHub)
+  * [3. Output](#output)
+  * [3.1 Summary](#summary)
+  * [4. Verwendete Codesysteme](#verwendete-codesysteme)
+  * [5. Verwendete Profile/Datenelemente](#verwendete-profiledatenelemente)
+  * [6. Konzeptioneller Ablauf der Abfrage](#konzeptioneller-ablauf-der-abfrage)
+  * [7. Datentransfer](#data-transfer)
+  * [8. Changelog](#changelog)
 
 ## Verwendung
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
