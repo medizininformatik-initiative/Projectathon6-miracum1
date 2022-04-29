@@ -266,16 +266,14 @@ Im Prinzip läuft das Drehbuch wie folgt ab:
 
 #### Apr 29, 2022
 
-- Text is no yet finished in Progress-
 ** Freigabe der SELECT-Query (STEP1) **
-Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet. Vielen Dank an allen Beteiliginten die diese Tests durchgeführt haben. 
-"To name a few": 
-
-Julia Palm UK Jena (HAPI)
-Jonathan Mang UK Erlangen (HAPI)
+Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet. Die erforderlichen Anpassungen sind ebenfalls abgeschlossen. Vielen Dank für die schnelle Zusammenarbeit, Vorschläge und die Aktualisierung des Status so schnell wie möglich. 
+ 
+Julia Palm UK Jena (HAPI) (https://github.com/palmjulia)
+Jonathan Mang UK Erlangen (HAPI) (https://github.com/joundso)
 Noemi Deppenwiese UK Erlangen (HAPI)
 Thomas Gansland UK Erlangen (HAPI)
-[Raffael Bild]() Raffael Rahttps://github.com/RaffaelBild TUM (IBM HAPI & BLAZE)
+Raffael Bild  TUM (IBM HAPI & BLAZE) (https://github.com/RaffaelBild)
 Stephanie Biergans UK Tübingen (IBM HAPI) minor changes 
 
 Für die HAPI basierte Scripte kann der Master Branch ge-pullt werden. 
@@ -286,7 +284,7 @@ Die DockerHub Images sind jeweils für HAPI(add link) und BLAZE(add link) bei ü
 Der Geschwindigkeitslimitierende Faktor ist der Download der Observations (Labor Module). Für Standorte mit vielen Labordaten erhöht sich die Zeit. 
 Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
 Time range (BLAZE): 46 mins (cohort sizes: ~6-9k)
-- Text is no yet finished in Progress-
+
 
 #### Apr 21, 2022
 
