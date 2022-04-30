@@ -1,5 +1,5 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 29.04.2022
+Datum: 30.04.2022
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -7,25 +7,33 @@ Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
+## BREAKING NEWS
+In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022).
+
+---
+
 ## Table of Contents 
 
   * [1. Verwendung](#verwendung)
-  * [1.1. Ausführung in R](#ausführung-in-R)
-  * [1.1.1. Vor der ersten Nutzung](#vor-der-ersten-utzung)
-  * [1.1.1.1. Batch-Datei/Shell-Skript](#batch-dateishell-skript)
-  * [1.1.1.2. R/RStudio](#rrstudio)
+    * [1.1. Ausführung in R](#ausführung-in-R)
+     * [1.1.1. Vor der ersten Nutzung](#vor-der-ersten-utzung)
+      * [1.1.1.1. Batch-Datei/Shell-Skript](#batch-dateishell-skript)
+      * [1.1.1.2. R/RStudio](#rrstudio)
   * [2. Ausführung im Docker Container](#ausführung-im-docker-container)
-  * [2.1. DockerHub](#a-image-von-dockerhub-ziehen)
-  * [2.2. Docker Compose](#b-image-bauen-mit-docker-compose)
-  * [2.3. Ohne Docker Compose](#c-image-bauen-ohne-docker-compose)
-  * [2.4. DockerHub Direkt Download](#d-direkt-download-vom-dockerHub)
+    * [2.1. DockerHub](#a-image-von-dockerhub-ziehen)
+    * [2.2. Docker Compose](#b-image-bauen-mit-docker-compose)
+    * [2.3. Ohne Docker Compose](#c-image-bauen-ohne-docker-compose)
+    * [2.4. DockerHub Direkt Download](#d-direkt-download-vom-dockerHub)
   * [3. Output](#output)
-  * [3.1 Summary](#summary)
+    * [3.1. Summary](#summary)
   * [4. Verwendete Codesysteme](#verwendete-codesysteme)
   * [5. Verwendete Profile/Datenelemente](#verwendete-profiledatenelemente)
   * [6. Konzeptioneller Ablauf der Abfrage](#konzeptioneller-ablauf-der-abfrage)
   * [7. Datentransfer](#data-transfer)
   * [8. Changelog](#changelog)
+    * [Apr 29, 2022 - Freigabe der Scripte für die STEP 1-Select Abfrage](#apr-29-2022)
+
+---
 
 ## Verwendung
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
@@ -114,6 +122,8 @@ Wenn die Abfrage erfolgreich durchgeführt wurde, wird die folgende Zusammenfass
 - `LabValues` Für die identifizierte Kohorte werden hier die Labormethoden angegeben, die bei verschiedenen Untersuchungen gemessen wurden (basierend auf LOINC-Code), sowie deren prozentualer Anteil an der Gesamtkohorte.
 - `Medication` Für die identifizierte Kohorte werden hier die bei verschiedenen Untersuchungen verabreichten Medikamente und ihr prozentualer Anteil an der Gesamtkohorte angegeben.
 Diese sind benötigt um die Different Procedures größte und feature-reicshte homogene Kohrote über alle Standorten hinweg für die statistische Auswertung selektieren zu können. 
+
+---
 
 ## Verwendete Codesysteme
   Dieses System wird für den Download per FHIR Search verwendet
@@ -281,7 +291,7 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 #### Apr 29, 2022
 
 ##### Freigabe der Step 1, SELECT-Query
-Die Select Abfrage wurde erfolgreich an den folgenden Standorten getestet (e.g. Erlangen, Jena, Mannheim, TU-München, Tübingen). Die erforderlichen Anpassungen sind ebenfalls abgeschlossen. 
+In der heutigen MII Weekly Projectathon Webkonferenz haben wir die **Step 1, Select-Abfrage** des WE-STORM Projektes freigegeben. Die Skripte wurden erfolgreich an den folgenden Standorten getestet (e.g. Erlangen, Jena, Mannheim, TU-München, Tübingen). 
 
 Vielen Dank für die gute Zusammenarbeit, Eure Zeit und Unterstützung sowie die Anregungen und Verbesserungs Vorschläge, insbesondere an:  
  
@@ -294,8 +304,8 @@ Vielen Dank für die gute Zusammenarbeit, Eure Zeit und Unterstützung sowie die
 * [Alexander Kiel](https://github.com/alexanderkiel), Uni Leipzig ([blaze](https://github.com/samply/blaze) [v0.17.0](https://github.com/samply/blaze/releases/tag/v0.17.0) update with chaining)
 
 ##### Github Pull
-1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `Master Branch` ge-pullt werden. 
-2. Für [blaze](https://github.com/samply/blaze) angepasste Scripte können der `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden. 
+1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `master' [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) ge-pullt werden. 
+2. Für [blaze](https://github.com/samply/blaze) angepasste Scripte können vom `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden. 
   * Diese wurden für `v0.16.x`(noch ohne chained search parameters) angepasst.
 
 ##### Dockerhub
@@ -304,9 +314,11 @@ Die [dockerhub](https://hub.docker.com/) Images sind für jeweils:
 * [blaze](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1-blaze) FHIR Server über die Links verfügbar. Diese können je nach Server/Proxy Settings eine einfachere Lösung bieten (siehe Changelogs [Apr 12](#apr-12-2022) & [Feb 18](#feb-18-2022)). 
 
 ##### Performance
-Der Geschwindigkeitslimitierende Faktor ist der Download der Observations ([Labor Module](### Modul Labor)). Für Standorte mit vielen Labordaten erhöht sich die Zeit (vor allem auf HAPI FHIR). 
+Der geschwindigkeitslimitierende Faktor ist der Download der Observations ([Labor Module](#modul-labor-observation). Für Standorte mit vielen Labordaten erhöht sich die Zeit (vor allem auf HAPI FHIR). 
   + Time ranges (HAPI): 4h-16h (cohort sizes: ~2-9k)
   + Time range (blaze): 46 mins (cohort sizes: ~6-9k)
+
+---
 
 #### Apr 27, 2022
 
@@ -333,7 +345,7 @@ Proxy-Konfigurationsoptionen in config_default.yml hinzugefügt und in `miracum_
 #### Mar 08, 2022
 Maxbundles-Argument aus dem Encounter-Bundle-Downlaod entfernt, das am 25. Januar versehentlich hinzugefügt wurde (Überbleibsel aus einer Debug-Session)
 
-##### Feb 18, 2022
+#### Feb 18, 2022
 Rückmeldung von Leipzing: Fehlermeldung bei R package install `Warning: unable to access index for repository https://packagemanager.rstudio.com/cran/__linux__/focal/latest/src/contrib: cannot open URL ...`
 
 Bei WE-STORM werden zur Run time des Containers durch das R-Skript (`install2.r`) weitere R-Pakete (`fhircrackr, config, dplyr, zoo, didyr, data.table, openxlsx`) nachinstalliert, deise benötigen weitere Pakete als Abhängigkeiten, welche standardgemäß von CRAN geladen werden.  
@@ -342,34 +354,31 @@ Zwischenlösung: [@joundso](https://github.com/joundso) docker image auf [docker
 
 Falls der Skript ausführende Server keine Internetverbindung hat [siehe Feb 17](#feb-17-2022) kann der o.g. updated container vom dockerhub `docker pull joundso/projectathon6-miracum1:latest` benutzt werden.
 
-##### Feb 17, 2022
+#### Feb 17, 2022
 Rückmeldung von Leipzig: Fehler am ehesten aufgrund von Firewall beim Download vom R-Packete & Dependencies (Abel Stolz; `RUN install2.r --error   --deps TRUE   fhircrackr ---> Running in 34cdad0afa40`), weil wir aktuell den Docker-Container lokal selbst bauen. 
 
 Anmerkung: Das Docker-Image sollte für Sites verfügbar sein, die nicht in der Lage sind, selbst zu bauen. Siehe auch [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/3). 
 
 Zwischenlösung: @joundso (Jonathan Mang) hat netterweise das Image unter seinem [dockerhub-Konto](https://hub.docker.com/r/joundso/projectathon6-miracum1) hochgeladen. Es wird noch ein Konto des Maintainers ([@nandhiniS08] | [@mematt]) erstellt.
 
-##### Jan 27, 2022
+#### Jan 27, 2022
 Änderung: Fälle mit fehlenden Aufnahme- und Aufzeichnungsdaten wurden entfernt.
 
-##### Jan 25, 2022
+#### Jan 25, 2022
 Änderung: Logik beim herunterladen von Conditions geändert. Es werden jetzt alle Conditions zu den untersuchten Patienten gezogen und anschließend so gefiltert, dass nur Conditions übrig bleiben, die zu den gewünschten Encountern gehören. 
 
 Erklärung: Damit ist es jetzt irrelevant, ob der Encounter auf die Condition verlinkt oder die Condition auf den Encounter verlinkt. Das Skript funktioniert, solange mindestens eine der Richtungen gegeben ist. Diese Änderung wurde implementiert, weil es sich herausgestellt hat, dass die Linkrichtung in den verschiedenen DIZen heterogen und unterschiedlich gelöst ist. 
 
-##### Jan 18, 2022
+#### Jan 18, 2022
 Änderung: Problem, wenn multiple Medikamenten-IDs gefiltert werden, wird die URL-Länge der FHIR Query zu lang. Dieses Problem hat Erlangen gemeldet. Die Medikamenten-IDs werden aufgeteilt und die Ressourcen werden in Teilen heruntergeladen.
 
 Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die für andere Ressourcen-Downloads implementiert ist). Der Fehler trat auf der lokalen Seite nicht auf, da die Medikationsdaten sehr gering sind.
 
-
 ##### Jan 11, 2022
 Änderung: Anpassung des Formats und des Inhalts der Excel-Zusammenfassung gemäß einem Vorschlag der UAC.
 
-
 ##### Dec 10, 2021
 Änderung: Anpassung der FHIR-Suchparameter für den Diagnosecode 
-
 
 ##### Dec 7, 2021
 Änderung: Extraction based on subject_id and admission and discharge date
@@ -379,5 +388,3 @@ Erklärung: Es wurde versäumt, die Logik der Aufteilung von IDs anzupassen (die
 
 ##### Dec 2,3, 2021
 Änderung: minor changes on readme and removed saving bundles 
-
-
