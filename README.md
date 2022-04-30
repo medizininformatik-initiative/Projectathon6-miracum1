@@ -7,6 +7,11 @@ Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
+## BREAKING NEWS
+In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022).
+
+---
+
 ## Table of Contents 
 
   * [1. Verwendung](#verwendung)
