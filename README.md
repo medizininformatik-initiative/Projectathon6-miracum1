@@ -294,14 +294,14 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 #### May 05, 2022 
 
-Die häufigste Fehlermeldung (bisher Leipzig, Würzburg) beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank @pdi-uk und @Abel Stolz (MII Slack). 
+Die häufigste Fehlermeldung beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank [@pdi-uk](https://github.com/pdi-uk) und @Abel Stolz (MII Slack). 
 
 Das Problem wird von der langen Query im Rahmen der Abfrage vom Labor Modul ausgelöst. Die kombinierte Länge der multiplen LOINC Codes von multiplen Patienten überschreiten die erlaubte URL Charakter Länge. 
 Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/2a795679d2827165564decf9c58da07f2b17363f/miracum_select.R#L352) definiert. In Erlangen, Jena, Mannheim lief das Script mit 1800 durch. In Leipzig und Würzburg kam der HTTP 500 Error.
 
 * Zuvor `nchar_for_ids <- 1800 - (nchar(conf$serverbase)+nchar_loincs)`
 * Lösung `nchar_for_ids <- 900 - (nchar(conf$serverbase)+nchar_loincs)`
-   * Dadurch wird die Anzahl der Patienten pro Anfrage reduziert, für die LOINC-kodierte Beobachtungen heruntergeladen werden (in Leipzig hat es das Problem gelöst).
+   * Dadurch wird die Anzahl der Patienten pro Anfrage reduziert, für die LOINC-kodierte Beobachtungen heruntergeladen werden (z.B. in Leipzig hat es das Problem gelöst).
 
 Wir haben den  `master` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) dem entsprechend updated.
 
