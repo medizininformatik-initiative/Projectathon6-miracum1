@@ -11,7 +11,7 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
 
 #### Häufige Probleme
-Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` aufgrund der Timeout der Abfrage (insbes. Observations Modul) finden sie [hier](#may-05-2022).
+Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` (bisher nur HAPI) aufgrund der Timeout der Abfrage (insbes. Observations Modul) finden sie [hier](#may-05-2022).
 
 ---
 
@@ -294,7 +294,7 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 #### May 05, 2022 
 
-Die häufigste Fehlermeldung beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank [@pdi-uk](https://github.com/pdi-uk) und @Abel Stolz (MII Slack). 
+Die häufigste Fehlermeldung beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank [@pdi-uk](https://github.com/pdi-uk) und @Abel Stolz (MII Slack). Der Fehler trat bisher nur beim [HAPI FHIR Servers](https://hapifhir.io) auf. 
 
 Das Problem wird von der langen Query im Rahmen der Abfrage vom Labor Modul ausgelöst. Die kombinierte Länge der multiplen LOINC Codes von multiplen Patienten überschreiten die erlaubte URL Charakter Länge. 
 Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/2a795679d2827165564decf9c58da07f2b17363f/miracum_select.R#L352) definiert. In Erlangen, Jena, Mannheim lief das Script mit 1800 durch. In Leipzig kam der HTTP 500 Error.
