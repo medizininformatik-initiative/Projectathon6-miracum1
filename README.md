@@ -1,5 +1,5 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 30.04.2022
+Datum: 05.05.2022
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -297,7 +297,7 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 Die häufigste Fehlermeldung beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank [@pdi-uk](https://github.com/pdi-uk) und @Abel Stolz (MII Slack). 
 
 Das Problem wird von der langen Query im Rahmen der Abfrage vom Labor Modul ausgelöst. Die kombinierte Länge der multiplen LOINC Codes von multiplen Patienten überschreiten die erlaubte URL Charakter Länge. 
-Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/2a795679d2827165564decf9c58da07f2b17363f/miracum_select.R#L352) definiert. In Erlangen, Jena, Mannheim lief das Script mit 1800 durch. In Leipzig und Würzburg kam der HTTP 500 Error.
+Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/2a795679d2827165564decf9c58da07f2b17363f/miracum_select.R#L352) definiert. In Erlangen, Jena, Mannheim lief das Script mit 1800 durch. In Leipzig kam der HTTP 500 Error.
 
 * Zuvor `nchar_for_ids <- 1800 - (nchar(conf$serverbase)+nchar_loincs)`
 * Lösung `nchar_for_ids <- 900 - (nchar(conf$serverbase)+nchar_loincs)`
