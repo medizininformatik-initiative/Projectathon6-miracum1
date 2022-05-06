@@ -310,7 +310,7 @@ Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projec
 * Lösung `nchar_for_ids <- 900 - (nchar(conf$serverbase)+nchar_loincs)`
    * Dadurch wird die Anzahl der Patienten pro Anfrage reduziert, für die LOINC-kodierte Beobachtungen heruntergeladen werden (z.B. in Leipzig hat es das Problem gelöst).
 
-Wir haben den  `master` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) dem entsprechend ([Observation_length_update](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/commit/388a470dcf1149498909725dc82b7357d791f71f) updated.
+Wir haben den  `master` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) dem entsprechend ([Observation_length_update](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/commit/388a470dcf1149498909725dc82b7357d791f71f)) aktualisiert.
 
 #### Apr 29, 2022
 
