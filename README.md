@@ -11,7 +11,7 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
 
 #### Häufige Probleme
-Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` (bisher nur HAPI) aufgrund der Timeout der Abfrage (insbes. Observations Modul) finden sie [hier](#may-05-2022).
+Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` (bisher nur HAPI) aufgrund der Timeout der Abfrage (für Observations Modul) finden sie [hier](#may-05-2022) und für Condition Resources [hier](may-05-2022).
 
 ---
 
@@ -35,7 +35,8 @@ Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` 
   * [7. Datentransfer](#data-transfer)
   * [8. Changelog](#changelog)
     * [Apr 29, 2022 - Freigabe der Scripte für die STEP 1-Select Abfrage](#apr-29-2022)
-    * [May 05, 2022 - Frequent Errors & Quick fixes](#may-05-2022)
+    * [May 05, 2022 - Frequent Errors & Quick fixes - HTTP 500 Observation Module](#may-05-2022)
+    * [May 06, 2022 - Frequent Errors & Quick fixes - HTTP 500 Condition Resources](#may-06-2022)
 
 ---
 
@@ -291,6 +292,12 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 ## Changelog
 
 ### Major changes
+
+#### May 06, 2022
+
+Siehe das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) was auch ein `HTTP code 500` error geliefert hat. Das Problem scheint hier mit der HAPI Server Version (5.3.0) gebunden zu sein. Die länge der Condition Resources und Anzahl der gebundelten Fälle (zuvor `max_bundles = 100`) war zu lang werden. 
+
+Der simple Fix in [line 131](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/c4c219bca9a9343392d203113727a4fb20601cb5/miracum_select.R#L131) `, max_bundles = 100 -> , max_bundles = 40` hat das Problem in Halle gelöst. Vielen Dank [@Diana Pietzner](https://github.com/pdi-uk).
 
 #### May 05, 2022 
 
