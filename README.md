@@ -1,5 +1,5 @@
 # Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 05.05.2022
+Datum: 06.05.2022
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -295,9 +295,9 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 #### May 06, 2022
 
-Siehe das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) was auch ein `HTTP code 500` error geliefert hat. Das Problem scheint hier mit der HAPI Server Version (5.3.0) gebunden zu sein. Die länge der Condition Resources und Anzahl der gebundelten Fälle (zuvor `max_bundles = 100`) war zu lang werden. 
+Siehe das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) was auch ein `HTTP code 500` error geliefert hat. Das Problem scheint hier mit der HAPI Server Version (5.3.0) gebunden zu sein. Die länge der Condition Resources und Anzahl der gebundelten Fälle (zuvor `max_bundles = 100`) kann ggf. zu lang werden. 
 
-Der simple Fix in [line 131](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/c4c219bca9a9343392d203113727a4fb20601cb5/miracum_select.R#L131) `, max_bundles = 100 -> , max_bundles = 40` hat das Problem in Halle gelöst. Vielen Dank [@Diana Pietzner](https://github.com/pdi-uk).
+Der simple Fix in [line 131](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/c4c219bca9a9343392d203113727a4fb20601cb5/miracum_select.R#L131) mit der Reduktion auf `, max_bundles = 40` hat das Problem in Halle gelöst. Vielen Dank [@Diana Pietzner](https://github.com/pdi-uk).
 
 #### May 05, 2022 
 
