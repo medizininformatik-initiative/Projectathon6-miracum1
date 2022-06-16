@@ -293,6 +293,10 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 ### Major changes
 
+#### June 16, 2022
+
+Added DQ Scripts based on dataquieR.
+
 #### May 06, 2022
 
 Siehe das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) was auch ein `HTTP code 500` error geliefert hat. Das Problem scheint hier mit der HAPI Server Version (5.3.0) gebunden zu sein. Die länge der Condition Resources und Anzahl der gebundelten Fälle (zuvor `max_bundles = 100`) kann ggf. zu lang werden. 
