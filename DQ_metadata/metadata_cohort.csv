@@ -1,0 +1,14 @@
+VAR_NAMES,LABEL,DATA_TYPE,VALUE_LABELS,MISSING_LIST,JUMP_LIST,HARD_LIMITS,DETECTION_LIMITS,CONTRADICTIONS,SOFT_LIMITS,DISTRIBUTION,DECIMALS,DATA_ENTRY_TYPE,KEY_OBSERVER,KEY_DEVICE,KEY_DATETIME,KEY_STUDY_SEGMENT,VARIABLE_ROLE,VARIABLE_ORDER,LONG_LABEL
+birthdate,age,integer,,9991100 | 9991200,NA,[0;120],NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+gender,gender,integer,1 = other,9991100 | 9991300,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+patient_zip,patient_zip,integer,,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+admission_date,admission_date,datetime,,9991100 | 9991200,NA,,NA,1001,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+discharge_date,discharge_date,datetime,,9991100 | 9991200,NA,,NA,1001 | 1002,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+recorded_date,recorded_date,datetime,,9991100 | 9991200,NA,,NA,1002,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+icd,icd,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+system,system,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+patient_type_fhir_class,patient_type_fhir_class,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+rank,rank,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+diagnosis_use,diagnosis_use,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+icd_family,icd_family,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+rank_indicator,rank_indicator,integer,1 = other,9991100,NA,,NA,,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

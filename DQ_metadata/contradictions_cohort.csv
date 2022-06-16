@@ -1,0 +1,3 @@
+ID,Function_name,A,A_levels,A_value,B,B_levels,B_value,Label
+1001,A_less_than_B_vv,discharge_date,NA,NA,admission_date,NA,NA,patient admission before discharge
+1002,A_less_than_B_vv,discharge_date,NA,NA,recorded_date,NA,NA,Encounter recorded after patient discharge

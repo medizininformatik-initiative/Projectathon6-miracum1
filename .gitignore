@@ -11,3 +11,6 @@ config.yml
 ## Ignore all log-related files:
 **/*[Ll]og*
 **/*.log
+
+Ergebnisse
+miracum_dq_report.html

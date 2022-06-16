@@ -1,0 +1,327 @@
+---
+title: "DQ report - MIRACUM"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r include=FALSE}
+### LIBRARIES ------------------------
+library(knitr)
+library(dataquieR)
+library(data.table)
+library(lubridate)
+
+```
+
+```{r include=FALSE}
+### READ DATA -------------------
+
+if(!file.exists("Ergebnisse\\Kohorte.csv") || !file.exists("Ergebnisse\\Observations.csv") ){
+  write("Ergebnisse nicht gefunden.", file ="errors/error_message.txt")
+  stop("Results not found - aborting.")
+}
+
+# read result csv
+cohort_report <- read.csv("Ergebnisse\\Kohorte.csv", sep = ";", colClasses = "character")
+observations_report <- read.csv("Ergebnisse\\Observations.csv", sep = ";", colClasses = "character")
+
+# read metadata
+cohort_metadata <- read.csv("DQ_metadata\\metadata_cohort.csv")
+missings <- read.csv("DQ_metadata\\missing-codes.csv")
+cohort_contradictions <- read.csv("DQ_metadata\\contradictions_cohort.csv") 
+observations_metadata <- read.csv("DQ_metadata\\metadata_observations.csv")
+
+### apply dataquieR format  -------------------
+
+# select columns supported with metadata from cohort
+if(!all( cohort_metadata$VAR_NAMES %in% colnames(cohort_report) )){
+  write("Metadaten passen nicht zur Kohorte.", file ="errors/error_message.txt")
+  stop("Metadata does not match Cohort - aborting.")
+}
+cohort_report <- cohort_report[,cohort_metadata$VAR_NAMES]
+
+if(!all( observations_metadata$VAR_NAMES %in% colnames(observations_report) )){
+  write("Metadaten passen nicht zur Kohorte.", file ="errors/error_message.txt")
+  stop("Metadata does not match Cohort - aborting.")
+}
+observations_report <- observations_report[,observations_metadata$VAR_NAMES]
+
+#extract known data types
+cohort_datatyps <- as.data.table(t(cohort_metadata$DATA_TYPE))
+colnames(cohort_datatyps) <- cohort_metadata$VAR_NAMES
+observations_datatyps <- as.data.table(t(observations_metadata$DATA_TYPE))
+colnames(observations_datatyps) <- observations_metadata$VAR_NAMES
+
+# for distubuted analysis value labels or not know 
+
+# function that returns all value labels for distributed dq report
+get_labels <- function(vector) {
+  
+  # unify casing, trim whitespace
+  vector <- tolower(vector)
+  vector <- trimws(vector, which = "both")
+  
+  labels <- levels(factor(vector))
+
+  r <- ""
+  i <- 1
+  for (l in labels) {
+    r <- paste0(r,i," = ",l," | ")
+    i <- i + 1
+  }
+  r <- paste0(r,i," = other")
+  
+  return(r)
+}
+
+# find value labels
+cohort_metadata$VALUE_LABELS[2] <- get_labels(cohort_report$gender)
+cohort_metadata$VALUE_LABELS[7] <- get_labels(cohort_report$icd)
+cohort_metadata$VALUE_LABELS[8] <- get_labels(cohort_report$system)
+cohort_metadata$VALUE_LABELS[9] <- get_labels(cohort_report$patient_type_fhir_class)
+cohort_metadata$VALUE_LABELS[10] <- get_labels(cohort_report$rank)
+cohort_metadata$VALUE_LABELS[11] <- get_labels(cohort_report$diagnosis_use)
+cohort_metadata$VALUE_LABELS[12] <- get_labels(cohort_report$icd_family)
+cohort_metadata$VALUE_LABELS[13] <- get_labels(cohort_report$rank_indicator)
+observations_metadata$VALUE_LABELS[2] <- get_labels(observations_report$loinc_code)
+observations_metadata$VALUE_LABELS[3] <- get_labels(observations_report$system)
+observations_metadata$VALUE_LABELS[4] <- get_labels(observations_report$display)
+observations_metadata$VALUE_LABELS[6] <- get_labels(observations_report$unit)
+
+# extract value labels
+cohort_value_labels <- as.data.table(t(cohort_metadata$VALUE_LABELS))
+colnames(cohort_value_labels) <- cohort_metadata$VAR_NAMES
+observations_value_labels <- as.data.table(t(observations_metadata$VALUE_LABELS))
+colnames(observations_value_labels) <- observations_metadata$VAR_NAMES
+# function that returns only labels in string as list
+get_labels <- function(string) {
+  # regex to split at | num = : \s?\|?\s?\d\s\=\s
+  # [-1] removes 1 = at start
+  return(strsplit(string, "\\s?\\|?\\s?\\d\\s\\=\\s")[[1]][-1])
+}
+cohort_value_labels <- sapply(cohort_value_labels, get_labels)
+observations_value_labels <- sapply(observations_value_labels, get_labels)
+
+#set up missing codes
+missing_unknown <- missings$CODE_VALUE[2]
+#item has integer/string type but cannot be converted to date for age calculation
+missing_datetime <- missings$CODE_VALUE[3]
+#item has correct type but is missing in value labels
+missing_label <- missings$CODE_VALUE[4] 
+
+
+### Transform to dataquiR format -------------------
+
+# function that sets integer values according to labels and missing codes
+apply_labels <- function(vector, labels) {
+  
+  # unify casing, trim whitespace
+  vector <- tolower(vector)
+  labels <- tolower(labels)
+  vector <- trimws(vector, which = "both")
+  labels <- trimws(labels, which = "both")
+  
+  r <- NULL
+  for(item in vector) {
+    # default assumes value of item is missing in value labels
+    value <- missing_label
+    # if item is whitespace or NA set value to NA for correct dataquiR missingness
+    if(item == "" || is.na(item) ) value <- NA  
+    else {
+      i <- 0
+      for(l in labels) {
+        i <- i + 1
+        # if item is found in labels set value to corresponding integer
+        if(item == l) value <- i
+      }
+    }
+    r <- c(r,value)
+  }
+  
+  return(r)
+}
+
+calculate_age <- function(vector) {
+
+  # ws is assinged missing code for wrong format as well  
+  # # unify casing, trim whitespace
+  # vector <- tolower(vector)
+  # vector <- trimws(vector, which = "both")
+  
+  #convert to datetime with at least years (YYYY or any YYYY-MM... format)
+  r <- parse_date_time(vector, "ymd", truncated = 2)
+  
+  # calculate age with lubridate period
+  r <- lapply(r, function(x) {as.period(interval(x, Sys.Date()), unit = "year")$year} )
+  r <- unlist(r)
+  
+  for (i in 1:length(r) ) {
+    if( is.na( r[i] ) && !is.na(vector[i]) ) r[i] <- missing_datetime
+  } 
+  
+  return(r)
+}
+
+#apply labels and fix typing per column - missmatched typing is returned as NA (NOT as missing code)
+
+# cohort
+cohort_report$birthdate <- as.integer(calculate_age(cohort_report$birthdate))
+cohort_report$gender <- as.integer(apply_labels(cohort_report$gender,cohort_value_labels$gender))
+cohort_report$patient_zip <- as.integer(cohort_report$patient_zip)
+cohort_report$admission_date <- parse_date_time(cohort_report$admission_date, "ymd", truncated = 2)
+cohort_report$discharge_date <- parse_date_time(cohort_report$discharge_date, "ymd", truncated = 2)
+cohort_report$recorded_date <- parse_date_time(cohort_report$recorded_date, "ymd", truncated = 2)
+cohort_report$icd <- as.integer(apply_labels(cohort_report$icd,cohort_value_labels$icd))
+cohort_report$system <- as.integer(apply_labels(cohort_report$system,cohort_value_labels$system))
+cohort_report$patient_type_fhir_class <- as.integer(apply_labels(cohort_report$patient_type_fhir_class,cohort_value_labels$patient_type_fhir_class))
+cohort_report$rank <- as.integer(apply_labels(cohort_report$rank,cohort_value_labels$rank))
+cohort_report$diagnosis_use <- as.integer(apply_labels(cohort_report$diagnosis_use,cohort_value_labels$diagnosis_use))
+cohort_report$icd_family <- as.integer(apply_labels(cohort_report$icd_family,cohort_value_labels$icd_family))
+cohort_report$rank_indicator <- as.integer(apply_labels(cohort_report$rank_indicator,cohort_value_labels$rank_indicator))
+
+# observations
+observations_report$effective_date <- parse_date_time(observations_report$effective_date,"ymdHMS",truncated = 5) #includes hours minutes and seconds, but only years would be mapped to YYYY-01-01
+observations_report$loinc_code <- as.integer(apply_labels(observations_report$loinc_code,observations_value_labels$loinc_code))
+observations_report$system <- as.integer(apply_labels(observations_report$system,observations_value_labels$system))
+observations_report$display <- as.integer(apply_labels(observations_report$display,observations_value_labels$display))
+observations_report$value <- as.double(observations_report$value)
+observations_report$unit <- as.integer(apply_labels(observations_report$unit,observations_value_labels$unit))
+
+# verify correct typing
+#sapply(cohort_report, class)
+
+```
+
+```{r include=FALSE}
+### GENERATE REPORTS ----------------------
+#import missing list
+
+cohort_dq_report <- dq_report(study_data = cohort_report,
+                          meta_data  = cohort_metadata,
+                          check_table = cohort_contradictions,
+                          MISSING_LIST = missings,
+                          label_col  = LABEL)
+
+observations_dq_report <- dq_report(study_data = observations_report,
+                          meta_data  = observations_metadata,
+                          check_table = cohort_contradictions,
+                          MISSING_LIST = missings,
+                          label_col  = LABEL)
+
+```
+
+## Data Quality report for the 6. Projectathon of MII: MIRACUM
+
+#### This report was created with the [dataquieR](https://dataquality.ship-med.uni-greifswald.de/tutorials2.html) Package for R.
+
+## Result of contradiction checks:  
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+
+cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryPlot
+
+```
+
+### Contradiction checks as Table:
+
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+
+cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryTable
+
+```
+
+# Information about distribution:  
+
+## Gender:  
+#### Value Labels:  
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "gender"]
+cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$gender
+
+```
+
+## Age:  
+#### Age was calculated from birthdates in YYYY... format.
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+
+cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$age
+
+```
+
+## ICD10 Codes:  
+#### Value Labels:
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "icd"]
+cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$icd
+
+```
+
+## Patient Type FHIR Class:  
+#### Value Labels:
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "patient_type_fhir_class"]
+cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotLis$patient_type_fhir_class
+
+```
+
+## Observation Value:
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$value
+
+```
+
+## LOINC Codes:
+Observation Vlaue includes measurements for different LOINC Codes, for a more detailed plausibility/limit check we need to know what LOINC codes are found in the distributed analysis.
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "loinc_code"]
+observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$loinc_code
+
+```
+
+## Units:
+```{r message=FALSE, warning=FALSE,echo=FALSE}
+observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "unit"]
+observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$unit
+
+```
+
+
+# Information about completness: 
+
+### for Cohort:
+
+```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
+
+cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable
+
+```
+
+### for Observations
+```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
+
+observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable
+
+```
+
+# Plot of completness with missing codes:
+#### MISSING 9991100: Missing - reason unknown
+#### MISSING 9991200: Deleted - Datetime format not supported
+#### MISSING 9991300: Deleted - not in VALUE_LABELS
+Regarding completeness and missing codes:   
+If a field has the wrong datatype it is evaluated to NA and tracked under Sysmiss in the completeness table. If a field has the correct typing but an undefined value (for example any string as a gender other than 'male', 'female', 'other', 'unknown') the missing code 9991300 is used instead.
+```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
+
+#Plot
+cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot
+observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot
+
+```
+
+# Further possible analysis with dataquieR:    
+```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
+
+cohort_dq_report$app_mat$ApplicabilityPlot
+observations_dq_report$app_mat$ApplicabilityPlot
+
+```

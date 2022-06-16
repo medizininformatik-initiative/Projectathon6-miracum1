@@ -1,5 +1,5 @@
 #load/install packages
-packages <- c("fhircrackr","config","dplyr","zoo","stringr","tidyr","data.table","openxlsx")
+packages <- c("fhircrackr","config","dplyr","zoo","stringr","tidyr","data.table","openxlsx","knitr","dataquieR","lubridate")
 
 for(package in packages){
   

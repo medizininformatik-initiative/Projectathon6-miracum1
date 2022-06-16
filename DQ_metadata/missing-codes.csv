@@ -1,0 +1,5 @@
+CODE_CLASS,CODE_VALUE,CODE_LABEL
+JUMP,9991000,JUMP - not applicable
+MISSING,9991100,Missing - reason unknown
+MISSING,9991200,Deleted - Datetime format not supported
+MISSING,9991300,Deleted - not in VALUE_LABELS

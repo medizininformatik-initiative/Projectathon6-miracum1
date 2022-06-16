@@ -733,6 +733,14 @@ if(exists("df.conditions.previous.wide")){
 }
 
 
+#################################### save actual data for DQ script ##################################################
+if(conf$dq_report == TRUE) {
+  if(!dir.exists("Ergebnisse")){dir.create("Ergebnisse")}
+  write.csv2(df.cohort, paste0("Ergebnisse/Kohorte.csv"))
+  write.csv2(df.observation, paste0("Ergebnisse/Observations.csv"))
+  write.csv2(df.medstatement, paste0("Ergebnisse/Medications.csv"))
+}
+
 
 ###generate summary data and export####
 
@@ -948,5 +956,10 @@ write(paste0(
   "R script execution took ", round(runtime, 2), " ", attr(runtime, "units"), "."
 ), file = con)
 close(con)
+
+#################################### generate DQ report ##################################################
+if(conf$dq_report == TRUE) {
+  rmarkdown::render("miracum_dq_report.RMD", output_format = "html_document", output_file = "Ergebnisse/DQ-Report.html")
+}
 
 

@@ -9,3 +9,5 @@ default:
   http_proxy: ""
   https_proxy: ""
   no_proxy: ""
+#DQ Report
+  dq_report: TRUE
