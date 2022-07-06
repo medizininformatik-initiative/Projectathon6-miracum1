@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 config.yml
+*.RData
 
 ## Do not push result folders:
 /Summary/

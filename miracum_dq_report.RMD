@@ -210,6 +210,16 @@ observations_dq_report <- dq_report(study_data = observations_report,
                           MISSING_LIST = missings,
                           label_col  = LABEL)
 
+knit_error <- function(f ,er_message) {
+   tryCatch(
+      { f },
+        error = function(e){
+            print(er_message)
+            print(e)
+        }
+    )
+}
+
 ```
 
 ## Data Quality report for the 6. Projectathon of MII: MIRACUM
@@ -219,7 +229,9 @@ observations_dq_report <- dq_report(study_data = observations_report,
 ## Result of contradiction checks:  
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
 
-cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryPlot
+
+knit_error( cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryPlot, 'Could print Contradictions SummaryPlot for Cohort. Error: ')
+
 
 ```
 
@@ -227,7 +239,8 @@ cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryPlot
 
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
 
-cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryTable
+knit_error( cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryTable, 'Could print Contradictions SummaryTable for Cohort. Error: ')
+
 
 ```
 
@@ -236,8 +249,10 @@ cohort_dq_report$long_format$con_contradictions$results[[1]]$SummaryTable
 ## Gender:  
 #### Value Labels:  
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "gender"]
-cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$gender
+
+knit_error( cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "gender"], 'Could print Genders for Cohort. Error: ')
+knit_error( cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$gender, 'Could print SummaryPlotList$gender for Cohort. Error: ')
+
 
 ```
 
@@ -245,44 +260,56 @@ cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$g
 #### Age was calculated from birthdates in YYYY... format.
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
 
-cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$age
+knit_error( cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$age, 'Could print SummaryPlotList$age for Cohort. Error: ')
+
 
 ```
 
 ## ICD10 Codes:  
 #### Value Labels:
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "icd"]
-cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$icd
+
+knit_error( cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "icd"], 'Could print ICD10 Codes for Cohort. Error: ')
+knit_error( cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$icd, 'Could print SummaryPlotList$icd for Cohort. Error: ')
+
 
 ```
 
 ## Patient Type FHIR Class:  
 #### Value Labels:
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "patient_type_fhir_class"]
-cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotLis$patient_type_fhir_class
+
+
+knit_error( cohort_metadata$VALUE_LABELS[cohort_metadata$LABEL == "patient_type_fhir_class"], 'Could print FHIR Class for Cohort. Error: ')
+knit_error( cohort_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotLis$patient_type_fhir_class, 'Could print SummaryPlotLis$patient_type_fhir_class for Cohort. Error: ')
+
 
 ```
 
 ## Observation Value:
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$value
+
+
+knit_error( observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$value, 'Could print SummaryPlotList$value for Observations. Error: ')
+
 
 ```
 
 ## LOINC Codes:
 Observation Vlaue includes measurements for different LOINC Codes, for a more detailed plausibility/limit check we need to know what LOINC codes are found in the distributed analysis.
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "loinc_code"]
-observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$loinc_code
+
+knit_error( observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "loinc_code"], 'Could print LOINC Codes for Observations. Error: ')
+knit_error( observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$loinc_code, 'Could print SummaryPlotList$loinc_code for Observations. Error: ')
+
 
 ```
 
 ## Units:
 ```{r message=FALSE, warning=FALSE,echo=FALSE}
-observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "unit"]
-observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$unit
+
+knit_error( observations_metadata$VALUE_LABELS[observations_metadata$LABEL == "unit"], 'Could print Units for Observations. Error: ')
+knit_error( observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlotList$unit, 'Could print SummaryPlotList$unit for Observations. Error: ')
 
 ```
 
@@ -293,14 +320,15 @@ observations_dq_report$long_format$con_limit_deviations$results[[1]]$SummaryPlot
 
 ```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
 
-cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable
+knit_error( cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable, 'Could print SummaryTable for Cohort. Error: ') 
+
 
 ```
 
 ### for Observations
 ```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
 
-observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable
+knit_error( observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryTable, 'Could print SummaryTable for Observations. Error: ') 
 
 ```
 
@@ -313,15 +341,16 @@ If a field has the wrong datatype it is evaluated to NA and tracked under Sysmis
 ```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
 
 #Plot
-cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot
-observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot
+knit_error( cohort_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot, 'Could print SummaryPlot for Cohort. Error: ') 
+knit_error( observations_dq_report$long_format$com_item_missingness$results[[1]]$SummaryPlot, 'Could print SummaryPlot for Observations. Error: ') 
+
 
 ```
 
 # Further possible analysis with dataquieR:    
 ```{r message=FALSE, warning=FALSE,echo=FALSE,out.width="100%"}
 
-cohort_dq_report$app_mat$ApplicabilityPlot
-observations_dq_report$app_mat$ApplicabilityPlot
+knit_error( cohort_dq_report$app_mat$ApplicabilityPlot, 'Could print ApplicabilityPlot for Cohort. Error: ') 
+knit_error( observations_dq_report$app_mat$ApplicabilityPlot, 'Could print ApplicabilityPlot for Observations. Error: ')
 
 ```
