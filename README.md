@@ -70,10 +70,10 @@ _Wichtig:_ nach dem Cloning des Repos bitte ins [step2](https://github.com/mediz
   
 4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet wird, sollte in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
 
-##### Start des Skripts
+#### Start des Skripts
 Beim ersten Start des Skripts wird überprüft, ob die zur Ausführung notwendigen R-Pakete vorhanden sind. Ist dies nicht der Fall, werden diese Pakete nachinstalliert – dieser Prozess kann einige Zeit in Anspruch nehmen.
 
-##### Batch-Datei/Shell-Skript
+#### Batch-Datei/Shell-Skript
 **Unter Windows**: Mit der Batch-Datei `runMIRACUM_select.bat`.
 Beim ersten Ausführen sollte diese ggf. als Administrator gestartet werden (über Eingabeaufforderung oder Rechtsklick), wenn die ggf. notwendigen Berechtigungen zum Nachinstallieren der R-Pakete sonst nicht vorhanden sind. Nach der ersten Installation reicht dann ein Doppelklick zum Starten.
 
