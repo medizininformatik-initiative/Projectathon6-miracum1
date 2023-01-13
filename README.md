@@ -6,7 +6,7 @@ Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@
 Dieses Project führtdas MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/projekt2.php)) Projekt vom [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. 
 Dieses Repository beinhaltet Skripte für das zweistufige Verfahren: 
 + Skript-1 (Step 1 - Abfrage) erzeugt mehreren Tabellen mit (anonymen, grob)aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen wurden zentral evaluiert und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben.
-+ Skript-2 (Step 2 Analysen) **neues Update vom 13-01-2023**, im Folder [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) des master Branches, führt die basierend der Step 1 erstellten statistische Modelle und Maschinelle Lernalgorithmen aus. Die Modelle werden ausschließlich lokal (im jeweiligen DIZ) trainiert und nur die Modellobjekte werden i.R. des Federated Learning Verfahrens zusammengeführt. 
++ Skript-2 (Step 2 Analysen) **neues Update vom 13-01-2023**, im Folder [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) des master Branches, führt die basierend der Step 1 erstellten statistische Modelle und Maschinelle Lernalgorithmen aus. Die Modelle werden _ausschließlich lokal_ (im jeweiligen DIZ) trainiert und nur die Modellobjekte werden i.R. des Federated Learning Verfahrens zusammengeführt. 
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
@@ -90,7 +90,8 @@ Diese Skript (`execution.R`) führt sequenziell 6 weitere R Skripte aus, wie fol
 * `5_modeling2_fixedwindow_true.R`, Modeling 2: Kreuzvalidierung (fixedWindow = T) 
 * `6_modeling3_gamboost.R`, Modeling 3: genestete-Kreuzvalidierung 
 
-_Hinweis:_ Alle notwendige präprozessierte Wetterdaten sind im Folder [`data`](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2/data) vorhanden. Im Rahmen der Ausführung der Skripte werden _keine Daten_ von externen Quellen herunterladen, keine Ports geöffnet. 
+_Hinweis:_ Alle notwendige präprozessierte Wetterdaten sind im Folder [`data`](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2/data) vorhanden. 
+Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quellen herunterladen, keine Ports geöffnet. 
 
 ### Ausführung im Docker Container Step2
 
@@ -116,7 +117,7 @@ _Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and
 
 ---
 
-## 2022 Step 1
+## 2022 Step 1 - Select Abfrage
 
 ## Verwendung Step1
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
