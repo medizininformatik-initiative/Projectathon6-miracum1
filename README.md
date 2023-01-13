@@ -11,7 +11,7 @@ Dieses Repository beinhaltet Skripte für das zweistufige Verfahren:
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
 ### BREAKING NEWS
-+ Freigabe [13.01.2023](#jan-01-2023) der Step2 Skripte für die statistischen Analysen mittels Federated Learning. 
++ Freigabe [13.01.2023](#jan-01-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für die statistischen Analysen mittels Federated Learning. 
 
 + In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
 
