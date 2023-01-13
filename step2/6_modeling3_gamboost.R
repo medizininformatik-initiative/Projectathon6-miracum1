@@ -91,7 +91,7 @@ for(output_counter in outputs){
   test <- daily[test_index,]
   
   tr_year <- year[-test_index]
-  val_folds <- sapply(unique(tr_year), function(y) tr_year == y)
+  #val_folds <- sapply(unique(tr_year), function(y) tr_year == y)
   
   #fixed window false
   val_folds<- matrix(nrow =nrow(train) ,ncol = length(unique(tr_year)) - 1)
@@ -216,11 +216,11 @@ for(output_counter in outputs){
     
     res_list<- rbind(res_gamboostNB, res_gamboostPO,res_earth1,res_rf)
   
-  #}
+ 
   
-  res <- do.call("rbind", res_list)
+ 
   
-  res_long <- res %>% pivot_longer(MSE_train:COR_test) %>% 
+  res_long <- res_list %>% pivot_longer(MSE_train:COR_test) %>% 
     mutate(data = gsub(".*_(train|test)", "\\1", name),
            measure = gsub("(.*)_(train|test)", "\\1", name))
   
@@ -229,7 +229,7 @@ for(output_counter in outputs){
   
   
   ggplot(res_long, aes(x = model, y = value, colour = model)) + 
-    geom_point(aes(shape = factor(year))) + 
+    geom_point() + 
     facet_grid(measure ~ data, scales = "free") + 
     theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
