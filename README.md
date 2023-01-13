@@ -74,13 +74,13 @@ _Wichtig:_ nach dem Cloning des Repos bitte ins [step2](https://github.com/mediz
 Beim ersten Start des Skripts wird überprüft, ob die zur Ausführung notwendigen R-Pakete vorhanden sind. Ist dies nicht der Fall, werden diese Pakete nachinstalliert – dieser Prozess kann einige Zeit in Anspruch nehmen.
 
 #### Batch-Datei/Shell-Skript
-**Unter Windows**: Mit der Batch-Datei `runMIRACUM_select.bat`.
+**Unter Windows**: Mit der Batch-Datei `runMIRACUM_select_step2.bat`.
 Beim ersten Ausführen sollte diese ggf. als Administrator gestartet werden (über Eingabeaufforderung oder Rechtsklick), wenn die ggf. notwendigen Berechtigungen zum Nachinstallieren der R-Pakete sonst nicht vorhanden sind. Nach der ersten Installation reicht dann ein Doppelklick zum Starten.
 
-**Unter Linux**: Mit dem Shell-Skript `runMIRACUM_select.sh`. Das Shell-Skript muss ausführbar sein und ggf. beim ersten Ausführen mittels `sudo` gestartet werden, wenn ein Nachinstallieren der R-Pakete außerhalb des User-Kontexts erforderlich ist.
+**Unter Linux**: Mit dem Shell-Skript `runMIRACUM_select_step2.sh`. Das Shell-Skript muss ausführbar sein und ggf. beim ersten Ausführen mittels `sudo` gestartet werden, wenn ein Nachinstallieren der R-Pakete außerhalb des User-Kontexts erforderlich ist.
 
 ### Ablauf und Logik der Analyse Pipeline
-Beide Skripte (`runMIRACUM_select.bat` und `runMIRACUM_select.sh`) führen die Datei `execution.R` aus. 
+Beide Skripte (`runMIRACUM_select_step2.bat` und `runMIRACUM_select_step2.sh`) führen die Datei `execution.R` aus. 
 
 Diese Skript (`execution.R`) führt sequenziell 6 weitere R Skripte aus, wie folgt: 
 * `1_install_r_packages.R`, Load & Install notwendige R Packete
