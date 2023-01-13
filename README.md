@@ -1,13 +1,16 @@
-# Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 19.10.2022
+# 6. Projectathon der MII: MIRACUM - "WEather-based Stroke Outcome pRediction and Modeling" (WE-STORM)
+Datum: 13.01.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
-Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt im Rahmen des [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
+Dieses Project führtdas MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt vom [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. 
+Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
 ### BREAKING NEWS
+Freigabe [13.01.2023](#jan-01-2023)der Step2 Skripts für die statistischen Analysen mittels Federated Learning. 
+
 In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
 
 #### Häufige Probleme
@@ -17,6 +20,7 @@ Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` 
 
 ## Table of Contents 
 
+  * [0. UPDATE 2023 - Step2 Analysen](#)
   * [1. Verwendung](#verwendung)
     * [1.1. Ausführung in R](#ausführung-in-R)
      * [1.1.1. Vor der ersten Nutzung](#vor-der-ersten-utzung)
