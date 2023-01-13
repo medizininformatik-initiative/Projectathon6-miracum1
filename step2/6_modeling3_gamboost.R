@@ -26,7 +26,7 @@ site.name <- conf$site
 for(output_counter in outputs){
   
   print(paste("fitting models for", output_counter))
-  daily <- read.csv(file = paste("data/","daily_level.csv",sep = ""))
+  daily <- read.csv(file = file.path(getwd(),"data/daily_level.csv"))
 
   # Outcome based on output_counter 
   outcome <- daily[[output_counter]]

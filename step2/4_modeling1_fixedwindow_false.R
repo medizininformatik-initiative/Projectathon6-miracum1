@@ -22,10 +22,10 @@ if(file.exists("config.yml")){
 
 site.name <- conf$site
 ########################import prepared data  #######
-daily <- read.csv(file = paste("data/","daily_level.csv",sep = ""))
-two_day <- read.csv(file = paste("data/","two_day.csv",sep = ""))
-weekly <- read.csv(file = paste("data/","weekly.csv",sep = ""))
-monthly <- read.csv(file = paste("data/","monthly.csv",sep = ""))
+daily <- read.csv(file = file.path(getwd(),"data/daily_level.csv"))
+two_day <- read.csv(file = file.path(getwd(),"data/two_day.csv"))
+weekly <- read.csv(file = file.path(getwd(),"data/weekly.csv"))
+monthly <- read.csv(file = file.path(getwd(),"data/monthly.csv"))
 ########################################Modelling#################################
 wb <-openxlsx:::createWorkbook()
 openxlsx:::addWorksheet(wb, "Daily")

@@ -14,3 +14,4 @@ for(package in packages){
     available <- suppressWarnings(require(package, character.only = T))
   }
 }
+print("Installation done")

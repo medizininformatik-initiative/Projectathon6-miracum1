@@ -19,14 +19,14 @@ if(file.exists("config.yml")){
 
 print("loading stroke cohort")
 ###################load stroke cohort #############################
-df.stroke.cohort <- read.csv(file  = paste("data/","stroke_cohort.csv",sep = ""))
+df.stroke.cohort <- read.csv(file  = file.path(getwd(),"data/stroke_cohort.csv"))
 df.stroke.cohort <- subset(df.stroke.cohort,select = -c(X))
 df.stroke.cohort$admission_datetime <- df.stroke.cohort$admission_date
 df.stroke.cohort$admission_date <- as.character(as.Date(df.stroke.cohort$admission_date))
 
 print("extracting lat and long based on PLZ")
 ###################extract latitude and longitude ###################
-df.plz <- read.csv(file  = paste("data/","plz.csv",sep = ""))
+df.plz <- read.csv(file  = file.path(getwd(),"data/plz.csv"))
 df.plz$plz <- str_pad(df.plz$plz, 5, pad = "0")
 df.stroke.cohort$patient_zip <- as.character(df.stroke.cohort$patient_zip)
 
@@ -41,7 +41,7 @@ if(length(which(is.na(df.stroke.cohort$latitude) | is.na(df.stroke.cohort$longit
   
 }
 ############################stroke daily counts#################################
-print("stroke daily counts - thre different outputs")
+print("stroke daily counts - three different outputs")
 count.info <- df.stroke.cohort%>%
   group_by(Date = as.Date(admission_date))%>%
   summarise(total_count = length(unique(encounter_id))
@@ -58,14 +58,14 @@ count.info.all <- left_join(count.info.all,count.info,"Date")
 count.info.all[is.na(count.info.all)] <- 0
 
 ###################load appropriate conf files#############################
-variables <- config::get(file = "conf/WeatherVariables.yml")
-sites <- config::get(file = "conf/sites.yml")
+variables <- config::get(file = file.path(getwd(),"conf/WeatherVariables.yml"))
+sites <- config::get(file = file.path(getwd(),"conf/sites.yml"))
 
 ###############load the weather data downloaded from DWD  and meta index dataframe#######
 print("Load weather data and find the appropriate stations for patients")
-load(file = paste("data/","weather_data_all_updated.RData",sep = ""))
+load(file = file.path(getwd(),"data/weather_data_all_updated.RData"))
 weather.data$MESS_DATUM =as.character(weather.data$MESS_DATUM)
-load(file = paste("data/","metaIndex.RData",sep = ""))
+load(file = file.path(getwd(),"data/metaIndex.RData"))
 
 #################calculate the distance bin and angle based on clinic location and weather station ######
 metaIndex$distance_from_clinic <- apply(X = data.frame(1:nrow(metaIndex)),MARGIN = 1,FUN = function(X){(distHaversine(p1 = c(sites$UMM$clinic.lon,sites$UMM$clinic.lat), p2  = c(metaIndex$lon[X],metaIndex$lat[X]))/1000)})
@@ -113,7 +113,7 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   type_1 <- left_join(type_1,weather.data,by = c("admission_date" = "MESS_DATUM" , "closest.from.plz" ="STATIONS_ID"))
   #####################add PT temperature based on site location - station id from sites.yml############
   # read PT temp weather data
-  PT.data<-  read.csv(file  = paste("data/","PT_Dwd_Agg.csv",sep = ""))
+  PT.data<-  read.csv(file  = file.path(getwd(),"data/PT_Dwd_Agg.csv"))
   type_1$PT.station <- sites[[conf$site]]$PT.Station.id
   type_1 <- left_join(type_1,PT.data,by = c("admission_date" = "MESS_DATUM" , "PT.station" ="STATIONS_ID"))
   type_1[sapply(type_1, is.infinite)] <- NA
@@ -181,7 +181,7 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   
   
   
-  write.csv(daily_level,file = paste("data/","daily_level.csv",sep = ""),row.names = FALSE)
+  write.csv(daily_level,file = file.path(getwd(),"data/daily_level.csv"),row.names = FALSE)
 
 ##2.###################################2 day################################################
   print("Creating two-day level data")
@@ -203,7 +203,7 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   
   two_day <- left_join(two_day_weather,two_day_counts,"daycounter")
   rm(two_day_counts,two_day_weather)
-  write.csv(two_day,file = paste("data/","two_day.csv",sep = ""),row.names = FALSE)
+  write.csv(two_day,file = file.path(getwd(),"data/two_day.csv"),row.names = FALSE)
 
 #####################################site-based################################################
   site.based.df <- count.info.all
@@ -231,7 +231,7 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   
   weekly <- left_join(weekly_weather,weekly_count,"year_weekNum")
   rm(weekly_count,weekly_weather)
-  write.csv(weekly,file = paste("data/","weekly.csv",sep = ""),row.names = FALSE)
+  write.csv(weekly,file = file.path(getwd(),"data/weekly.csv"),row.names = FALSE)
 
 ##4.###################################Monthly################################################
   print("Creating monthly level data")
@@ -251,6 +251,6 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   
   monthly <- left_join(monthly_weather,monthly_count,"year_month")
   rm(monthly_count,monthly_weather)
-  write.csv(monthly,file = paste("data/","monthly.csv",sep = ""),row.names = FALSE)
+  write.csv(monthly,file = file.path(getwd(),"data/monthly.csv"),row.names = FALSE)
   print("Feature extraction done")
   #########################################################################################################

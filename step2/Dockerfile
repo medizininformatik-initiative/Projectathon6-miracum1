@@ -7,6 +7,9 @@ LABEL Maintainer="nandhini.santhanam@medma.uni-heidelberg.de"
 ## build ARGs
 ARG NCPUS=${NCPUS:--1}
 
+ENV http_proxy http://proxy.klima.ads.local:2080/
+ENV https_proxy http://proxy.klima.ads.local:2080/
+
 RUN mkdir -p /Ergebnisse && \
   mkdir -p /errors && \
   mkdir -p /Bundles
@@ -16,7 +19,11 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   ## `libpq-dev` for RPostgres (one of the deps/suggests of the packages):
   libpq-dev \
   libssl-dev \
-  libxml2-dev && \
+  libxml2-dev \
+  libgdal-dev \
+  libgeos-dev \ 
+  libproj-dev \
+  uuid-dev && \
   ## clear caches:
   rm -rf /var/lib/apt/lists/* && \
   rm -rf /tmp/* && \
@@ -30,19 +37,6 @@ RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
   stringr \
   tidyr \
   data.table \
-  rdwd \
-  lubridate \
-  geosphere \
-  stringi \
-  caret \
-  xgboost \
-  ranger \
-  mboost \
-  tidyverse \
-  corrplot \
-  earth \
-  Metrics \
-  ggplot2 \
   openxlsx && \
   ## clear caches:
   rm -rf /tmp/downloaded_packages && \
