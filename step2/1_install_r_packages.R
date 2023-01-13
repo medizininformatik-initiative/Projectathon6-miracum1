@@ -1,9 +1,9 @@
 #load/install packages
-packages <- c("fhircrackr","config","dplyr"
-              ,"zoo","stringr","tidyr","data.table"
-              ,"openxlsx","rdwd","lubridate","geosphere"
-              ,"stringi","caret","xgboost","ranger","mboost"
-              ,"tidyverse","corrplot","earth","Metrics","ggplot2")
+packages <- c("fhircrackr","config","dplyr",
+              "zoo","stringr","tidyr","data.table",
+              "openxlsx","rdwd","lubridate","geosphere",
+              "stringi","caret","xgboost","ranger","mboost",
+              "tidyverse","corrplot","earth","Metrics","ggplot2")
 
 for(package in packages){
   
