@@ -241,5 +241,5 @@ df.cohort <- df.cohort[,c("patient_id", "birthdate","gender","patient_zip",
 
 ############### Save data as csv ####################################
 df.cohort <- distinct(df.cohort)
-write.csv(df.cohort,file  = paste("data/", "stroke_cohort.csv", sep = "") )
+write.csv(df.cohort,file  = file.path(getwd(),"data/stroke_cohort.csv"))
 print("Data selection done")
