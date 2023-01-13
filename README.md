@@ -1,4 +1,4 @@
-# 6. Projectathon der MII: MIRACUM - "WEather-based Stroke Outcome pRediction and Modeling" (WE-STORM)
+# 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
 Datum: 13.01.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
