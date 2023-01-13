@@ -1,0 +1,63 @@
+default:
+    daily_kl:
+    - max_wind_gust
+    - mean_wind_speed
+    - precipitation_height
+    - precipitation_form
+    - sunshine_duration
+    - snow_depth
+    - mean_cloud_cover
+    - mean_vapor_pressure
+    - mean_pressure
+    - mean_temperature
+    - mean_relative_humidity
+    - maximum_temperature_2m
+    - minimum_temperature_2m
+    - minimum_temperature_5cm
+    daily_more_precip:
+    - precipitation_height
+    - precipitation_form
+    - snow_pack_height
+    - fresh_snow_depth
+    hourly_air_temperature:   
+    - max_humidity
+    - min_humidity
+    - mean_humidity
+    - max_temperature_alias
+    - min_temperature_alias
+    - mean_temperature_alias
+    hourly_dew_point: 
+    - max_temperature_alias
+    - min_temperature_alias
+    - mean_temperature_alias
+    - max_dew_point_temperature
+    - min_dew_point_temperature
+    - mean_dew_point_temperature
+    hourly_moisture:  
+    - max_pressure_alias
+    - min_pressure_alias
+    - mean_pressure_alias
+    - max_humid_temperature
+    - min_humid_temperature
+    - mean_humid_temperature
+    - max_vapour_pressure
+    - min_vapour_pressure
+    - mean_vapour_pressure
+    hourly_precipitation: 
+    - max_precipitation_height
+    - min_precipitation_height
+    - mean_precipitation_height
+    hourly_wind:
+    - wind_direction
+    - max_wind_speed
+    - min_wind_speed
+    - mean_wind_speed
+    hourly_pressure:   
+    - max_pressure_alias
+    - min_pressure_alias
+    - mean_pressure_alias
+    - max_pressure_station
+    - min_pressure_station
+    - mean_pressure_station
+    hourly_sun:  
+    - total_sunshine_duration
