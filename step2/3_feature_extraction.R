@@ -1,7 +1,7 @@
+
 ###############clear Rstudio environment variables ####################
 rm(list=ls())
 gc()
-
 
 ##################libraries#######################################
 library(geosphere)
@@ -26,7 +26,7 @@ df.stroke.cohort$admission_date <- as.character(as.Date(df.stroke.cohort$admissi
 
 print("extracting lat and long based on PLZ")
 ###################extract latitude and longitude ###################
-df.plz <- read.csv(file  = file.path(getwd(),"data/plz.csv"))
+df.plz <- read.csv(file  = file.path(getwd(), "data/plz.csv"))
 df.plz$plz <- str_pad(df.plz$plz, 5, pad = "0")
 df.stroke.cohort$patient_zip <- as.character(df.stroke.cohort$patient_zip)
 

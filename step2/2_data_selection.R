@@ -1,5 +1,5 @@
 ############### Clear Rstudio environment variables ####################
-rm(list=ls())
+rm(list = ls())
 gc() # optional
 
 ############### Preparation ##############################
@@ -15,13 +15,12 @@ if(!dir.exists("results")){dir.create("results")}
 
 # read config
 if (file.exists("config.yml")) {
-  conf <- config::get(file = "config.yml")}
-else {
+  conf <- config::get(file = "config.yml")
+} else {
   conf <- config::get(file = "config_default.yml")
 }
 
 if (!(conf$ssl_verify_peer)){httr::set_config(httr::config(ssl_verifypeer = 0L))}
-
 
 brackets = c("[", "]")
 sep = " || "
