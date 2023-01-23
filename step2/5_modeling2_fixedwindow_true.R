@@ -471,7 +471,7 @@ rmse <-
   )
 mae <-
   paste(
-    "MAE of Poisson daily model for ischmeic count",
+    "MAE of random forest daily model for ischmeic count",
     MAE(pred = preds, obs = test_ischemic_count_daily)
   )
 openxlsx:::writeData(

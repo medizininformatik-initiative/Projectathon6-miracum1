@@ -115,6 +115,9 @@ Ergänzung folgt.
 #### Jan 13, 2023
 _Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and machine learning models. 
 
+#### Jan 23, 2023
+Uploaded the fix for the issue (Fehler bei der Ausführung (step2) #9). Updated Poisson-glm object with type = "response"
+
 ---
 
 ## 2022 Step 1 - Select Abfrage

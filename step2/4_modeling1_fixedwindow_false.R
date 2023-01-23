@@ -248,10 +248,10 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #print summary
 	  summary(poisson_daily_ischmeic_count)
 	  #predict
-	  preds <- predict(poisson_daily_ischmeic_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	  preds <- predict(poisson_daily_ischmeic_count, newdata = as.data.frame(test_features_daily), type = "response")
 	  #metrics
-	  rmse<-paste("RMSE of Poisson daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
-	  mae<- paste("MAE of Poisson daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
+	  rmse <- paste("RMSE of Poisson daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
+	  mae <- paste("MAE of Poisson daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
 	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 9)
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 10)
 	  ##save model
@@ -392,7 +392,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #print summary
 	  summary(poisson_daily_bleeding_count)
 	  #predict
-	  preds<-predict(poisson_daily_bleeding_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	  preds<-predict(poisson_daily_bleeding_count, newdata = as.data.frame(test_features_daily), type = "response")
 	  #metrics
 	  rmse<-paste("RMSE of Poisson daily model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_daily))
 	  mae<- paste("MAE of Poisson daily model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_daily))
@@ -656,7 +656,7 @@ print("Models for Two-day count")
 								   ,tuneGrid = final_grid,method = "svmRadial"
 								   ,preProcess = c("center"), verbosity = 0)
 	  #predict
-	  preds<-predict(svm_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "response")
+	  preds<-predict(svm_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
 	  rmse <- paste("RMSE of SVM two_day model for total count", RMSE(pred = preds,obs = test_total_count_two_day))
 	  mae <- paste("MAE of SVM two_day model for total count", MAE(pred = preds,obs = test_total_count_two_day))
@@ -726,7 +726,7 @@ print("Models for Two-day count")
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_two_day_ischmeic_count = train(X_train, y_train,  trControl = timecontrol_cv_two_day,tuneGrid = final_grid,method = "rf", verbosity = 0)
 	  #predict
-	  preds<-predict(forest_two_day_ischmeic_count, newdata = as.data.frame(test_features_two_day), type = "response")
+	  preds<-predict(forest_two_day_ischmeic_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
 	  rmse <- paste("RMSE of random forest two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 	  mae <- paste("MAE of random forest two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
