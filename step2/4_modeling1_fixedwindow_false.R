@@ -215,7 +215,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	                                 preProcess = c("center"), 
 	                                 verbosity = 0)
 	  #predict
-	  preds < -predict(svm_daily_total_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	  preds <- predict(svm_daily_total_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  #metrics
 	  rmse<-paste("RMSE of SVM daily model for total count",RMSE(pred = preds,obs = test_total_count_daily))
 	  mae<- paste("MAE of SVM daily model for total count",MAE(pred = preds,obs = test_total_count_daily))
@@ -692,7 +692,7 @@ print("Models for Two-day count")
 	  preds <- predict(poisson_two_day_ischmeic_count, newdata = as.data.frame(test_features_two_day), type = "response")
 	  # metrics
 	  rmse <- paste("RMSE of poisson two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
-	  mae < - paste("MAE of poisson two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
+	  mae <- paste("MAE of poisson two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
 	  openxlsx:::writeData(wb = wb, x = rmse, sheet = "Two-day", withFilter = FALSE, startRow = 9)
 	  openxlsx:::writeData(wb = wb, x = mae, sheet = "Two-day", withFilter = FALSE, startRow = 10)
 	  ##save model
@@ -1076,7 +1076,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  rm(svm_weekly_total_count)
 	  
 
-	print("Fitting models for Ischemic_count for two_day resolution")
+	print("Fitting models for Ischemic_count for weekly resolution")
 	#3-b.################################################# Models for Ischemic count ################################### 
 	  train_ischemic_count_weekly <- Ischemic_count_weekly[-test_index]
 	  test_ischemic_count_weekly <- Ischemic_count_weekly[test_index]
@@ -1193,9 +1193,9 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	                                     preProcess = c("center"), 
 	                                     verbosity = 0)
 	#predict
-	  preds<-predict(svm_weekly_ischemic_count, newdata = as.data.frame(test_features_weekly), type = "raw")
+	  preds <- predict(svm_weekly_ischemic_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 	  #metrics
-	  rmse < -paste("RMSE of SVM weekly model for ischemic count",RMSE(pred = preds, obs = test_ischemic_count_weekly))
+	  rmse <- paste("RMSE of SVM weekly model for ischemic count",RMSE(pred = preds, obs = test_ischemic_count_weekly))
 	  mae <- paste("MAE of SVM weekly model for ischemic count",MAE(pred = preds, obs = test_ischemic_count_weekly))
 	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 15)
 	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 16)
@@ -1206,7 +1206,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	 
 	 
 
-	print("Fitting models for Bleeding_count for two day resolution")
+	print("Fitting models for Bleeding_count for weekly resolution")
 	#3-c.################################################# Models for Bleeding count###################################
 	  train_bleeding_count_weekly <- Bleeding_count_weekly[-test_index]
 	  test_bleeding_count_weekly <- Bleeding_count_weekly[test_index]
@@ -1439,7 +1439,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #predict
 	  preds<-predict(xgb_monthly_total_count, newdata = as.data.frame(test_features_monthly), type = "raw")
 	  #metrics
-	  rmse < -paste("RMSE of XGB monthly model for total count",RMSE(pred = preds,obs = test_total_count_monthly))
+	  rmse <- paste("RMSE of XGB monthly model for total count",RMSE(pred = preds,obs = test_total_count_monthly))
 	  mae <- paste("MAE of XGB monthly model for total count",MAE(pred = preds,obs = test_total_count_monthly))
 	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 5)
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 6)
@@ -1485,7 +1485,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	 
 	 
 
-	print("Fitting models for Ischemic_count for two_day resolution")
+	print("Fitting models for Ischemic_count for monthly resolution")
 	#4-b.################################################# Models for Ischemic count################################### 
 	  train_ischemic_count_monthly <- Ischemic_count_monthly[-test_index]
 	  test_ischemic_count_monthly <- Ischemic_count_monthly[test_index]
