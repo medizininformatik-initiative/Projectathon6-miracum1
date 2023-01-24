@@ -1253,7 +1253,7 @@ preds <-
   predict(
     svm_two_day_total_count,
     newdata = as.data.frame(test_features_two_day),
-    type = "response"
+    type = "raw"
   )
 #metrics
 rmse <-
@@ -1353,7 +1353,7 @@ preds <-
   predict(
     forest_two_day_ischmeic_count,
     newdata = as.data.frame(test_features_two_day),
-    type = "response"
+    type = "raw"
   )
 #metrics
 rmse <-
