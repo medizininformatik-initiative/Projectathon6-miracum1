@@ -3,7 +3,8 @@ packages <- c("fhircrackr","config","dplyr",
               "zoo","stringr","tidyr","data.table",
               "openxlsx","rdwd","lubridate","geosphere",
               "stringi","caret","xgboost","ranger","mboost",
-              "tidyverse","corrplot","earth","Metrics","ggplot2")
+              "tidyverse","corrplot","earth","Metrics","ggplot2",
+			  "RANN", "randomForest", "")
 
 for(package in packages){
   
