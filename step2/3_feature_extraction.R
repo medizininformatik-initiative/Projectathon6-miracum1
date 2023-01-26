@@ -53,7 +53,7 @@ count.info <- df.stroke.cohort%>%
             
   )
 count.info.all <- data.table::data.table()
-count.info.all$Date <- seq(ymd('2015-01-01'),ymd('2021-12-31'),by='days')
+count.info.all$Date <- seq(ymd(min(count.info$Date)),ymd(max(count.info$Date)),by='days')
 count.info.all <- left_join(count.info.all,count.info,"Date")
 count.info.all[is.na(count.info.all)] <- 0
 

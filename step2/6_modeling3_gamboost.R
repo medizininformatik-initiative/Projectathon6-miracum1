@@ -116,59 +116,61 @@ for(output_counter in outputs){
                         collapse = " + ")
     
     
-    # NegBinomial model
-    mod <- gamboost(formula = as.formula(paste0("outcome ~ ", frm_mboost)),
-                    data = train, family = NBinomial(),
-                    control = boost_control(mstop = 1000L,nu = 0.01))
- 
-    cvr <- cvrisk(mod, folds = val_folds)
-    mod[mstop(cvr)]
-    
-    if(check_models){
-      plot(cvr)
-      table(selected(mod))
-      plot(mod)
-      plot(train$outcome, predict(mod, type = "response")[,1], col=rgb(0,0,0,0.4))
-      abline(0, 1, col="red")
-    }
-    
-    pr_tr <- predict(mod, type = "response")[,1]
-    pr_te <- predict(mod, newdata = test, type = "response")[,1]
-    
-    res_gamboostNB <- eval_fun(train$outcome, test$outcome,
-                               pr_tr, pr_te, name = "gamboostNB")
-    
-    #save model
-    saveRDS(object = mod,file = paste("./results/gamboostNB_",output_counter,site.name,".rda",sep = ""))
-    
+    try({
+		# NegBinomial model
+		mod <- gamboost(formula = as.formula(paste0("outcome ~ ", frm_mboost)),
+						data = train, family = NBinomial(),
+						control = boost_control(mstop = 1000L,nu = 0.01))
+	 
+		cvr <- cvrisk(mod, folds = val_folds)
+		mod[mstop(cvr)]
+		
+		if(check_models){
+		  plot(cvr)
+		  table(selected(mod))
+		  plot(mod)
+		  plot(train$outcome, predict(mod, type = "response")[,1], col=rgb(0,0,0,0.4))
+		  abline(0, 1, col="red")
+		}
+		
+		pr_tr <- predict(mod, type = "response")[,1]
+		pr_te <- predict(mod, newdata = test, type = "response")[,1]
+		
+		res_gamboostNB <- eval_fun(train$outcome, test$outcome,
+								   pr_tr, pr_te, name = "gamboostNB")
+		
+		#save model
+		saveRDS(object = mod,file = paste("./results/gamboostNB_",output_counter,site.name,".rda",sep = ""))
+   }, silent=TRUE)
     print(paste("Fitting Gamboost Poisson for",output_counter))
     
-    # Poisson model
-    mod <- gamboost(formula = as.formula(paste0("outcome ~ ", frm_mboost)),
-                    data = train, family = Poisson(), control = boost_control(mstop = 1000L, 
-                                                                             nu = 0.01))
-    
-    cvr <- cvrisk(mod, folds = val_folds)
-    
-    mod[mstop(cvr)]
-    
-    if(check_models){
-    plot(cvr)
-    table(selected(mod))
-    plot(mod)
-    plot(train$outcome, predict(mod, type = "response")[,1], col=rgb(0,0,0,0.4))
-    abline(0, 1, col="red")
-    }
-    
-    pr_tr <- predict(mod, type = "response")[,1]
-    pr_te <- predict(mod, newdata = test, type = "response")[,1]
-    
-    res_gamboostPO <- eval_fun(train$outcome, test$outcome,
-                               pr_tr, pr_te, name = "gamboostPO")
-    
-    #save model
-    saveRDS(object = mod,file = paste("./results/gamboostPO",output_counter,"_",site.name,".rda",sep = ""))
-    
+	try({
+		# Poisson model
+		mod <- gamboost(formula = as.formula(paste0("outcome ~ ", frm_mboost)),
+						data = train, family = Poisson(), control = boost_control(mstop = 1000L, 
+																				 nu = 0.01))
+		
+		cvr <- cvrisk(mod, folds = val_folds)
+		
+		mod[mstop(cvr)]
+		
+		if(check_models){
+		plot(cvr)
+		table(selected(mod))
+		plot(mod)
+		plot(train$outcome, predict(mod, type = "response")[,1], col=rgb(0,0,0,0.4))
+		abline(0, 1, col="red")
+		}
+		
+		pr_tr <- predict(mod, type = "response")[,1]
+		pr_te <- predict(mod, newdata = test, type = "response")[,1]
+		
+		res_gamboostPO <- eval_fun(train$outcome, test$outcome,
+								   pr_tr, pr_te, name = "gamboostPO")
+		
+		#save model
+		saveRDS(object = mod,file = paste("./results/gamboostPO",output_counter,"_",site.name,".rda",sep = ""))
+    }, silent=TRUE)
     ### ---------------------------------------------------------------------------
     ### MARS
     print(paste("Fitting MARS earth for",output_counter))
@@ -227,12 +229,13 @@ for(output_counter in outputs){
   #save residuals
   saveRDS(object = res_long,file = paste("./results/results",output_counter,"_",site.name,".rda",sep = ""))
   
-  
-  ggplot(res_long, aes(x = model, y = value, colour = model)) + 
-    geom_point() + 
-    facet_grid(measure ~ data, scales = "free") + 
-    theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  
-  ggsave(filename = paste("./results/predictions",output_counter,"_",site.name,".pdf",sep = ""), width = 5, height = 5)
+  try({
+	  ggplot(res_long, aes(x = model, y = value, colour = model)) + 
+		geom_point() + 
+		facet_grid(measure ~ data, scales = "free") + 
+		theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+	  
+	  ggsave(filename = paste("./results/predictions",output_counter,"_",site.name,".pdf",sep = ""), width = 5, height = 5)
+  }, silent=TRUE)
 }
 print("Modeling gamboost is done")

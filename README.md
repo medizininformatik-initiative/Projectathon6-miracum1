@@ -118,6 +118,9 @@ _Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and
 #### Jan 23, 2023
 Uploaded the fix for the issue (Fehler bei der Ausführung (step2) #9). Updated Poisson-glm object with type = "response"
 
+#### Jan 26, 2023
+Uploaded the fix for the issue (Error for SVM model #11). Added try catch blocks, Changed dataframe timerange based on local min and max
+
 ---
 
 ## 2022 Step 1 - Select Abfrage
