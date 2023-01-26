@@ -4,7 +4,7 @@ packages <- c("fhircrackr","config","dplyr",
               "openxlsx","rdwd","lubridate","geosphere",
               "stringi","caret","xgboost","ranger","mboost",
               "tidyverse","corrplot","earth","Metrics","ggplot2",
-			  "RANN", "randomForest", "")
+			  "RANN", "randomForest", "kernlab", "pacman")
 
 for(package in packages){
   

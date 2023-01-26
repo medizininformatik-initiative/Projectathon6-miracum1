@@ -810,7 +810,7 @@ print("Models for Two-day count")
 	  train_ischemic_count_two_day <- Ischemic_count_two_day[-test_index]
 	  test_ischemic_count_two_day <- Ischemic_count_two_day[test_index]
 	  train_two_day <- as.data.frame(cbind(train_features_two_day,train_ischemic_count_two_day))
-
+	  print("Poisson")
   try({
   
 	### Poisson
@@ -829,7 +829,9 @@ print("Models for Two-day count")
 	  ##save model
 	  saveRDS(object = poisson_two_day_ischmeic_count,file = paste("./results/poisson_two_day_ischemic_count_",site.name,".rda",sep = ""))
 	  rm(poisson_two_day_ischmeic_count)
-    }, silent=TRUE)	print("Poisson")
+    }, silent=TRUE)
+	  
+	  
 	### ARIMA
 
 	print("Random Forest")

@@ -176,8 +176,8 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   daily_level <- right_join(daily_level,count.info.all,c("admission_date" = "Date"))
   
   #drop week number which is equal to minimum and min year
-  daily_level<- daily_level[-c(which(daily_level$week_num == min(daily_level$week_num) & 
-                                       daily_level$year == min(daily_level$year))),] 
+  # daily_level<- daily_level[-c(which(daily_level$week_num == min(daily_level$week_num) & 
+  #                                      daily_level$year == min(daily_level$year))),] 
   
   
   
@@ -187,8 +187,7 @@ type_1 <- type_1[c(order(type_1$admission_date)),]
   print("Creating two-day level data")
   two_day <- daily_level
   two_day <- subset(two_day,select = -c(day_of_month,day_of_year,month,wday,year,week_num))
-  
-  two_day$daycounter<- c(0, rep(1:(nrow(two_day)-1)%/%2)) + 1
+  two_day$daycounter<- c(0, rep(1:(nrow(two_day)- 1)%/%2)) + 1
   
   two_day <- subset(two_day,select = -c(admission_date))
   ## check how to aggregate mean prior week counts
