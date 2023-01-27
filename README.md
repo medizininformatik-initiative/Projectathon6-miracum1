@@ -96,7 +96,7 @@ Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quelle
 ### Ausführung im Docker Container Step2
 
 #### A) Image von DockerHub ziehen:
-Ergänzung folgt. 
+Link folgt. 
 
 #### B) Image bauen mit Docker Compose Step2: 
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
@@ -111,6 +111,30 @@ Ergänzung folgt.
 
 
 ## Changelog Step2
+
+#### Jan 27, 2023
+_MII Projektathon Weekly-Sprechstunde:_ WE-STORM Step2 Update Darstellung. 
+
+The branch [blaze_update](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) has also been updated with `step2` scripts.
+
+Currently, _UKH_ and _UKJ_ successfully ran the scripts in their current forms. 
+
+_Minor:_ Link to DockerHub, the number of model objects in the `results` folder is coming soon. 
+
+#### Jan 26, 2023 
+GitHub Issue [#11](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/11) regarding missing support vectors in SVM fit is fixed. 
+
+__TL;DR Explanation__
+This issue originated from the hardcoded import time range of `2015-01-01 to 2021-12-31`, which might not neccessarily be available at all sites, resulting in (potentially years of) 0 values in the target vector (count). Hence, no decision boundary could be found. 
+Additionally, `try() | tryCatch()` wrappers have been added to assure that the script runs even if certain model fits would fail.
+Thanks for raising and helping to solve the issue [@pdi-uk](https://github.com/pdi-uk).
+
+#### Jan 25, 2023 
+GitHub Issue [#10](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/10) regarding package dependency is now fixed. 
+
+#### Jan 23, 2023 
+GitHub Issue [#9](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/9) regarding `predict.glm(..., type = "response")` is now fixed. Thanks for raising the issue [@KutSaleh](https://github.com/KutSaleh).
+
 
 #### Jan 13, 2023
 _Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and machine learning models. 
