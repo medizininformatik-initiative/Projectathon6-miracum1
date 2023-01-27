@@ -1,0 +1,15 @@
+default:
+  serverbase:       'https://mii-agiop-3p.life.uni-leipzig.de/fhir/'
+# if you need to authenticate on your fhir server, set username and password
+  username:        NULL
+  password:        NULL
+## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
+  ssl_verify_peer: TRUE
+##Proxy configs
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+##site short form. Please refer to the short form '/conf/sites.yml'
+  site: "UMM"
+## Postal code of hospital location
+  PLZ: "68167"

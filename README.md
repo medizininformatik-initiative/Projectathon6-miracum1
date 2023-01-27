@@ -1,41 +1,134 @@
-# Selectanfrage für den 6. Projectathon der MII: MIRACUM "WE-STORM"
-Datum: 30.04.2022
+# 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
+Datum: 13.01.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
-Dieses Project führt die Select-Anfrage für das MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/project.php?fdpgid=20)) Projekt im Rahmen des [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. Dieses Skript (Step 1) erzeugt mehreren Tabellen mit aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen sollen zuerst zentral evaluiert werden und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben werden.
+Dieses Project führtdas MIRACUM (["WE-STORM"](https://forschen-fuer-gesundheit.de/projekt2.php)) Projekt vom [6. Projectathons](https://www.medizininformatik-initiative.de/datennutzung) aus. Hier ist eine dezentrale Analyse (distributed On-Site and Federated Learning)vorgesehen. 
+Dieses Repository beinhaltet Skripte für das zweistufige Verfahren: 
++ Skript-1 (Step 1 - Abfrage) erzeugt mehreren Tabellen mit (anonymen, grob)aggregierten Daten, die für die Planung der statistischen Analysen (Step 2) benötigt werden. Diese Tabellen wurden zentral evaluiert und somit an die datenauswertendende Stelle (MIRACUM, Mannheim) übergeben.
++ Skript-2 (Step 2 Analysen) **neues Update vom 13-01-2023**, im Folder [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) des master Branches, führt die basierend der Step 1 erstellten statistische Modelle und Maschinelle Lernalgorithmen aus. Die Modelle werden _ausschließlich lokal_ (im jeweiligen DIZ) trainiert und nur die Modellobjekte werden i.R. des Federated Learning Verfahrens zusammengeführt. 
 
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
-## BREAKING NEWS
-In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022).
+### BREAKING NEWS
++ Freigabe [13.01.2023](#jan-01-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für die statistischen Analysen mittels Federated Learning. 
+
++ In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
+
+#### Häufige Probleme
+Den [Quick-Fix](#may-05-2022) für die häufigste Error Meldung `HTTP code 500` (bisher nur HAPI) aufgrund der Timeout der Abfrage (für Observations Modul) finden sie [hier](#may-05-2022) und für Condition Resources [hier](may-05-2022).
 
 ---
 
 ## Table of Contents 
 
-  * [1. Verwendung](#verwendung)
+  * [2023-0. UPDATE - Step2 Analysen](#update-2023)
+  * [2023-1. Verwendung (Step 2)](#verwendung-step2)
+    * [1.1. Ausführung in R Step2](#ausführung-in-R-step2)
+  * [2023-2 Ablauf und Logik der Analyse Pipeline](#ablauf-und-logik-der-analyse-pipeline)
+  * [2023-3. Ausführung im Docker Container (Step 2)](#ausführung-im-docker-container-step2)
+    * [3.2. Docker Compose](#b-image-bauen-mit-docker-compose-step2)
+  * [2023-4. Changelog (Step 2)](#changelog-step2)
+  * [2022-0. Step 1](#2022-step1)
+  * [1. Verwendung (Step 1)](#verwendung-step1)
     * [1.1. Ausführung in R](#ausführung-in-R)
      * [1.1.1. Vor der ersten Nutzung](#vor-der-ersten-utzung)
       * [1.1.1.1. Batch-Datei/Shell-Skript](#batch-dateishell-skript)
       * [1.1.1.2. R/RStudio](#rrstudio)
-  * [2. Ausführung im Docker Container](#ausführung-im-docker-container)
+  * [2. Ausführung im Docker Container (Step 1)](#ausführung-im-docker-container)
     * [2.1. DockerHub](#a-image-von-dockerhub-ziehen)
     * [2.2. Docker Compose](#b-image-bauen-mit-docker-compose)
     * [2.3. Ohne Docker Compose](#c-image-bauen-ohne-docker-compose)
     * [2.4. DockerHub Direkt Download](#d-direkt-download-vom-dockerHub)
-  * [3. Output](#output)
+  * [3. Output (Step 1)](#output)
     * [3.1. Summary](#summary)
-  * [4. Verwendete Codesysteme](#verwendete-codesysteme)
-  * [5. Verwendete Profile/Datenelemente](#verwendete-profiledatenelemente)
-  * [6. Konzeptioneller Ablauf der Abfrage](#konzeptioneller-ablauf-der-abfrage)
-  * [7. Datentransfer](#data-transfer)
-  * [8. Changelog](#changelog)
+  * [4. Verwendete Codesysteme (Step 1)](#verwendete-codesysteme)
+  * [5. Verwendete Profile/Datenelemente (Step 1)](#verwendete-profiledatenelemente)
+  * [6. Konzeptioneller Ablauf der Abfrage (Step 1)](#konzeptioneller-ablauf-der-abfrage)
+  * [7. Datentransfer (Step 1)](#data-transfer)
+  * [8. Changelog (Step 1)](#changelog-step1)
     * [Apr 29, 2022 - Freigabe der Scripte für die STEP 1-Select Abfrage](#apr-29-2022)
+    * [May 05, 2022 - Frequent Errors & Quick fixes - HTTP 500 Observation Module](#may-05-2022)
+    * [May 06, 2022 - Frequent Errors & Quick fixes - HTTP 500 Condition Resources](#may-06-2022)
+
+---
+## UPDATE 2023
+
+## Verwendung Step2 
+Es gibt zwei Möglichkeiten die R-Skripte für die "Step 2 - Analysen" auszuführen: 
++ Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
+
+_Wichtig:_ nach dem Cloning des Repos bitte ins [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) Folder navigieren und als working/reference director einstellen.
+
+### Ausführung in R Step2
+
+1. Um die Analysen auszuführen (Analog zu den Step1-Skripten), muss der Inhalt des Git-Repository auf einen Rechner (PC, Server) gezogen werden, von dem aus der REST-Endpunkt des gewünschten FHIR-Servers (z.B. FHIR-Server der Clinical Domain im DIZ) erreichbar ist. 
+
+2. Auf diesem Rechner muss R (aber nicht notwendigerweise RStudio) als genutzte Laufzeitumgebung installiert sein.
+
+3. Im `master` branch des Repos soll im Folder [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) befindliche Datei `./config_default.yml` muss nach `./config.yml` kopiert werden und lokal angepasst werden (serverbase, ggf. Authentifizierung - Username and password, proxy configs); Erklärungen dazu finden sich direkt in dieser Datei. Eine Authentifizierung mit Basic Authentication. Dafür müssen in `config.yml` die Variable `authentication` und die zugehörigen Zugangsdaten (`password`/`username`) angepasst werden.
+  
+4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet wird, sollte in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
+
+#### Start des Skripts
+Beim ersten Start des Skripts wird überprüft, ob die zur Ausführung notwendigen R-Pakete vorhanden sind. Ist dies nicht der Fall, werden diese Pakete nachinstalliert – dieser Prozess kann einige Zeit in Anspruch nehmen.
+
+#### Batch-Datei/Shell-Skript
+**Unter Windows**: Mit der Batch-Datei `runMIRACUM_select_step2.bat`.
+Beim ersten Ausführen sollte diese ggf. als Administrator gestartet werden (über Eingabeaufforderung oder Rechtsklick), wenn die ggf. notwendigen Berechtigungen zum Nachinstallieren der R-Pakete sonst nicht vorhanden sind. Nach der ersten Installation reicht dann ein Doppelklick zum Starten.
+
+**Unter Linux**: Mit dem Shell-Skript `runMIRACUM_select_step2.sh`. Das Shell-Skript muss ausführbar sein und ggf. beim ersten Ausführen mittels `sudo` gestartet werden, wenn ein Nachinstallieren der R-Pakete außerhalb des User-Kontexts erforderlich ist.
+
+### Ablauf und Logik der Analyse Pipeline
+Beide Skripte (`runMIRACUM_select_step2.bat` und `runMIRACUM_select_step2.sh`) führen die Datei `execution.R` aus. 
+
+Diese Skript (`execution.R`) führt sequenziell 6 weitere R Skripte aus, wie folgt: 
+* `1_install_r_packages.R`, Load & Install notwendige R Packete
+* `2_data_selection.R`, Selektion der Daten vom FHIR Server zum Wetterdaten-Matching
+* `3_feature_extraction.R`, Extraktion der Wetterparameter entsprechend der WStationen. 
+* `4_modeling1_fixedwindow_false.R`, Modeling 1: Kreuzvalidierung (fixedWindow = F) 
+* `5_modeling2_fixedwindow_true.R`, Modeling 2: Kreuzvalidierung (fixedWindow = T) 
+* `6_modeling3_gamboost.R`, Modeling 3: genestete-Kreuzvalidierung 
+
+_Hinweis:_ Alle notwendige präprozessierte Wetterdaten sind im Folder [`data`](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2/data) vorhanden. 
+Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quellen herunterladen, keine Ports geöffnet. 
+
+### Ausführung im Docker Container Step2
+
+#### A) Image von DockerHub ziehen:
+Ergänzung folgt. 
+
+#### B) Image bauen mit Docker Compose Step2: 
+1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
+2. Verzeichniswechsel in das lokale Repository und in den neuen Folder **step2**: `cd Projectathon6-miracum1/step2`
+3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
+4. Image bauen und Container starten: `docker compose up -d`
+
+Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `docker compose start`.
+
+#### C) Image bauen ohne Docker Compose:
+Ergänzung folgt.
+
+
+## Changelog Step2
+
+#### Jan 13, 2023
+_Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and machine learning models. 
+
+#### Jan 23, 2023
+Uploaded the fix for the issue (Fehler bei der Ausführung (step2) #9). Updated Poisson-glm object with type = "response"
+
+#### Jan 26, 2023
+Uploaded the fix for the issue (Error for SVM model #11). Added try catch blocks, Changed dataframe timerange based on local min and max
+
+#### Jan 27, 2023
+Blaze Branch updated with step2 results.
 
 ---
 
-## Verwendung
+## 2022 Step 1 - Select Abfrage
+
+## Verwendung Step1
 Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in einem Docker Container. Beide werden im folgenden beschrieben.
 
 ### Ausführung in R
@@ -46,7 +139,6 @@ Es gibt zwei Möglichkeiten diese R-Skripte auszuführen: Direkt in R oder in ei
 
 3. Die mitgelieferte Datei `./config_default.yml` muss nach `./config.yml` kopiert werden und lokal angepasst werden (serverbase, ggf. Authentifizierung - Username and password, proxy configs); Erklärungen dazu finden sich direkt in dieser Datei. Eine Authentifizierung mit Basic Authentication. Dafür müssen in `config.yml` die Variable `authentication` und die zugehörigen Zugangsdaten (`password`/`username`) angepasst werden.
   
-
 4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet soll, muss in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
 
 ##### Start des Skripts
@@ -284,9 +376,28 @@ Vielen Dank an [@wetret](https://github.com/wetret) (Reto Wettstein) und [@hhund
 
 ---
 
-## Changelog
+## Changelog Step1
 
 ### Major changes
+
+#### May 06, 2022
+
+Siehe das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) was auch ein `HTTP code 500` error geliefert hat. Das Problem scheint hier mit der HAPI Server Version (5.3.0) gebunden zu sein. Die länge der Condition Resources und Anzahl der gebundelten Fälle (zuvor `max_bundles = 100`) kann ggf. zu lang werden. 
+
+Der simple Fix in [line 131](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/c4c219bca9a9343392d203113727a4fb20601cb5/miracum_select.R#L131) mit der Reduktion auf `, max_bundles = 40` hat das Problem in Halle gelöst. Vielen Dank [@Diana Pietzner](https://github.com/pdi-uk).
+
+#### May 05, 2022 
+
+Die häufigste Fehlermeldung beim Ausführen des Scripts (`miracum_select.R`) war bisher das folgende `Your request generated a server error, HTTP code 500.` siehe auch das [Issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/7) - vielen Dank [@pdi-uk](https://github.com/pdi-uk) und @Abel Stolz (MII Slack). Der Fehler trat bisher nur beim [HAPI FHIR Servers](https://hapifhir.io) auf. 
+
+Das Problem wird von der langen Query im Rahmen der Abfrage vom Labor Modul ausgelöst. Die kombinierte Länge der multiplen LOINC Codes von multiplen Patienten überschreiten die erlaubte URL Charakter Länge. 
+Diese wird in [Zeile 352](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/2a795679d2827165564decf9c58da07f2b17363f/miracum_select.R#L352) definiert. In Erlangen, Jena, Mannheim lief das Script mit 1800 durch. In Leipzig kam der HTTP 500 Error.
+
+* Zuvor `nchar_for_ids <- 1800 - (nchar(conf$serverbase)+nchar_loincs)`
+* Lösung `nchar_for_ids <- 900 - (nchar(conf$serverbase)+nchar_loincs)`
+   * Dadurch wird die Anzahl der Patienten pro Anfrage reduziert, für die LOINC-kodierte Beobachtungen heruntergeladen werden (z.B. in Leipzig hat es das Problem gelöst).
+
+Wir haben den  `master` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) dem entsprechend ([Observation_length_update](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/commit/388a470dcf1149498909725dc82b7357d791f71f)) aktualisiert.
 
 #### Apr 29, 2022
 
@@ -304,9 +415,9 @@ Vielen Dank für die gute Zusammenarbeit, Eure Zeit und Unterstützung sowie die
 * [Alexander Kiel](https://github.com/alexanderkiel), Uni Leipzig ([blaze](https://github.com/samply/blaze) [v0.17.0](https://github.com/samply/blaze/releases/tag/v0.17.0) update with chaining)
 
 ##### Github Pull
-1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `master' [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) ge-pullt werden. 
+1. Für die [HAPI](https://hapifhir.io) erstellte Scripte können vom `master` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1) ge-pullt werden. 
 2. Für [blaze](https://github.com/samply/blaze) angepasste Scripte können vom `blaze_update` [Branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/blaze_update) ge-pullt werden. 
-  * Diese wurden für `v0.16.x`(noch ohne chained search parameters) angepasst.
+    * Diese wurden für `v0.16.x`(noch ohne chained search parameters) angepasst.
 
 ##### Dockerhub
 Die [dockerhub](https://hub.docker.com/) Images sind für jeweils:

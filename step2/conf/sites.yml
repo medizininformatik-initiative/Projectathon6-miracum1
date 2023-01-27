@@ -1,0 +1,65 @@
+default:
+  UMM:
+    clinic.lat: 49.49449279074749
+    clinic.lon: 8.486348097023802
+    PT.Station.id: 5906
+  UKER:
+    clinic.lat: 49.60103990837787
+    clinic.lon: 11.010227811745994
+    PT.Station.id: 3668
+  UKDD:
+    clinic.lat: 51.056301160091905
+    clinic.lon: 13.779322369455853
+    PT.Station.id: 7393     
+  Charite:
+    clinic.lat: 52.53004142089244
+    clinic.lon: 13.375164245611243
+    PT.Station.id: 433
+  KGU:
+    clinic.lat: 50.09528956791057
+    clinic.lon: 8.661679327100057
+    PT.Station.id: 7341
+  UMG:
+    clinic.lat: 51.55102581694177 
+    clinic.lon: 9.942522036958001
+    PT.Station.id: 1691
+  UKG:
+    clinic.lat: 54.08877701681848  
+    clinic.lon: 13.405406828947203
+    PT.Station.id: 4024
+  UKH:
+    clinic.lat: 51.50264213074988  
+    clinic.lon: 11.936737972080023
+    PT.Station.id: 2928
+  UKE:
+    clinic.lat: 53.59088537800458   
+    clinic.lon: 9.974012122774383
+    PT.Station.id: 1975
+  UKJ:
+    clinic.lat: 50.92877051318968    
+    clinic.lon: 11.579743711781937
+    PT.Station.id: 3821
+  UKL:
+    clinic.lat: 51.33133169169391    
+    clinic.lon: 12.38641122990797
+    PT.Station.id: 2928
+  LMU-TUM:
+    clinic.lat: 48.111507340838514     
+    clinic.lon: 11.470252182871539
+    PT.Station.id: 3379
+  MRI-TUM:
+    clinic.lat: 48.13757895705822      
+    clinic.lon: 11.600796111707421
+    PT.Station.id: 3379
+  UKT:
+    clinic.lat: 48.52991308830395      
+    clinic.lon: 9.038185698223241
+    PT.Station.id: 4928
+  UKU:
+    clinic.lat: 48.42245901956247       
+    clinic.lon: 9.95265815589079
+    PT.Station.id: 15444
+  UKW:
+    clinic.lat: 49.80217162413574     
+    clinic.lon: 9.956822054081
+    PT.Station.id: 5705
