@@ -1,5 +1,5 @@
 # 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
-Datum: 13.01.2023
+Datum: 28.01.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -96,7 +96,7 @@ Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quelle
 ### Ausführung im Docker Container Step2
 
 #### A) Image von DockerHub ziehen:
-Link folgt. 
+[Link to DockerHub](nandhinis08/projectathon6-miracum1-step2) or by using `docker pull nandhinis08/projectathon6-miracum1-step2`
 
 #### B) Image bauen mit Docker Compose Step2: 
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
@@ -119,7 +119,9 @@ The branch [blaze_update](https://github.com/medizininformatik-initiative/Projec
 
 Currently, _UKH_ and _UKJ_ successfully ran the scripts in their current forms. 
 
-_Minor:_ Link to DockerHub, the number of model objects in the `results` folder is coming soon. 
+[Link to DockerHub](https://hub.docker.com/r/nandhinis08/projectathon6-miracum1-step2)
+
+_Minor:_ the number of model objects in the `results` folder is coming soon. 
 
 #### Jan 26, 2023 
 GitHub Issue [#11](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/11) regarding missing support vectors in SVM fit is fixed. 
