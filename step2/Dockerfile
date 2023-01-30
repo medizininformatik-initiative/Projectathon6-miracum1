@@ -7,8 +7,6 @@ LABEL Maintainer="nandhini.santhanam@medma.uni-heidelberg.de"
 ## build ARGs
 ARG NCPUS=${NCPUS:--1}
 
-ENV http_proxy http://proxy.klima.ads.local:2080/
-ENV https_proxy http://proxy.klima.ads.local:2080/
 
 RUN mkdir -p /Ergebnisse && \
   mkdir -p /errors && \
