@@ -83,7 +83,7 @@ while (!is.null(encounter_request) && length(encounter_request) > 0){
                              password = conf$password,
                              verbose = 2,
                              log_errors = "errors/encounter_error.xml", 
-                             max_bundles = 100)
+                             max_bundles = conf$max_bundles)
 
   enc_tables <- fhir_crack(enc_bundles,
                 design = fhir_design(enc = encounters, pat = patients, con = condition),
@@ -120,7 +120,7 @@ condition_request_2 <- fhir_url(url = conf$serverbase,
 start_time <- Sys.time()
 while (!is.null(condition_request_2)&&length(condition_request_2) > 0) {
   con_bundles <- fhir_search(request = condition_request_2, username = conf$user, password = conf$password,
-                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = conf$max_bundles)
 
   con_tables <- fhir_crack(con_bundles,
                            design = fhir_design(enc = encounters, pat = patients, con = condition),

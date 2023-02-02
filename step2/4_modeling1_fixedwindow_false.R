@@ -27,6 +27,11 @@ two_day <- read.csv(file = file.path(getwd(), "data/two_day.csv"))
 weekly <- read.csv(file = file.path(getwd(), "data/weekly.csv"))
 monthly <- read.csv(file = file.path(getwd(), "data/monthly.csv"))
 
+
+###################### Source customRF function ##################################
+
+source(file.path(getwd(), "customRF.R"))
+
 ######################################## Modelling #################################
 wb <-openxlsx:::createWorkbook()
 openxlsx:::addWorksheet(wb, "Daily")
@@ -87,10 +92,10 @@ openxlsx:::addWorksheet(wb, "Daily")
 	set.seed(1492)
 	  poisson_daily_total_count <- glm(train_total_count_daily ~ ., data = train_daily, family = poisson)
 	  # predict
-	  preds<-predict(poisson_daily_total_count, newdata = as.data.frame(test_features_daily), type = "response")
+	  preds <- predict(poisson_daily_total_count, newdata = as.data.frame(test_features_daily), type = "response")
 	  # metrics
-	  rmse<-paste("RMSE of Poisson daily model for total count", RMSE(pred = preds, obs = test_total_count_daily))
-	  mae<- paste("MAE of Poisson daily model for total count", MAE(pred = preds, obs = test_total_count_daily))
+	  rmse <- paste("RMSE of Poisson daily model for total count", RMSE(pred = preds, obs = test_total_count_daily))
+	  mae <- paste("MAE of Poisson daily model for total count", MAE(pred = preds, obs = test_total_count_daily))
 	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE, startRow = 1)
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE, startRow = 2)
 	  
@@ -105,7 +110,10 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # mtry defaults to sqrt(n_features) ~ 18; check approx. +/-10% range
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17, 18, 19, 20)) 
+	  
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 
 	  # cross-validation
 	  timecontrol_cv <- trainControl(method = "timeslice",
@@ -119,11 +127,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # fit model
 	  forest <- train(train_total_count_daily~., 
 	                  data = train_daily, 
-	                  method = 'rf', 
+	                  method = customRF, 
 	                  trControl = timecontrol_cv, 
 	                  metric='RMSE',
 					  preProcess = c("center","scale"),
 	                  tuneGrid = tunegrid)
+
 	
 	  # final grid 
 	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
@@ -136,12 +145,14 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # final RF model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_daily_total_count = train(X_train, y_train,
-	                                   trControl = timecontrol_cv,
-	                                   tuneGrid = final_grid, 
-	                                   method = "rf", 
+	                                   method = 'rf',
+	                                   metric='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
 	                                   verbosity = TRUE)
 	  
-	  
+
 	  # predict
 	  preds <- predict(forest_daily_total_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  
@@ -176,8 +187,8 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #train the model
 	  xgb_model = train(X_train, y_train, 
 	                    trControl = timecontrol_cv, 
-						tuneGrid = xgbGrid, 
-						preProcess = c("center","scale"),
+	                    tuneGrid = xgbGrid, 
+	                    preProcess = c("center","scale"),
 	                    method = "xgbTree", 
 	                    verbosity = 0)
 	  #final grid 
@@ -285,21 +296,23 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # hyper parameter
 	try({
 	  set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	 tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  # cross-validation
 	  # repeat_cv <- trainControl(method = 'repeatedcv', number = 5, repeats = 3, verboseIter = TRUE, returnData = FALSE)
 	  
 	  #fit model
 	  forest <- train(train_ischemic_count_daily~.,
 	                  data = train_daily, 
-	                  method = 'rf', 
+	                  method = customRF, 
 	                  trControl = timecontrol_cv, 
 					  preProcess = c("center","scale"),
 	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
 	  
 	  # final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	 
 	 # final rf model with chosen hyper parameter
 	  X_train = train_features_daily 
@@ -308,9 +321,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  y_test = test_ischemic_count_daily
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_daily_ischmeic_count = train(X_train, y_train,
-										preProcess = c("center","scale"),
-										tuneGrid = final_grid,
-										method = "rf", verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_daily_ischmeic_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  #metrics
@@ -452,31 +468,36 @@ openxlsx:::addWorksheet(wb, "Daily")
 	### RF
 	  #hyper parameter
 	try({
-		set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	  set.seed(1492)
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
-	  forest <- train(train_bleeding_count_daily~.,data=train_daily, 
-					method='rf', 
-					trControl=timecontrol_cv,
+	  forest <- train(train_bleeding_count_daily~.,
+					data=train_daily, 
+					method = customRF, 
+					trControl = timecontrol_cv,
 					preProcess = c("center","scale"),					
-					metric='RMSE',
-					tuneGrid =tunegrid )
+					metric = 'RMSE',
+					tuneGrid = tunegrid )
 
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry,)
 	  #final rf model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  X_train = train_features_daily 
 	  y_train = train_bleeding_count_daily
 	  X_test = test_features_daily 
 	  y_test = test_bleeding_count_daily
-	  forest_daily_bleeding_count = train(X_train, y_train,  
-											preProcess = c("center","scale"),
-											tuneGrid = final_grid,
-											method = "rf", 
-											verbosity = 0)
+	  forest_daily_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric ='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_daily_bleeding_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  #metrics
@@ -673,26 +694,31 @@ print("Models for Two-day count")
 	  try({
 	  	set.seed(1492)
 	  #hyper parameter
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_total_count_two_day~.,
-							data=train_two_day, 
+							data = train_two_day, 
 							preProcess = c("center","scale"),
-							method='rf', 
-							trControl=timecontrol_cv_two_day, 
-							metric='RMSE',
+							method = customRF, 
+							trControl = timecontrol_cv_two_day, 
+							metric = 'RMSE',
 							tuneGrid =tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_two_day_total_count = train(X_train, y_train,  
-									preProcess = c("center","scale"),
-									tuneGrid = final_grid,
-									method = "rf", verbosity = 0)
+	  forest_two_day_total_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
@@ -844,28 +870,33 @@ print("Models for Two-day count")
 	### RF
 	  #hyper parameter
 	try({
-	  set.seed(1492)
-	  tunegrid <-expand.grid(mtry=c(17,18,19,20))
+	  set.seed(1492)	  
+	  
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_ischemic_count_two_day ~ .,
 	                  data = train_two_day, 
-	                  method = 'rf',
+	                  method = customRF,
 	                  trControl = timecontrol_cv_two_day, 
 					  preProcess = c("center","scale"),
 	                  metric = 'RMSE',
 	                  tuneGrid = tunegrid)
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
-	  #final xgb model with chosen hyper parameter
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	  #final rf model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_two_day_ischmeic_count = train(X_train, y_train, 
-								preProcess = c("center","scale"),
-								tuneGrid = final_grid,
-								method = "rf", 
-								verbosity = 0)
+	  forest_two_day_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_two_day_ischmeic_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
@@ -1014,27 +1045,31 @@ print("Models for Two-day count")
 	try({
 		set.seed(1492)
 		  #hyper parameter
-		  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+		  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_bleeding_count_two_day~.,
-						data=train_two_day, 
-						method='rf', 
-						trControl=timecontrol_cv_two_day, 
+						data = train_two_day, 
+						method = customRF, 
+						trControl = timecontrol_cv_two_day, 
 						preProcess = c("center","scale"),
-						metric='RMSE',
-						tuneGrid =tunegrid )
+						metric = 'RMSE',
+						tuneGrid = tunegrid )
 
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		    final_grid <- expand.grid(mtry = forest$bestTune$mtry,)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_two_day_bleeding_count = train(X_train, y_train,  
-												tuneGrid = final_grid,
-												preProcess = c("center","scale"),
-												method = "rf", 
-												verbosity = 0)
+		  forest_two_day_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds <- predict(forest_two_day_bleeding_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 		  #metrics
@@ -1201,7 +1236,9 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	 try({
 	 set.seed(1492)
 	  #hyper parameter
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', 
 	                            number=5, 
@@ -1210,21 +1247,23 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	                            returnData = FALSE)
 	  #fit model
 	  forest <- train(train_total_count_weekly~.,
-	                  data=train_weekly, 
-	                  method='rf', 
+	                  data = train_weekly, 
+	                  method = customRF, 
 	                  trControl=repeat_cv, 
 	                  metric='RMSE',
 	                  tuneGrid =tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_weekly_total_count = train(X_train, y_train,  
-	                                    tuneGrid = final_grid,
-	                                    preProcess = c("center","scale"),
-	                                    method = "rf", 
-	                                    verbosity = 0)
+	  forest_weekly_total_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_weekly_total_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 	  #metrics
@@ -1365,26 +1404,30 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #hyper parameter
 	  try({
 		  set.seed(1492)
-		  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+		  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_ischemic_count_weekly~.,
-		                  data=train_weekly, 
-		                  method='rf',
+		                  data = train_weekly, 
+		                  method = customRF,
 		                  preProcess = c("center","scale"),
-		                  trControl=repeat_cv, 
-		                  metric='RMSE',tuneGrid =tunegrid )
+		                  trControl = repeat_cv, 
+		                  metric = 'RMSE',tuneGrid =tunegrid )
 		  
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		   final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_weekly_ischmeic_count = train(X_train, y_train,  
-		                                       preProcess = c("center","scale"),
-		                                       tuneGrid = final_grid,
-		                                       method = "rf", 
-		                                       verbosity = 0)
+		  forest_weekly_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds<-predict(forest_weekly_ischmeic_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 		  #metrics
@@ -1525,27 +1568,31 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #hyper parameter
 	  try({
 	  set.seed(1492)
-		  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+		  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_bleeding_count_weekly~.,
-		                  data=train_weekly, 
-		                  method='rf',
+		                  data = train_weekly, 
+		                  method = customRF,
 		                  preProcess = c("center","scale"),
-		                  trControl=repeat_cv, 
-		                  metric='RMSE',
-		                  tuneGrid =tunegrid )
+		                  trControl = repeat_cv, 
+		                  metric = 'RMSE',
+		                  tuneGrid = tunegrid )
 
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_weekly_bleeding_count = train(X_train, y_train, 
-		                                       tuneGrid = final_grid,
-		                                       preProcess = c("center","scale"),
-		                                       method = "rf", 
-		                                       verbosity = 0)
+		  forest_weekly_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds<-predict(forest_weekly_bleeding_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 		  #metrics
@@ -1697,7 +1744,9 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', 
 	                            number=5, 
@@ -1707,21 +1756,23 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #fit model
 	  forest <- train(train_total_count_monthly~.,
 	                  data = train_monthly, 
-	                  method='rf', 
+	                  method = customRF, 
 	                  preProcess = c("center","scale"),
 	                  trControl = repeat_cv, 
-	                  metric='RMSE', 
+	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
 	  
 	  # final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  # final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_monthly_total_count = train(X_train, y_train,
-	                                     tuneGrid = final_grid,
-	                                     preProcess = c("center","scale"),
-	                                     method = "rf", 
-	                                     verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  # predict
 	  preds <- predict(forest_monthly_total_count, newdata = as.data.frame(test_features_monthly), type = "raw")
 	  # metrics
@@ -1853,27 +1904,31 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_ischemic_count_monthly~.,
-	                  data=train_monthly,
-	                  method='rf',
+	                  data = train_monthly,
+	                  method = customRF,
 	                  preProcess = c("center","scale"),
-	                  trControl=repeat_cv, 
-	                  metric='RMSE',
-	                  tuneGrid =tunegrid )
+	                  trControl = repeat_cv, 
+	                  metric = 'RMSE',
+	                  tuneGrid = tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_monthly_ischmeic_count = train(X_train, y_train,  
-	                                        tuneGrid = final_grid,
-	                                        preProcess = c("center","scale"),
-	                                        method = "rf", 
-	                                        verbosity = 0)
+	  forest_monthly_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds<-predict(forest_monthly_ischmeic_count, newdata = as.data.frame(test_features_monthly), type = "raw")
 	  #metrics
@@ -2002,27 +2057,31 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_bleeding_count_monthly~.,
-	                  data=train_monthly,
-	                  method='rf', 
-	                  trControl=repeat_cv,
+	                  data = train_monthly,
+	                  method = customRF, 
+	                  trControl = repeat_cv,
 	                  preProcess = c("center","scale"),
-	                  metric='RMSE',
-	                  tuneGrid =tunegrid )
+	                  metric = 'RMSE',
+	                  tuneGrid = tunegrid )
 
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_monthly_bleeding_count = train(X_train, y_train,
-	                                        preProcess = c("center","scale"),
-	                                        tuneGrid = final_grid,
-	                                        method = "rf", 
-	                                        verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  
 	  # predict
 	  preds <- predict(forest_monthly_bleeding_count, newdata = as.data.frame(test_features_monthly), type = "raw")
@@ -2054,8 +2113,8 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  xgbGrid   <- expand.grid(nrounds = c(100,200), 
 	                           max_depth = c(1,3,6,9),
 	                           colsample_bytree = seq(0.5, 0.9, length.out = 5),
-	                           eta =c( .2, .1, .05, .01),
-	                           gamma=0,
+	                           eta = c( .2, .1, .05, .01),
+	                           gamma = 0,
 	                           min_child_weight = 1,
 	                           subsample = 1)
 	  # train the model

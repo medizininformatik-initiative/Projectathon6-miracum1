@@ -3,6 +3,8 @@ default:
 # if you need to authenticate on your fhir server, set username and password
   username:        NULL
   password:        NULL
+# max bundle of  FHIR server
+  max_bundles:  50 
 ## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
   ssl_verify_peer: TRUE
 ##Proxy configs
