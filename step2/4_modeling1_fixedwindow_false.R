@@ -484,7 +484,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 					tuneGrid = tunegrid )
 
 	  #final grid 
-	    final_grid <- expand.grid(mtry = forest$bestTune$mtry,)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final rf model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  X_train = train_features_daily 
