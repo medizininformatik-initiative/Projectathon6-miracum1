@@ -1,5 +1,6 @@
 FROM rocker/r-ver:latest
 
+
 # MAINTAINER Nandhini Santhanam <nandhini.santhanam@medma.uni-heidelberg.de>
 LABEL Description="PJT#6 miracum1 step2"
 LABEL Maintainer="nandhini.santhanam@medma.uni-heidelberg.de"
@@ -21,24 +22,21 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   libgdal-dev \
   libgeos-dev \ 
   libproj-dev \
+  default-jdk \
+  r-cran-rjava \
   uuid-dev && \
   ## clear caches:
   rm -rf /var/lib/apt/lists/* && \
   rm -rf /tmp/* && \
   apt-get clean && apt-get autoclean && apt-get autoremove -y
+  
+  
+RUN R -e "install.packages(c('fhircrackr', 'config', 'dplyr', 'zoo', 'stringr', 'tidyr', 'data.table', 'openxlsx', 'rdwd', 'lubridate', 'geosphere', 'stringi', 'caret', 'ranger', 'mboost','tidyverse', 'corrplot', 'earth', 'Metrics', 'ggplot2', 'RANN', 'pacman'), dependencies = TRUE, repos='https://cloud.r-project.org/')"
 
-RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
-  fhircrackr \
-  config \
-  dplyr \
-  zoo \
-  stringr \
-  tidyr \
-  data.table \
-  openxlsx && \
-  ## clear caches:
-  rm -rf /tmp/downloaded_packages && \
-  rm -rf /var/lib/apt/lists/*
+
+
+
+
 
 # COPY config_default.yml config_default.yml
 COPY 1_install_r_packages.R 1_install_r_packages.R
