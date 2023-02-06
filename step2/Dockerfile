@@ -45,6 +45,7 @@ COPY 3_feature_extraction.R 3_feature_extraction.R
 COPY 4_modeling1_fixedwindow_false.R 4_modeling1_fixedwindow_false.R
 COPY 5_modeling2_fixedwindow_true.R 5_modeling2_fixedwindow_true.R
 COPY 6_modeling3_gamboost.R 6_modeling3_gamboost.R
+COPY customRF.R customRF.R
 COPY execution.R execution.R
 
 

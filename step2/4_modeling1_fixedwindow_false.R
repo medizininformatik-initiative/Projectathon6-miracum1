@@ -30,7 +30,7 @@ monthly <- read.csv(file = file.path(getwd(), "data/monthly.csv"))
 
 ###################### Source customRF function ##################################
 
-source(file.path(getwd(), "customRF.R"), local = TRUE)
+source(file.path(getwd(), "customRF.R"))
 
 ######################################## Modelling #################################
 wb <-openxlsx:::createWorkbook()

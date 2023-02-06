@@ -28,7 +28,7 @@ two_day <- read.csv(file = file.path(getwd(), "data/two_day.csv"))
 
 ###################### Source customRF function ##################################
 
-source(file.path(getwd(), "customRF.R"), local = TRUE)
+source(file.path(getwd(), "customRF.R"))
 
 ########################  Modelling ######################## 
 wb <- openxlsx:::createWorkbook()
