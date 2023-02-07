@@ -27,6 +27,11 @@ two_day <- read.csv(file = file.path(getwd(), "data/two_day.csv"))
 weekly <- read.csv(file = file.path(getwd(), "data/weekly.csv"))
 monthly <- read.csv(file = file.path(getwd(), "data/monthly.csv"))
 
+
+###################### Source customRF function ##################################
+
+source(file.path(getwd(), "customRF.R"))
+
 ######################################## Modelling #################################
 wb <-openxlsx:::createWorkbook()
 openxlsx:::addWorksheet(wb, "Daily")
@@ -87,10 +92,10 @@ openxlsx:::addWorksheet(wb, "Daily")
 	set.seed(1492)
 	  poisson_daily_total_count <- glm(train_total_count_daily ~ ., data = train_daily, family = poisson)
 	  # predict
-	  preds<-predict(poisson_daily_total_count, newdata = as.data.frame(test_features_daily), type = "response")
+	  preds <- predict(poisson_daily_total_count, newdata = as.data.frame(test_features_daily), type = "response")
 	  # metrics
-	  rmse<-paste("RMSE of Poisson daily model for total count", RMSE(pred = preds, obs = test_total_count_daily))
-	  mae<- paste("MAE of Poisson daily model for total count", MAE(pred = preds, obs = test_total_count_daily))
+	  rmse <- paste("RMSE of Poisson daily model for total count", RMSE(pred = preds, obs = test_total_count_daily))
+	  mae <- paste("MAE of Poisson daily model for total count", MAE(pred = preds, obs = test_total_count_daily))
 	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE, startRow = 1)
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE, startRow = 2)
 	  
@@ -105,7 +110,10 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # mtry defaults to sqrt(n_features) ~ 18; check approx. +/-10% range
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17, 18, 19, 20)) 
+	  
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 
 	  # cross-validation
 	  timecontrol_cv <- trainControl(method = "timeslice",
@@ -119,11 +127,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # fit model
 	  forest <- train(train_total_count_daily~., 
 	                  data = train_daily, 
-	                  method = 'rf', 
+	                  method = customRF, 
 	                  trControl = timecontrol_cv, 
 	                  metric='RMSE',
 					  preProcess = c("center","scale"),
 	                  tuneGrid = tunegrid)
+
 	
 	  # final grid 
 	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
@@ -136,12 +145,14 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # final RF model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_daily_total_count = train(X_train, y_train,
-	                                   trControl = timecontrol_cv,
-	                                   tuneGrid = final_grid, 
-	                                   method = "rf", 
+	                                   method = 'rf',
+	                                   metric='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
 	                                   verbosity = TRUE)
 	  
-	  
+
 	  # predict
 	  preds <- predict(forest_daily_total_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  
@@ -161,7 +172,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 	
 	print("Xgboost")
 	### XGB
-	  # cross-validation method and number of folds
 	  # grid space to search for the best hyperparameters
 	
 	try({
@@ -176,8 +186,8 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #train the model
 	  xgb_model = train(X_train, y_train, 
 	                    trControl = timecontrol_cv, 
-						tuneGrid = xgbGrid, 
-						preProcess = c("center","scale"),
+	                    tuneGrid = xgbGrid, 
+	                    preProcess = c("center","scale"),
 	                    method = "xgbTree", 
 	                    verbosity = 0)
 	  #final grid 
@@ -212,7 +222,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 	
 	print("Support Vector Regression") 
 	### SVR
-	  # svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  # search grid for hyperparameter tuning
 	try({
 		set.seed(1492)
@@ -230,8 +239,8 @@ openxlsx:::addWorksheet(wb, "Daily")
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_daily_total_count <- train(X_train, y_train,  
-										 trControl = timecontrol_cv,
-										 tuneGrid = final_grid,method = "svmRadial",
+										 tuneGrid = final_grid,
+										 method = "svmRadial",
 										 preProcess = c("center","scale"), 
 										 verbosity = 0)
 		  #predict
@@ -246,7 +255,42 @@ openxlsx:::addWorksheet(wb, "Daily")
 		  rm(svm_daily_total_count)
 	}, silent=TRUE)	  
 	  
-
+	print("Support Vector Regression Linear kernel") 
+	### SVR
+	# search grid for hyper parameter tuning
+	try({
+	  set.seed(1492)
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+	  svm_daily_total_count <- train(X_train, y_train,
+	                                 trControl = timecontrol_cv,
+	                                 tuneGrid = tuneGrid,
+	                                 method = "svmLinear",
+	                                 preProcess = c("center","scale"), 
+	                                 verbosity = 0)
+	  
+	  
+	  
+	  final_grid <- expand.grid(C =svm_daily_total_count$bestTune$C)  
+	  # final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_daily_total_count <- train(X_train, y_train,  
+	                                 tuneGrid = final_grid,
+	                                 method = "svmLinear",
+	                                 preProcess = c("center","scale"), 
+	                                 verbosity = 0)
+	  #predict
+	  preds <- predict(svm_daily_total_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM daily model for total count",RMSE(pred = preds,obs = test_total_count_daily))
+	  mae <- paste("MAE of SVM daily model for total count",MAE(pred = preds,obs = test_total_count_daily))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 7)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 8)
+	  #save model
+	  saveRDS(object = svm_daily_total_count,file = paste("./results/svm_linear_daily_total_count_",site.name,".rda",sep = ""))
+	  rm(svm_daily_total_count)
+	}, silent=TRUE)	
+	
+	
 	print("Fitting models for Ischemic_count for daily resolution")
 	
 	#1-b.################################################# Models for Ischemic count################################### 
@@ -285,21 +329,23 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # hyper parameter
 	try({
 	  set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	 tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  # cross-validation
 	  # repeat_cv <- trainControl(method = 'repeatedcv', number = 5, repeats = 3, verboseIter = TRUE, returnData = FALSE)
 	  
 	  #fit model
 	  forest <- train(train_ischemic_count_daily~.,
 	                  data = train_daily, 
-	                  method = 'rf', 
+	                  method = customRF, 
 	                  trControl = timecontrol_cv, 
 					  preProcess = c("center","scale"),
 	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
 	  
 	  # final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	 
 	 # final rf model with chosen hyper parameter
 	  X_train = train_features_daily 
@@ -308,9 +354,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  y_test = test_ischemic_count_daily
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_daily_ischmeic_count = train(X_train, y_train,
-										preProcess = c("center","scale"),
-										tuneGrid = final_grid,
-										method = "rf", verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_daily_ischmeic_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  #metrics
@@ -376,8 +425,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 	
 	print("Support Vector Regression") 
 	### SVR
-	  #svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
-	  #grid space to search for the best hyper parameter
 	try({
 		set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
@@ -410,6 +457,46 @@ openxlsx:::addWorksheet(wb, "Daily")
 	
 	  #save model
 	  saveRDS(object = svm_daily_ischemic_count, file = paste("./results/svm_daily_ischemic_count_",site.name,".rda",sep = ""))
+	  rm(svm_daily_ischemic_count)
+
+	  End.time <- Sys.time()	 
+	}, silent=TRUE)	 
+	
+	
+		print("Support Vector Regression Linear Kernel") 
+	### SVR
+	try({
+		set.seed(1492)
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+	  svm_daily_ischemic_count <- train(X_train, y_train,
+					    trControl = timecontrol_cv,
+					    tuneGrid = tuneGrid,
+					    method = "svmLinear",
+					    preProcess = c("center","scale"), 
+					    verbosity = 0)
+	      
+	  
+	  
+	  final_grid <- expand.grid(C =svm_daily_ischemic_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_daily_ischemic_count <- train(X_train, y_train,
+	                                    tuneGrid = final_grid,
+	                                    method = "svmLinear",
+	                                    preProcess = c("center", "scale"),
+	                                    verbosity = 0)
+
+
+	  #predict
+	    preds <- predict(svm_daily_ischemic_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	    #metrics
+	    rmse <- paste("RMSE of SVM daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
+	    mae <- paste("MAE of SVM daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
+	    openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 15)
+	    openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 16)
+	
+	  #save model
+	  saveRDS(object = svm_daily_ischemic_count, file = paste("./results/svm_linear_daily_ischemic_count_",site.name,".rda",sep = ""))
 	  rm(svm_daily_ischemic_count)
 
 	  End.time <- Sys.time()	 
@@ -452,31 +539,36 @@ openxlsx:::addWorksheet(wb, "Daily")
 	### RF
 	  #hyper parameter
 	try({
-		set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	  set.seed(1492)
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
-	  forest <- train(train_bleeding_count_daily~.,data=train_daily, 
-					method='rf', 
-					trControl=timecontrol_cv,
+	  forest <- train(train_bleeding_count_daily~.,
+					data=train_daily, 
+					method = customRF, 
+					trControl = timecontrol_cv,
 					preProcess = c("center","scale"),					
-					metric='RMSE',
-					tuneGrid =tunegrid )
+					metric = 'RMSE',
+					tuneGrid = tunegrid )
 
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final rf model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  X_train = train_features_daily 
 	  y_train = train_bleeding_count_daily
 	  X_test = test_features_daily 
 	  y_test = test_bleeding_count_daily
-	  forest_daily_bleeding_count = train(X_train, y_train,  
-											preProcess = c("center","scale"),
-											tuneGrid = final_grid,
-											method = "rf", 
-											verbosity = 0)
+	  forest_daily_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric ='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_daily_bleeding_count, newdata = as.data.frame(test_features_daily), type = "raw")
 	  #metrics
@@ -579,6 +671,45 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  saveRDS(object = svm_daily_bleeding_count, file = paste("./results/svm_daily_bleeding_count_", site.name, ".rda", sep = ""))
 	  rm(svm_daily_bleeding_count)
 	  }, silent=TRUE)	
+	  
+	  
+	  	print("Support Vector Regression Linear Kernel") 
+	### SVR
+	  #svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	try({	
+	set.seed(1492)	
+	  tuneGrid <- eexpand.grid(C = c(2^(-6:6)))
+	  svm_daily_bleeding_count <- train(X_train, y_train,
+					    trControl = timecontrol_cv,
+					    tuneGrid = tuneGrid,
+					    method = "svmLinear",
+					    preProcess = c("center", "scale"),
+					    verbosity = 0)
+	  
+	  final_grid <- expand.grid(C =svm_daily_bleeding_count$bestTune$C,
+								sigma=svm_daily_bleeding_count$bestTune$sigma )  
+	 
+	 #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+
+	  svm_daily_bleeding_count <- train(X_train, y_train,
+					    tuneGrid = final_grid,
+					    method = "svmLinear",
+					    preProcess = c("center", "scale"),
+					    verbosity = 0)
+ 
+	  #predict
+	  preds <- predict(svm_daily_bleeding_count, newdata = as.data.frame(test_features_daily), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM daily model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_daily))
+	  mae <- paste("MAE of SVM daily model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_daily))
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 23)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Daily", withFilter = FALSE, startRow = 24)
+	  #save model
+	  saveRDS(object = svm_daily_bleeding_count, file = paste("./results/svm_linear_daily_bleeding_count_", site.name, ".rda", sep = ""))
+	  rm(svm_daily_bleeding_count)
+	  }, silent=TRUE)
 
 	 
   
@@ -673,26 +804,31 @@ print("Models for Two-day count")
 	  try({
 	  	set.seed(1492)
 	  #hyper parameter
-	  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_total_count_two_day~.,
-							data=train_two_day, 
+							data = train_two_day, 
 							preProcess = c("center","scale"),
-							method='rf', 
-							trControl=timecontrol_cv_two_day, 
-							metric='RMSE',
+							method = customRF, 
+							trControl = timecontrol_cv_two_day, 
+							metric = 'RMSE',
 							tuneGrid =tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_two_day_total_count = train(X_train, y_train,  
-									preProcess = c("center","scale"),
-									tuneGrid = final_grid,
-									method = "rf", verbosity = 0)
+	  forest_two_day_total_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric='RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
@@ -760,7 +896,6 @@ print("Models for Two-day count")
 
 	print("Support Vector Regression") 
 	### SVR
-	  #svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters
 	try({
 	  set.seed(1492)
@@ -796,6 +931,47 @@ print("Models for Two-day count")
 	  rm(svm_two_day_total_count)
 
 	}, silent=TRUE)	  
+	
+	
+	print("Support Vector Regression Linear Kernel") 
+	### SVR
+	  #grid space to search for the best hyper parameters
+	try({
+	  set.seed(1492)
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+	  svm_two_day_total_count <- train(X_train, y_train, 
+					   trControl = timecontrol_cv_two_day,
+					   tuneGrid = tuneGrid,
+					   method = "svmLinear",
+					   preProcess = c("center","scale"),
+					   verbosity = 0)
+	  
+	  
+	  final_grid <- expand.grid(C =svm_two_day_total_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+
+	  svm_two_day_total_count <- train(X_train, y_train,
+					   tuneGrid = final_grid,
+					   method = "svmLinear",
+					   preProcess = c("center", "scale"),
+					   verbosity = 0)
+
+	  
+      #predict
+	  preds <- predict(svm_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM two_day model for total count", RMSE(pred = preds,obs = test_total_count_two_day))
+	  mae <- paste("MAE of SVM two_day model for total count", MAE(pred = preds,obs = test_total_count_two_day))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 7)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 8)
+	  # save model
+	  # not OS agnostic consider file.path() instead
+	  saveRDS(object = svm_two_day_total_count, file = paste("./results/svm_linear_two_day_total_count_", site.name, ".rda", sep = ""))
+	  rm(svm_two_day_total_count)
+
+	}, silent=TRUE)		
+	
 
 	print("Fitting models for Ischemic_count for two_day resolution")
 	# 2-b.################################################# Models for Ischemic count################################### 
@@ -844,28 +1020,33 @@ print("Models for Two-day count")
 	### RF
 	  #hyper parameter
 	try({
-	  set.seed(1492)
-	  tunegrid <-expand.grid(mtry=c(17,18,19,20))
+	  set.seed(1492)	  
+	  
+	  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_ischemic_count_two_day ~ .,
 	                  data = train_two_day, 
-	                  method = 'rf',
+	                  method = customRF,
 	                  trControl = timecontrol_cv_two_day, 
 					  preProcess = c("center","scale"),
 	                  metric = 'RMSE',
 	                  tuneGrid = tunegrid)
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
-	  #final xgb model with chosen hyper parameter
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	  #final rf model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_two_day_ischmeic_count = train(X_train, y_train, 
-								preProcess = c("center","scale"),
-								tuneGrid = final_grid,
-								method = "rf", 
-								verbosity = 0)
+	  forest_two_day_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_two_day_ischmeic_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
@@ -932,7 +1113,6 @@ print("Models for Two-day count")
 	
 	print("Support Vector Regression") 
 	### SVR
-	  #svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters+
 	  try({
 		  set.seed(1492)
@@ -966,6 +1146,45 @@ print("Models for Two-day count")
 		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 16)
 		  # save model
 		  saveRDS(object = svm_two_day_ischemic_count,file = paste("./results/svm_two_day_ischemic_count_",site.name,".rda",sep = ""))
+		  rm(svm_two_day_ischemic_count)
+	}, silent=TRUE)
+
+
+	print("Support Vector Regression Linear Kernel") 
+	### SVR
+	  #grid space to search for the best hyper parameters+
+	  try({
+		  set.seed(1492)
+		  tuneGrid <- expand.grid(C = c(0.25, .5, 1))
+
+		  svm_two_day_ischemic_count <- train(X_train, y_train, 
+							  trControl = timecontrol_cv_two_day,
+							  tuneGrid = tuneGrid,
+							  method = "svmLinear",
+							  preProcess = c("center", "scale"),
+							  verbosity = 0)
+		
+		  
+		  
+		  final_grid <- expand.grid(C =svm_two_day_ischemic_count$bestTune$C)  
+		  # final svr model with chosen hyper parameter
+		  print("fitting SVR based on chosen hyperparameter")
+		  svm_two_day_ischemic_count <- train(X_train, y_train, 
+										 tuneGrid = final_grid,
+										 method = "svmLinear",
+										 preProcess = c("center", "scale"), 
+										 verbosity = 0)
+
+		  # predict
+		
+		  preds <- predict(svm_two_day_ischemic_count, newdata = as.data.frame(test_features_two_day), type = "raw")
+		  # metrics
+		  rmse <- paste("RMSE of SVM two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
+		  mae <- paste("MAE of SVM two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 15)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 16)
+		  # save model
+		  saveRDS(object = svm_two_day_ischemic_count,file = paste("./results/svm_linear_two_day_ischemic_count_",site.name,".rda",sep = ""))
 		  rm(svm_two_day_ischemic_count)
 	}, silent=TRUE)
 
@@ -1014,27 +1233,31 @@ print("Models for Two-day count")
 	try({
 		set.seed(1492)
 		  #hyper parameter
-		  tunegrid <- expand.grid(mtry=c(17,18,19,20))
+		  tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  #repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_bleeding_count_two_day~.,
-						data=train_two_day, 
-						method='rf', 
-						trControl=timecontrol_cv_two_day, 
+						data = train_two_day, 
+						method = customRF, 
+						trControl = timecontrol_cv_two_day, 
 						preProcess = c("center","scale"),
-						metric='RMSE',
-						tuneGrid =tunegrid )
+						metric = 'RMSE',
+						tuneGrid = tunegrid )
 
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		    final_grid <- expand.grid(mtry = forest$bestTune$mtry,)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_two_day_bleeding_count = train(X_train, y_train,  
-												tuneGrid = final_grid,
-												preProcess = c("center","scale"),
-												method = "rf", 
-												verbosity = 0)
+		  forest_two_day_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds <- predict(forest_two_day_bleeding_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 		  #metrics
@@ -1102,8 +1325,7 @@ print("Models for Two-day count")
 	
 	print("Support Vector Regression") 
 	### SVR
-	  #svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
-	  #grid space to search for the best hyper parameters
+	#grid space to search for the best hyper parameters
 	try({
 	set.seed(1492)
 		  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
@@ -1133,6 +1355,42 @@ print("Models for Two-day count")
 		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 24)
 		  #save model
 		  saveRDS(object = svm_two_day_bleeding_count,file = paste("./results/svm_two_day_bleeding_count_",site.name,".rda",sep = ""))
+		  rm(svm_two_day_bleeding_count)
+	}, silent=TRUE)
+	
+	
+print("Support Vector Regression linear kernel") 
+	### SVR
+	#grid space to search for the best hyper parameters
+	try({
+	set.seed(1492)
+		  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+		  svm_two_day_bleeding_count <- train(X_train, y_train,
+							  trControl = timecontrol_cv_two_day,
+							  tuneGrid = tuneGrid,method = "svmLinear",
+							  preProcess = c("center","scale"),
+							  verbosity = 0)
+
+		  final_grid <- expand.grid(C =svm_two_day_bleeding_count$bestTune$C)  
+		  # final svr model with chosen hyper parameter
+		  print("fitting SVR based on chosen hyperparameter")
+		  svm_two_day_bleeding_count <- train(X_train, y_train,
+											  tuneGrid = final_grid,
+											  method = "svmLinear",
+											  preProcess = c("center" ,"scale"),
+											  verbosity = 0)
+
+		
+		  # predict
+
+		  preds <- predict(svm_two_day_bleeding_count, newdata = as.data.frame(test_features_two_day), type = "raw")
+		  # metrics
+		  rmse <- paste("RMSE of SVM two_day model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_two_day))
+		  mae <- paste("MAE of SVM two_day model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_two_day))
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 23)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 24)
+		  #save model
+		  saveRDS(object = svm_two_day_bleeding_count,file = paste("./results/svm_linear_two_day_bleeding_count_",site.name,".rda",sep = ""))
 		  rm(svm_two_day_bleeding_count)
 	}, silent=TRUE)
 	
@@ -1201,7 +1459,9 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	 try({
 	 set.seed(1492)
 	  #hyper parameter
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', 
 	                            number=5, 
@@ -1210,21 +1470,23 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	                            returnData = FALSE)
 	  #fit model
 	  forest <- train(train_total_count_weekly~.,
-	                  data=train_weekly, 
-	                  method='rf', 
+	                  data = train_weekly, 
+	                  method = customRF, 
 	                  trControl=repeat_cv, 
 	                  metric='RMSE',
 	                  tuneGrid =tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_weekly_total_count = train(X_train, y_train,  
-	                                    tuneGrid = final_grid,
-	                                    preProcess = c("center","scale"),
-	                                    method = "rf", 
-	                                    verbosity = 0)
+	  forest_weekly_total_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds <- predict(forest_weekly_total_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 	  #metrics
@@ -1292,6 +1554,8 @@ openxlsx:::addWorksheet(wb, "Weekly")
 		  saveRDS(object = xgb_weekly_total_count,file = paste("./results/xgb_weekly_total_count_",site.name,".rda",sep = ""))
 	  rm(xgb_weekly_total_count)
 	}, silent=TRUE) 
+	
+	
 	print("Support Vector Regression") 
 	### SVR
 	try({
@@ -1302,7 +1566,8 @@ openxlsx:::addWorksheet(wb, "Weekly")
 
 	  svm_weekly_total_count <- train(X_train, y_train,
 					  trControl = svr_trcontrol,
-					  tuneGrid = tuneGrid,method = "svmRadial",
+					  tuneGrid = tuneGrid,
+					  method = "svmRadial",
 					  preProcess = c("center","scale"), 
 					  verbosity = 0)
   
@@ -1310,7 +1575,8 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_total_count <- train(X_train, y_train,
-					  tuneGrid = final_grid,method = "svmRadial",
+					  tuneGrid = final_grid,
+					  method = "svmRadial",
 					  preProcess = c("center", "scale"),
 					  verbosity = 0)
 
@@ -1324,6 +1590,45 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 8)
 	  # save model
 	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_weekly_total_count_",site.name,".rda",sep = ""))
+	  rm(svm_weekly_total_count)
+	}, silent=TRUE)
+	
+	
+	print("Support Vector Regression Linear kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+
+	  svm_weekly_total_count <- train(X_train, y_train,
+					  trControl = svr_trcontrol,
+					  tuneGrid = tuneGrid,
+					  method = "svmLinear",
+					  preProcess = c("center","scale"), 
+					  verbosity = 0)
+  
+	  final_grid <- expand.grid(C =svm_weekly_total_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_weekly_total_count <- train(X_train, y_train,
+					  tuneGrid = final_grid,
+					  method = "svmLinear",
+					  preProcess = c("center", "scale"),
+					  verbosity = 0)
+
+	  # predict
+
+	  preds <- predict(svm_weekly_total_count, newdata = as.data.frame(test_features_weekly), type = "raw")
+	  # metrics
+	  rmse <- paste("RMSE of SVM weekly model for total count",RMSE(pred = preds,obs = test_total_count_weekly))
+	  mae <- paste("MAE of SVM weekly model for total count",MAE(pred = preds,obs = test_total_count_weekly))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 7)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 8)
+	  # save model
+	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_linear_weekly_total_count_",site.name,".rda",sep = ""))
+	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_linear_weekly_total_count_",site.name,".rda",sep = ""))
 	  rm(svm_weekly_total_count)
 	}, silent=TRUE)
 	  
@@ -1365,26 +1670,30 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #hyper parameter
 	  try({
 		  set.seed(1492)
-		  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+		  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_ischemic_count_weekly~.,
-		                  data=train_weekly, 
-		                  method='rf',
+		                  data = train_weekly, 
+		                  method = customRF,
 		                  preProcess = c("center","scale"),
-		                  trControl=repeat_cv, 
-		                  metric='RMSE',tuneGrid =tunegrid )
+		                  trControl = repeat_cv, 
+		                  metric = 'RMSE',tuneGrid =tunegrid )
 		  
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		   final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_weekly_ischmeic_count = train(X_train, y_train,  
-		                                       preProcess = c("center","scale"),
-		                                       tuneGrid = final_grid,
-		                                       method = "rf", 
-		                                       verbosity = 0)
+		  forest_weekly_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds<-predict(forest_weekly_ischmeic_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 		  #metrics
@@ -1484,6 +1793,44 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  saveRDS(object = svm_weekly_ischemic_count,file = paste("./results/svm_weekly_ischemic_count_",site.name,".rda",sep = ""))
 	  rm(svm_weekly_ischemic_count)
 	}, silent=TRUE)
+	
+	
+	print("Support Vector Regression Linear kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+
+	  svm_weekly_ischemic_count <- train(X_train, y_train,
+	                                     trControl = svr_trcontrol,
+	                                     tuneGrid = tuneGrid,
+	                                     method = "svmLinear",
+	                                     preProcess = c("center","scale"),
+	                                     verbosity = 0)
+
+	  final_grid <- expand.grid(C =svm_weekly_ischemic_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_weekly_ischemic_count <- train(X_train, y_train,
+	                                     tuneGrid = final_grid,
+	                                     method = "svmLinear",
+	                                     preProcess = c("center","scale"), 
+	                                     verbosity = 0)
+
+	# predict
+
+	  preds <- predict(svm_weekly_ischemic_count, newdata = as.data.frame(test_features_weekly), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM weekly model for ischemic count",RMSE(pred = preds, obs = test_ischemic_count_weekly))
+	  mae <- paste("MAE of SVM weekly model for ischemic count",MAE(pred = preds, obs = test_ischemic_count_weekly))
+	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 15)
+	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 16)
+	  #save model
+	  saveRDS(object = svm_weekly_ischemic_count,file = paste("./results/svm_linear_weekly_ischemic_count_",site.name,".rda",sep = ""))
+	  rm(svm_weekly_ischemic_count)
+	}, silent=TRUE)
 
 	 
 	 
@@ -1525,27 +1872,31 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #hyper parameter
 	  try({
 	  set.seed(1492)
-		  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+		  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 		  #cross validation
 		  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 		  #fit model
 		  forest <- train(train_bleeding_count_weekly~.,
-		                  data=train_weekly, 
-		                  method='rf',
+		                  data = train_weekly, 
+		                  method = customRF,
 		                  preProcess = c("center","scale"),
-		                  trControl=repeat_cv, 
-		                  metric='RMSE',
-		                  tuneGrid =tunegrid )
+		                  trControl = repeat_cv, 
+		                  metric = 'RMSE',
+		                  tuneGrid = tunegrid )
 
 		  #final grid 
-		  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+		    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 		  #final xgb model with chosen hyper parameter
 		  print("fitting forest based on chosen hyperparameter")
-		  forest_weekly_bleeding_count = train(X_train, y_train, 
-		                                       tuneGrid = final_grid,
-		                                       preProcess = c("center","scale"),
-		                                       method = "rf", 
-		                                       verbosity = 0)
+		  forest_weekly_bleeding_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 		  #predict
 		  preds<-predict(forest_weekly_bleeding_count, newdata = as.data.frame(test_features_weekly), type = "raw")
 		  #metrics
@@ -1638,7 +1989,41 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  rm(svm_weekly_bleeding_count)
 }, silent=TRUE)
 	 
-  
+print("Support Vector Regression linear kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+
+	  svm_weekly_bleeding_count <- train(X_train, y_train, 
+	                                     trControl = svr_trcontrol,
+	                                     tuneGrid = tuneGrid,
+	                                     method = "svmLinear",
+	                                     preProcess = c("center", "scale"), 
+	                                     verbosity = 0)
+
+
+	  final_grid <- expand.grid(C =svm_weekly_bleeding_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_weekly_bleeding_count <- train(X_train, y_train, 
+					     tuneGrid = final_grid,
+					     method = "svmLinear",
+					     preProcess = c("center", "scale"), 
+					     verbosity = 0)
+
+	  preds <- predict(svm_weekly_bleeding_count, newdata = as.data.frame(test_features_weekly), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM weekly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_weekly))
+	  mae<- paste("MAE of SVM weekly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_weekly))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 23)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 24)
+	  #save model
+	  saveRDS(object = svm_weekly_bleeding_count,file = paste("./results/svm_linear_weekly_bleeding_count_",site.name,".rda",sep = ""))
+	  rm(svm_weekly_bleeding_count)
+}, silent=TRUE)  
 
 #4.####################################################Monthly#####################################################
 print("Models for Monthly count")
@@ -1697,7 +2082,9 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', 
 	                            number=5, 
@@ -1707,21 +2094,23 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #fit model
 	  forest <- train(train_total_count_monthly~.,
 	                  data = train_monthly, 
-	                  method='rf', 
+	                  method = customRF, 
 	                  preProcess = c("center","scale"),
 	                  trControl = repeat_cv, 
-	                  metric='RMSE', 
+	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
 	  
 	  # final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  # final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_monthly_total_count = train(X_train, y_train,
-	                                     tuneGrid = final_grid,
-	                                     preProcess = c("center","scale"),
-	                                     method = "rf", 
-	                                     verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  # predict
 	  preds <- predict(forest_monthly_total_count, newdata = as.data.frame(test_features_monthly), type = "raw")
 	  # metrics
@@ -1814,6 +2203,43 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  saveRDS(object = svm_monthly_total_count,file = paste("./results/svm_monthly_total_count_",site.name,".rda",sep = ""))
 	  rm(svm_monthly_total_count)
 	}, silent=TRUE)
+	
+	
+		print("Support Vector Regression Linear kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+	  svm_monthly_total_count <- train(X_train, y_train, 
+	                                   trControl = svr_trcontrol, 
+	                                   tuneGrid = tuneGrid, 
+	                                   method = "svmLinear", 
+	                                   preProcess = c("center","scale"), 
+	                                   verbosity = 0)
+
+
+
+	  final_grid <- expand.grid(C =svm_monthly_total_count$bestTune$C,sigma=svm_monthly_total_count$bestTune$sigma )  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_monthly_total_count <- train(X_train, y_train,  
+	                                   tuneGrid = final_grid,
+									   method = "svmLinear", 
+	                                   preProcess = c("center","scale"), 
+	                                   verbosity = 0)
+
+	  preds <- predict(svm_monthly_total_count, newdata = as.data.frame(test_features_monthly), type = "raw")
+	  #metrics
+	  rmse <- paste("RMSE of SVM monthly model for total count", RMSE(pred = preds,obs = test_total_count_monthly))
+	  mae <- paste("MAE of SVM monthly model for total count", MAE(pred = preds,obs = test_total_count_monthly))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 7)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 8)
+	  #save model
+	  saveRDS(object = svm_monthly_total_count,file = paste("./results/svm_linear_monthly_total_count_",site.name,".rda",sep = ""))
+	  rm(svm_monthly_total_count)
+	}, silent=TRUE)
 	  
 
 	print("Fitting models for Ischemic_count for monthly resolution")
@@ -1853,27 +2279,31 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_ischemic_count_monthly~.,
-	                  data=train_monthly,
-	                  method='rf',
+	                  data = train_monthly,
+	                  method = customRF,
 	                  preProcess = c("center","scale"),
-	                  trControl=repeat_cv, 
-	                  metric='RMSE',
-	                  tuneGrid =tunegrid )
+	                  trControl = repeat_cv, 
+	                  metric = 'RMSE',
+	                  tuneGrid = tunegrid )
 	  
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
-	  forest_monthly_ischmeic_count = train(X_train, y_train,  
-	                                        tuneGrid = final_grid,
-	                                        preProcess = c("center","scale"),
-	                                        method = "rf", 
-	                                        verbosity = 0)
+	  forest_monthly_ischmeic_count = train(X_train, y_train,
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  #predict
 	  preds<-predict(forest_monthly_ischmeic_count, newdata = as.data.frame(test_features_monthly), type = "raw")
 	  #metrics
@@ -1964,6 +2394,42 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  saveRDS(object = svm_monthly_ischemic_count,file = paste("./results/svm_monthly_ischemic_count_",site.name,".rda",sep = ""))
 	  rm(svm_monthly_ischemic_count)
 	}, silent=TRUE)
+	
+	
+	print("Support Vector Regression Linear kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+	  svm_monthly_ischemic_count <- train(X_train, y_train,
+	                                      trControl = svr_trcontrol,
+	                                      tuneGrid = tuneGrid,
+	                                      method = "svmLinear",
+	                                      preProcess = c("center", "scale"),
+	                                      verbosity = 0)
+
+
+	  final_grid <- expand.grid(C =svm_monthly_ischemic_count$bestTune$C)  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_monthly_ischemic_count <- train(X_train, y_train,
+	                                      tuneGrid = final_grid,
+										  method = "svmLinear",
+	                                      preProcess = c("center", "scale"),
+	                                      verbosity = 0)
+
+	  preds <- predict(svm_monthly_ischemic_count, newdata = as.data.frame(test_features_monthly), type = "raw")
+	  # metrics
+	  rmse <- paste("RMSE of SVM monthly model for ischemic count", RMSE(pred = preds, obs = test_ischemic_count_monthly))
+	  mae <- paste("MAE of SVM monthly model for ischemic count", MAE(pred = preds, obs = test_ischemic_count_monthly))
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE, startRow = 15)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE, startRow = 16)
+	  #save model
+	  saveRDS(object = svm_monthly_ischemic_count,file = paste("./results/svm_linear_monthly_ischemic_count_",site.name,".rda",sep = ""))
+	  rm(svm_monthly_ischemic_count)
+	}, silent=TRUE)
 
 	print("Fitting models for Bleeding_count for monthly resolution")
 	#4-c.################################################# Models for Bleeding count###################################
@@ -2002,27 +2468,31 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #hyper parameter
 	try({
 	set.seed(1492)
-	  tunegrid <- expand.grid(mtry=c(5,6,7,8))
+	  tunegrid <- expand.grid(.mtry = seq(5, 8, 1),
+	                          .ntree = seq(1000, 2000, 500), 
+	                          .nodesize = 5)
 	  #cross validation
 	  repeat_cv <- trainControl(method='repeatedcv', number=5, repeats=3,verboseIter = TRUE,returnData = FALSE)
 	  #fit model
 	  forest <- train(train_bleeding_count_monthly~.,
-	                  data=train_monthly,
-	                  method='rf', 
-	                  trControl=repeat_cv,
+	                  data = train_monthly,
+	                  method = customRF, 
+	                  trControl = repeat_cv,
 	                  preProcess = c("center","scale"),
-	                  metric='RMSE',
-	                  tuneGrid =tunegrid )
+	                  metric = 'RMSE',
+	                  tuneGrid = tunegrid )
 
 	  #final grid 
-	  final_grid <- expand.grid(mtry = forest$bestTune$mtry)
+	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
 	  #final xgb model with chosen hyper parameter
 	  print("fitting forest based on chosen hyperparameter")
 	  forest_monthly_bleeding_count = train(X_train, y_train,
-	                                        preProcess = c("center","scale"),
-	                                        tuneGrid = final_grid,
-	                                        method = "rf", 
-	                                        verbosity = 0)
+	                                   method = 'rf',
+	                                   metric = 'RMSE',
+	                                   preProcess = c("center","scale"),
+	                                   tuneGrid = final_grid,
+	                                   ntree = forest$bestTune$ntree,
+	                                   verbosity = TRUE)
 	  
 	  # predict
 	  preds <- predict(forest_monthly_bleeding_count, newdata = as.data.frame(test_features_monthly), type = "raw")
@@ -2054,8 +2524,8 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  xgbGrid   <- expand.grid(nrounds = c(100,200), 
 	                           max_depth = c(1,3,6,9),
 	                           colsample_bytree = seq(0.5, 0.9, length.out = 5),
-	                           eta =c( .2, .1, .05, .01),
-	                           gamma=0,
+	                           eta = c( .2, .1, .05, .01),
+	                           gamma = 0,
 	                           min_child_weight = 1,
 	                           subsample = 1)
 	  # train the model
@@ -2130,7 +2600,42 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  rm(svm_monthly_bleeding_count)
 	}, silent=TRUE)
 	 
-	 
+	
+	print("Support Vector Regression Linear Kernel") 
+	### SVR
+	try({
+	set.seed(1492)
+	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
+	  #grid space to search for the best hyper parameters
+	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
+
+	  svm_monthly_bleeding_count <- train(X_train, y_train,
+	                                      trControl = svr_trcontrol,
+	                                      tuneGrid = tuneGrid,
+	                                      method = "svmLinear",
+	                                      preProcess = c("center", "scale"), # features are already centered
+	                                      verbosity = 0)
+	  final_grid <- expand.grid(C =svm_monthly_bleeding_count$bestTune$C )  
+	  #final svr model with chosen hyper parameter
+	  print("fitting SVR based on chosen hyperparameter")
+	  svm_monthly_bleeding_count <- train(X_train, y_train,
+	                                      tuneGrid = final_grid,
+	                                      method = "svmLinear",
+	                                      preProcess = c("center", "scale"), # features should be already centered
+	                                      verbosity = 0)
+
+	  preds <- predict(svm_monthly_bleeding_count, newdata = as.data.frame(test_features_monthly), type = "raw")
+	  # metrics
+	  rmse <- paste("RMSE of SVM monthly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_monthly))
+	  mae <- paste("MAE of SVM monthly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_monthly))
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE, startRow = 23)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE, startRow = 24)
+	  # save model
+	  # path not OS agnostic. consider file.path()
+	  saveRDS(object = svm_monthly_bleeding_count,file = paste("./results/svm_linear_monthly_bleeding_count_",site.name,".rda",sep = ""))
+	  rm(svm_monthly_bleeding_count)
+	}, silent=TRUE)
+	
 # save final output	
 openxlsx:::saveWorkbook(wb, "Results/ModelMetrics_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
 

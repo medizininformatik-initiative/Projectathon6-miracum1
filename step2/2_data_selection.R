@@ -97,7 +97,7 @@ combined_tables <- list(enc=data.table(), pat = data.table(), con = data.table()
 
 while(!is.null(encounter_request)&&length(encounter_request)>0){
   enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, 
-                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = 100)
+                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = conf$max_bundles)
   
   enc_tables <- fhir_crack(enc_bundles, 
                 design = fhir_design(enc = encounters, pat = patients, con = condition),
