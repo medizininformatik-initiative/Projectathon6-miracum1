@@ -9,4 +9,4 @@ services:
       - ./conf:/conf
       - ./config.yml:/config.yml
     #      - ./localca.pem:/usr/local/share/ca-certificates/localca.crt
-    image: "nandhinis08/projectathon6-miracum1-step2"
+    image: "nandhinis08/projectathon6-miracum1-step2-blaze"
