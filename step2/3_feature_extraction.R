@@ -22,10 +22,24 @@ print("loading stroke cohort")
 df.stroke.cohort <- read.csv(file  = file.path(getwd(),"data/stroke_cohort.csv"))
 df.stroke.cohort <- subset(df.stroke.cohort,select = -c(X))
 df.stroke.cohort$admission_datetime <- df.stroke.cohort$admission_date
+
+################## checking for missing dates in admission, discharge and recorded date ##############
+print(" Handling missing date")
+df.stroke.cohort$admission_date <- coalesce(df.stroke.cohort$admission_date, 
+                                            df.stroke.cohort$discharge_date, 
+                                            df.stroke.cohort$recorded_date)
+print(paste("Missing dates count after coalesce:", length(which(is.na(df.stroke.cohort$admission_date)))))
+
+if(length(which(is.na(df.stroke.cohort$admission_date))) > 0){
+  df.stroke.cohort <- df.stroke.cohort[-c(which(is.na(df.stroke.cohort$admission_date))),]
+}
+
+print(paste("Stroke cohort rows after removing missing dates:", nrow(df.stroke.cohort)))
 df.stroke.cohort$admission_date <- as.character(as.Date(df.stroke.cohort$admission_date))
 
-print("extracting lat and long based on PLZ")
+
 ###################extract latitude and longitude ###################
+print("extracting lat and long based on PLZ")
 df.plz <- read.csv(file  = file.path(getwd(), "data/plz.csv"))
 df.plz$plz <- str_pad(df.plz$plz, 5, pad = "0")
 df.stroke.cohort$patient_zip <- as.character(df.stroke.cohort$patient_zip)
