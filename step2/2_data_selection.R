@@ -6,7 +6,7 @@ gc() # optional
 start <- Sys.time()
 
 #load/install a packages
-source("install_R_packages.R")
+#source("install_R_packages.R")
 
 library(data.table)
 
