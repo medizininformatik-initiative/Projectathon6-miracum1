@@ -203,7 +203,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #final xgb model with chosen hyper parameter
 	  print("fitting xgboost based on chosen hyperparameter")
 	  xgb_daily_total_count = train(X_train, y_train, 
-									trControl = timecontrol_cv,
 									tuneGrid = final_grid,
 									preProcess = c("center","scale"),
 									method = "xgbTree", 
@@ -328,21 +327,25 @@ openxlsx:::addWorksheet(wb, "Daily")
 	### RF
 	  # hyper parameter
 	try({
-	  set.seed(1492)
+	 set.seed(1492)
 	 tunegrid <- expand.grid(.mtry = seq(17, 20, 1),
 	                          .ntree = seq(1000, 2000, 500), 
 	                          .nodesize = 5)
-	  # cross-validation
-	  # repeat_cv <- trainControl(method = 'repeatedcv', number = 5, repeats = 3, verboseIter = TRUE, returnData = FALSE)
-	  
+	 
 	  #fit model
 	  forest <- train(train_ischemic_count_daily~.,
 	                  data = train_daily, 
 	                  method = customRF, 
 	                  trControl = timecontrol_cv, 
-					  preProcess = c("center","scale"),
+					          preProcess = c("center","scale"),
 	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
+	  
+	  #predict
+	  preds_tune <- predict(forest, newdata = as.data.frame(test_features_daily), type = "raw")
+	  
+	  rmse_tune <- paste("RMSE of random forest daily model for ischmeic count", RMSE(pred = preds_tune, obs = test_ischemic_count_daily))
+	  mae_tune <- paste("MAE of Poisson daily model for ischmeic count", MAE(pred = preds_tune, obs = test_ischemic_count_daily))
 	  
 	  # final grid 
 	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
@@ -2637,7 +2640,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	}, silent=TRUE)
 	
 # save final output	
-openxlsx:::saveWorkbook(wb, "Results/ModelMetrics_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
+openxlsx:::saveWorkbook(wb, "results/ModelMetrics_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
 
 end.time <- Sys.time()
 
