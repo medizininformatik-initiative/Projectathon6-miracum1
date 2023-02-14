@@ -2327,7 +2327,7 @@ try({
 	rm(svm_two_day_bleeding_count)
 	
 }, silent=TRUE)
-openxlsx:::saveWorkbook(wb, "Results/ModelMetrics_fixed_window_true_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
+openxlsx:::saveWorkbook(wb, "results/ModelMetrics_fixed_window_true_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
 end.time <- Sys.time()
 
 print(end.time - start.time)
