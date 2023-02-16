@@ -154,6 +154,9 @@ Custom Random Forest function to tune mtry and ntree parameter. Made the max_bun
 SVM linear kernal models added and source path error fixed by changing source(file.path(getwd(), "customRF.R")) to
 source(file.path(getwd(), "customRF.R") , local = TRUE) (cannot open file '//customRF.R': No such file or directory #16)
 
+#### Feb 16, 2023
+Added count parameter to config and updated fhir query to drop warnings related to new updates in FHIRCRACKr. 
+Fix for issue #18
 
 ## 2022 Step 1 - Select Abfrage
 

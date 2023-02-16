@@ -5,6 +5,7 @@ default:
   password:        NULL
 # max bundle of  FHIR server
   max_bundles:  50 
+  count: 2
 ## TRUE = peer verification anschalten, FALSE = peer verification ausschalten   
   ssl_verify_peer: TRUE
 ##Proxy configs
