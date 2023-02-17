@@ -38,16 +38,11 @@ sep = " || "
 #To get encounters where condition is only referenced in encounter Encounter:diagnosis
 #To get encounters where encounter is referenced in condition  Condition:encounter
 
-#configure the fhir search url
-encounter_request <- fhir_url(url = conf$serverbase, 
-                              resource = "Condition", 
-                              parameters = c("recorded-date" = "ge2015-01-01",
-											"recorded-date" = "le2021-12-31",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_revinclude"="Encounter:diagnosis",
-                                             "_include" = "Condition:encounter",
-                                             "_include"="Condition:subject"
-                              ))
+# Needed icd_codes
+icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9',
+               'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9',
+               'I63.0','I63.1','I63.2','I63.3','I63.4','I63.5','I63.6','I63.8','I63.9','I67.80!')
+
 
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
 patients <- fhir_table_description(resource = "Patient",
@@ -55,9 +50,9 @@ patients <- fhir_table_description(resource = "Patient",
                                             gender        = "gender",
                                             birthdate     = "birthDate",
                                             patient_zip   = "address/postalCode"),
-                                   style = fhir_style(sep=sep,
-                                                      brackets = brackets,
-                                                      rm_empty_cols = FALSE)
+											sep=sep,
+											brackets = brackets,
+											rm_empty_cols = FALSE)
 )
 
 
@@ -72,9 +67,9 @@ encounters <- fhir_table_description(resource = "Encounter",
                                               diagnosis_use = "diagnosis/use/coding/code",
                                               discharge_reason = "hospitalization/dischargeDisposition/coding/code",
                                               rank = "diagnosis/rank"),
-                                     style = fhir_style(sep=sep,
-                                                        brackets = brackets,
-                                                        rm_empty_cols = FALSE)
+											  sep=sep,
+                                              brackets = brackets,
+                                              rm_empty_cols = FALSE
 )
 
 
@@ -85,36 +80,49 @@ condition <- fhir_table_description(resource = "Condition",
                                              system         = "code/coding/system",
                                              encounter_id = "encounter/reference",
                                              patient_id     = "subject/reference"),
-                                    style = fhir_style(sep=sep,
-                                                       brackets = brackets,
-                                                       rm_empty_cols = FALSE)
+											sep=sep,
+                                            brackets = brackets,
+                                            rm_empty_cols = FALSE
 )
 
 
 #download the bundles bit by bit and crack them immediately
 start_time <- Sys.time()
 combined_tables <- list(enc=data.table(), pat = data.table(), con = data.table())
-
-while(!is.null(encounter_request)&&length(encounter_request)>0){
-  enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, 
-                             verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = conf$max_bundles)
-  
-  enc_tables <- fhir_crack(enc_bundles, 
-                design = fhir_design(enc = encounters, pat = patients, con = condition),
-                data.table = TRUE)
-  
-  combined_tables <- lapply(names(combined_tables), 
-                       function(name){
-                           rbind(combined_tables[[name]], enc_tables[[name]], fill=TRUE)
-                       })
-  
-  names(combined_tables) <- names(enc_tables)
-  #get rid of duplicates
-  combined_tables$enc <- unique(combined_tables$enc)
-  combined_tables$con <- unique(combined_tables$con)
-  combined_tables$pat <- unique(combined_tables$pat)
-  
-  encounter_request <- fhir_next_bundle_url()
+for(code in icd_codes){
+ print(paste("Method 1 extracting for ICD",code))
+ 
+	encounter_request <- fhir_url(url = conf$serverbase, 
+                              resource = "Condition", 
+                              parameters = c("recorded-date" = "ge2015-01-01",
+											"recorded-date" = "le2021-12-31",
+                                             "code"= code,
+                                             "_revinclude"="Encounter:diagnosis",
+                                             "_include" = "Condition:encounter",
+                                             "_include"="Condition:subject",
+											 "_count"= conf$count
+                              ))
+	while(!is.null(encounter_request)&&length(encounter_request)>0){
+	  enc_bundles <- fhir_search(request = encounter_request, username = conf$user, password = conf$password, 
+								 verbose = 2,log_errors = "errors/encounter_error.xml", max_bundles = conf$max_bundles)
+	  
+	  enc_tables <- fhir_crack(enc_bundles, 
+					design = fhir_design(enc = encounters, pat = patients, con = condition),
+					data.table = TRUE)
+	  
+	  combined_tables <- lapply(names(combined_tables), 
+						   function(name){
+							   rbind(combined_tables[[name]], enc_tables[[name]], fill=TRUE)
+						   })
+	  
+	  names(combined_tables) <- names(enc_tables)
+	  #get rid of duplicates
+	  combined_tables$enc <- unique(combined_tables$enc)
+	  combined_tables$con <- unique(combined_tables$con)
+	  combined_tables$pat <- unique(combined_tables$pat)
+	  
+	  encounter_request <- fhir_next_bundle_url()
+	}
 }
 #fhir_save(bundles = enc_bundles, directory = "Bundles/Encounters")
 rm(enc_bundles, enc_tables)
@@ -157,8 +165,9 @@ df.encounters <- fhir_rm_indices(df.encounters, brackets = brackets )
 df.encounters$condition_id <- sub("Condition/", "", df.encounters$condition_id)
 df.encounters$patient_id <- sub("Patient/", "", df.encounters$patient_id)
 
-df.encounters$admission_date <- as.POSIXct(df.encounters$admission_date,format="%Y-%m-%dT%H:%M:%S")
-df.encounters$discharge_date <- as.POSIXct(df.encounters$discharge_date,format="%Y-%m-%dT%H:%M:%S")
+#df.encounters$admission_date <- as.POSIXct(df.encounters$admission_date,format="%Y-%m-%dT%H:%M:%S")
+#df.encounters$discharge_date <- as.POSIXct(df.encounters$discharge_date,format="%Y-%m-%dT%H:%M:%S")
+
 df.encounters <- df.encounters[!duplicated(df.encounters),]
 df.encounters <- df.encounters[c(which(df.encounters$admission_date >= '2015-01-01')),]
 
@@ -177,10 +186,6 @@ df.conditions$encounter_id <- sub("Encounter/", "", df.conditions$encounter_id)
 df.conditions$patient_id <- sub("Patient/", "", df.conditions$patient_id)
 
 df.conditions <- df.conditions[grepl("icd-10", system)]
-
-icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9'
-               ,'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9'
-               ,'I63.0','I63.1','I63.2','I63.3','I63.4','I63.5','I63.6','I63.8','I63.9','I67.80!')
 
 df.conditions <- df.conditions[c(which(df.conditions$icd %in% icd_codes) )]
 
