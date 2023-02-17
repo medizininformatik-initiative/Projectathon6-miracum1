@@ -158,6 +158,10 @@ source(file.path(getwd(), "customRF.R") , local = TRUE) (cannot open file '//cus
 Added count parameter to config and updated fhir query to drop warnings related to new updates in FHIRCRACKr. 
 Fix for issue #18
 
+#### Feb 17, 2023
+Searching for single ICD code in every requests. 
+Fix for issue #19
+
 ## 2022 Step 1 - Select Abfrage
 
 ## Verwendung Step1
