@@ -128,7 +128,8 @@ for(code in icd_codes){
                                              "recorded-date" = "le2021-12-31",
                                              "code"= code,
                                              "_include" = "Condition:encounter",
-                                             "_include"="Condition:subject"
+                                             "_include"="Condition:subject",
+											 "_count"= conf$count
                               ))
 
   # Download in batches and crack immediately, then append to combined tables from above
