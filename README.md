@@ -1,5 +1,5 @@
 # 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
-Datum: 28.01.2023
+Datum: 20.02.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -11,6 +11,8 @@ Dieses Repository beinhaltet Skripte für das zweistufige Verfahren:
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
 ### BREAKING NEWS
++ Abschluss der Testphase [20.02.2023](#feb-20-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2).  
+
 + Freigabe [13.01.2023](#jan-01-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für die statistischen Analysen mittels Federated Learning. 
 
 + In der MII Weekly Projectathon Webkonferenz am [29.04.2022](#apr-29-2022) haben wir die Scripts für die **Select-Abfrage (Step 1)** freigegeben. Details zur Ausführung der Scripte finden Sie im [Changelog](#apr-29-2022). 
@@ -109,8 +111,24 @@ Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `doc
 #### C) Image bauen ohne Docker Compose:
 Ergänzung folgt.
 
+### Output folder 
+
+Im `results` folder sollen insgesamt `101 Dateien`sein:
++ 2 excel files with multiple sheets
++ 3 PDF files with plots/images of model performance
++ Multiple .RData/.Rda Dateien mit den jeweiligen ML-Modelobjekt was die Modelinskripte (4_modeling1, 5_modeling2, 6_modeling3) erstellen.
+
+Keine diese Datenbeinhalten persönliche indetifiers. Die Modelle fitten die `count` (Anzahl der Fälle).
+
+---
 
 ## Changelog Step2
+
+#### Feb 20, 2023
+
+Various [issues](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues?q=is%3Aissue+is%3Aclosed) were fixed and requested features (bundle & count) were added based on feedbacks from lokal testings from 9/15 sites. _Thank you all for your contributions!_
+
+As of today, two issues are still outstanding. One regarding the [blaze branch](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/22) (probably, due to a memory issue or docker version) and one regarding [script-6](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/20) and gamboost models (matrix factorization problem probably due to the matrix structure). 
 
 #### Jan 27, 2023
 _MII Projektathon Weekly-Sprechstunde:_ WE-STORM Step2 Update Darstellung. 
@@ -136,7 +154,6 @@ GitHub Issue [#10](https://github.com/medizininformatik-initiative/Projectathon6
 
 #### Jan 23, 2023 
 GitHub Issue [#9](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/9) regarding `predict.glm(..., type = "response")` is now fixed. Thanks for raising the issue [@KutSaleh](https://github.com/KutSaleh).
-
 
 #### Jan 13, 2023
 _Major Update:_ Analyses Skripts for Step 2 including statistical (baseline) and machine learning models. 
