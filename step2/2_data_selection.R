@@ -53,7 +53,7 @@ patients <- fhir_table_description(resource = "Patient",
 											sep=sep,
 											brackets = brackets,
 											rm_empty_cols = FALSE)
-)
+
 
 
 
