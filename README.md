@@ -192,6 +192,9 @@ Fix for issue #18
 Searching for single ICD code in every requests. 
 Fix for issue #19
 
+#### Feb 21, 2023
+Zipping all results to a single file - caraous cloud upload
+
 ## 2022 Step 1 - Select Abfrage
 
 ## Verwendung Step1

@@ -243,3 +243,13 @@ for(output_counter in outputs){
    rm(res_long, res_gamboostNB, res_gamboostPO, res_earth1, res_rf, res_list)
 }
 print("Modeling gamboost is done")
+
+print("Zip the files in the reults folder to be delivered")
+
+## zip all the files in the results folder to zip : to upload
+daily <- read.csv(file = file.path(getwd(),"data/daily_level.csv"))
+files2zip <- dir(file.path(getwd(),"/results"), full.names = TRUE)
+zip_file_name <- paste('westorm-step2-results-', conf$site, "-", Sys.Date(), "-coverage-", min(year), "-", max(year), "-totalcases-", sum(daily$total_count),  sep = "")
+zip(zipfile = file.path(getwd(), zip_file_name), files = files2zip, extras = '-j')
+print(paste("please upload the zip file:", zip_file_name))
+print("Execution is done")
