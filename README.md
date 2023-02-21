@@ -100,6 +100,21 @@ Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quelle
 #### A) Image von DockerHub ziehen:
 [Link to DockerHub](nandhinis08/projectathon6-miracum1-step2) or by using `docker pull nandhinis08/projectathon6-miracum1-step2`
 
+1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
+2. Verzeichniswechsel in das lokale Repository und in den neuen Folder **step2**: `cd Projectathon6-miracum1/step2`
+3. Konfiguration lokal anpassen: `./config_default.yml` nach `./config.yml` kopieren und anpassen
+4. Image downloaden und Container starten:
+
+```bash
+docker run --name projectathon6-miracum1-step2 \
+       -v "$(pwd)/errors:/errors" \
+       -v "$(pwd)/data:/data" \
+       -v "$(pwd)/results:/results" \
+       -v "$(pwd)/conf:/conf" \
+       -v "$(pwd)/config.yml:/config.yml" \
+       nandhinis08/projectathon6-miracum1-step2
+```
+
 #### B) Image bauen mit Docker Compose Step2: 
 1. Git-Respository klonen: `git clone https://github.com/medizininformatik-initiative/Projectathon6-miracum1.git`
 2. Verzeichniswechsel in das lokale Repository und in den neuen Folder **step2**: `cd Projectathon6-miracum1/step2`
@@ -108,8 +123,6 @@ Im Rahmen der Ausführung der Skripte werden __keine Daten__ von externen Quelle
 
 Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `docker compose start`.
 
-#### C) Image bauen ohne Docker Compose:
-Ergänzung folgt.
 
 ### Output folder 
 

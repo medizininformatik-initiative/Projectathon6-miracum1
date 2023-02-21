@@ -31,7 +31,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   apt-get clean && apt-get autoclean && apt-get autoremove -y
   
   
-RUN R -e "install.packages(c('fhircrackr', 'config', 'dplyr', 'zoo', 'stringr', 'tidyr', 'data.table', 'openxlsx', 'rdwd', 'lubridate', 'geosphere', 'stringi', 'caret', 'ranger', 'mboost','tidyverse', 'corrplot', 'earth', 'Metrics', 'ggplot2', 'RANN', 'pacman'), dependencies = TRUE, repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages(c('fhircrackr', 'config', 'dplyr', 'zoo', 'stringr', 'tidyr', 'data.table', 'openxlsx', 'rdwd', 'lubridate', 'geosphere', 'stringi', 'caret', 'ranger', 'mboost', 'xgboost' ,'tidyverse', 'corrplot', 'earth', 'Metrics', 'ggplot2', 'RANN', 'pacman'), dependencies = TRUE, repos='https://cloud.r-project.org/')"
 
 
 

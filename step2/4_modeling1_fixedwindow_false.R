@@ -40,7 +40,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 	print("Models for daily count")
 	daily <- na.locf(daily,na.rm = FALSE)
 	daily <- na.locf(daily,fromLast = TRUE)
-
 	####features
 	# weather features standardize
 	print("Standardize the input features")
@@ -102,7 +101,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # save model
 	  # note: saving path with past is not OS agnostic. Consider using file.path().
 	  saveRDS(object = poisson_daily_total_count, file = paste("./results/poisson_daily_total_count_", site.name, ".rda", sep = ""))
-	  rm(poisson_daily_total_count)
+	  rm(poisson_daily_total_count, preds, rmse, mae)
 	}, silent=TRUE)
 	print("Random Forest")
 	### RF
@@ -167,7 +166,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  # save model
 	  # note: saving path with past is not OS agnostic. Consider using file.path().
 	  saveRDS(object = forest_daily_total_count, file = paste("./results/forest_daily_total_count_", site.name, ".rda", sep = ""))
-	  rm(forest_daily_total_count)
+	  rm(forest_daily_total_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Xgboost")
@@ -216,7 +215,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 6)
 	  # save model
 	  saveRDS(object = xgb_daily_total_count,file = paste("./results/xgb_daily_total_count_",site.name,".rda",sep = ""))
-	  rm(xgb_daily_total_count)
+	  rm(xgb_daily_total_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Support Vector Regression") 
@@ -225,7 +224,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({
 		set.seed(1492)
 		tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-		svm_daily_total_count <- train(X_train, y_train,
+		svm <- train(X_train, y_train,
 										 trControl = timecontrol_cv,
 										 tuneGrid = tuneGrid,
 										 method = "svmRadial",
@@ -234,7 +233,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 			 
 		  
 		  
-		  final_grid <- expand.grid(C =svm_daily_total_count$bestTune$C,sigma=svm_daily_total_count$bestTune$sigma )  
+		  final_grid <- expand.grid(C =svm$bestTune$C,sigma=svm$bestTune$sigma )  
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_daily_total_count <- train(X_train, y_train,  
@@ -251,7 +250,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 8)
 		  #save model
 		  saveRDS(object = svm_daily_total_count,file = paste("./results/svm_daily_total_count_",site.name,".rda",sep = ""))
-		  rm(svm_daily_total_count)
+		  rm(svm_daily_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)	  
 	  
 	print("Support Vector Regression Linear kernel") 
@@ -260,7 +259,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({
 	  set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	  svm_daily_total_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                 trControl = timecontrol_cv,
 	                                 tuneGrid = tuneGrid,
 	                                 method = "svmLinear",
@@ -269,7 +268,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  
 	  
 	  
-	  final_grid <- expand.grid(C =svm_daily_total_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  # final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_daily_total_count <- train(X_train, y_train,  
@@ -282,11 +281,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of SVM daily model for total count",RMSE(pred = preds,obs = test_total_count_daily))
 	  mae <- paste("MAE of SVM daily model for total count",MAE(pred = preds,obs = test_total_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 7)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 8)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 9)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 10)
 	  #save model
 	  saveRDS(object = svm_daily_total_count,file = paste("./results/svm_linear_daily_total_count_",site.name,".rda",sep = ""))
-	  rm(svm_daily_total_count)
+	  rm(svm_daily_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)	
 	
 	
@@ -317,11 +316,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of Poisson daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
 	  mae <- paste("MAE of Poisson daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 9)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 10)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 11)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 12)
 	  ##save model
 	  saveRDS(object = poisson_daily_ischmeic_count,file = paste("./results/poisson_daily_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(poisson_daily_ischmeic_count)
+	  rm(poisson_daily_ischmeic_count, preds, rmse, mae)
 	}, silent=TRUE)
 	print("Random Forest")
 	### RF
@@ -340,12 +339,6 @@ openxlsx:::addWorksheet(wb, "Daily")
 					          preProcess = c("center","scale"),
 	                  metric = 'RMSE', 
 	                  tuneGrid = tunegrid)
-	  
-	  #predict
-	  preds_tune <- predict(forest, newdata = as.data.frame(test_features_daily), type = "raw")
-	  
-	  rmse_tune <- paste("RMSE of random forest daily model for ischmeic count", RMSE(pred = preds_tune, obs = test_ischemic_count_daily))
-	  mae_tune <- paste("MAE of Poisson daily model for ischmeic count", MAE(pred = preds_tune, obs = test_ischemic_count_daily))
 	  
 	  # final grid 
 	    final_grid <- expand.grid(mtry = forest$bestTune$mtry)
@@ -368,11 +361,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of random forest daily model for ischmeic count", RMSE(pred = preds, obs = test_ischemic_count_daily))
 	  mae <- paste("MAE of Poisson daily model for ischmeic count", MAE(pred = preds, obs = test_ischemic_count_daily))
-	  openxlsx:::writeData(wb = wb, x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 11)
-	  openxlsx:::writeData(wb = wb, x = mae, sheet = "Daily", withFilter = FALSE, startRow = 12)
+	  openxlsx:::writeData(wb = wb, x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 13)
+	  openxlsx:::writeData(wb = wb, x = mae, sheet = "Daily", withFilter = FALSE, startRow = 14)
 	  #save model
 	  saveRDS(object = forest_daily_ischmeic_count, file = paste("./results/forest_daily_ischemic_count_", site.name, ".rda", sep = ""))
-	  rm(forest_daily_ischmeic_count)
+	  rm(forest_daily_ischmeic_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Xgboost")
@@ -418,11 +411,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of XGB daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
 	  mae <- paste("MAE of XGB daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 13)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 14)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 15)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 16)
 	  #save model
 	  saveRDS(object = xgb_daily_ischemic_count,file = paste("./results/xgb_daily_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(xgb_daily_ischemic_count)
+	  rm(xgb_daily_ischemic_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -431,7 +424,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({
 		set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-	  svm_daily_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					    trControl = timecontrol_cv,
 					    tuneGrid = tuneGrid,
 					    method = "svmRadial",
@@ -440,7 +433,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	      
 	  
 	  
-	  final_grid <- expand.grid(C =svm_daily_ischemic_count$bestTune$C,sigma=svm_daily_ischemic_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C,sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_daily_ischemic_count <- train(X_train, y_train,
@@ -455,12 +448,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	    #metrics
 	    rmse <- paste("RMSE of SVM daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
 	    mae <- paste("MAE of SVM daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
-	    openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 15)
-	    openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 16)
+	    openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 17)
+	    openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 18)
 	
 	  #save model
 	  saveRDS(object = svm_daily_ischemic_count, file = paste("./results/svm_daily_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_daily_ischemic_count)
+	  rm(svm_daily_ischemic_count, svm, preds, rmse, mae)
 
 	  End.time <- Sys.time()	 
 	}, silent=TRUE)	 
@@ -471,7 +464,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({
 		set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	  svm_daily_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					    trControl = timecontrol_cv,
 					    tuneGrid = tuneGrid,
 					    method = "svmLinear",
@@ -480,7 +473,7 @@ openxlsx:::addWorksheet(wb, "Daily")
 	      
 	  
 	  
-	  final_grid <- expand.grid(C =svm_daily_ischemic_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_daily_ischemic_count <- train(X_train, y_train,
@@ -495,12 +488,12 @@ openxlsx:::addWorksheet(wb, "Daily")
 	    #metrics
 	    rmse <- paste("RMSE of SVM daily model for ischmeic count",RMSE(pred = preds,obs = test_ischemic_count_daily))
 	    mae <- paste("MAE of SVM daily model for ischmeic count",MAE(pred = preds,obs = test_ischemic_count_daily))
-	    openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 15)
-	    openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 16)
+	    openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 19)
+	    openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 20)
 	
 	  #save model
 	  saveRDS(object = svm_daily_ischemic_count, file = paste("./results/svm_linear_daily_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_daily_ischemic_count)
+	  rm(svm_daily_ischemic_count, svm, preds, rmse, mae)
 
 	  End.time <- Sys.time()	 
 	}, silent=TRUE)	 
@@ -530,11 +523,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of Poisson daily model for bleeding count", RMSE(pred = preds,obs = test_bleeding_count_daily))
 	  mae <- paste("MAE of Poisson daily model for bleeding count", MAE(pred = preds,obs = test_bleeding_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 17)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 18)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 21)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 22)
 	  ##save model
 	  saveRDS(object = poisson_daily_bleeding_count,file = paste("./results/poisson_daily_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(poisson_daily_bleeding_count)
+	  rm(poisson_daily_bleeding_count, preds, rmse, mae)
 	}, silent=TRUE)	  
 	### ARIMA
 
@@ -577,11 +570,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of Random forest daily model for bleeding count", RMSE(pred = preds,obs = test_bleeding_count_daily))
 	  mae <- paste("MAE of Random forest daily model for bleeding count", MAE(pred = preds,obs = test_bleeding_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 19)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 20)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 23)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 24)
 	  #save model
 	  saveRDS(object = forest_daily_bleeding_count,file = paste("./results/forest_daily_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(forest_daily_bleeding_count)
+	  rm(forest_daily_bleeding_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Xgboost")
@@ -630,11 +623,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of XGB daily model for bleeding count", RMSE(pred = preds,obs = test_bleeding_count_daily))
 	  mae <-  paste("MAE of XGB daily model for bleeding count", MAE(pred = preds,obs = test_bleeding_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 21)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 22)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Daily", withFilter = FALSE,startRow = 25)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Daily", withFilter = FALSE,startRow = 26)
 	  #save model
 	  saveRDS(object = xgb_daily_bleeding_count,file = paste("./results/xgb_daily_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(xgb_daily_bleeding_count)
+	  rm(xgb_daily_bleeding_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Support Vector Regression") 
@@ -644,15 +637,15 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({	
 	set.seed(1492)	
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-	  svm_daily_bleeding_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					    trControl = timecontrol_cv,
 					    tuneGrid = tuneGrid,
 					    method = "svmRadial",
 					    preProcess = c("center", "scale"),
 					    verbosity = 0)
 	  
-	  final_grid <- expand.grid(C =svm_daily_bleeding_count$bestTune$C,
-								sigma=svm_daily_bleeding_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C,
+								sigma=svm$bestTune$sigma )  
 	 
 	 #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
@@ -668,11 +661,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of SVM daily model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_daily))
 	  mae <- paste("MAE of SVM daily model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Daily", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 27)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Daily", withFilter = FALSE, startRow = 28)
 	  #save model
 	  saveRDS(object = svm_daily_bleeding_count, file = paste("./results/svm_daily_bleeding_count_", site.name, ".rda", sep = ""))
-	  rm(svm_daily_bleeding_count)
+	  rm(svm_daily_bleeding_count, svm, preds, rmse, mae)
 	  }, silent=TRUE)	
 	  
 	  
@@ -683,15 +676,15 @@ openxlsx:::addWorksheet(wb, "Daily")
 	try({	
 	set.seed(1492)	
 	  tuneGrid <- eexpand.grid(C = c(2^(-6:6)))
-	  svm_daily_bleeding_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					    trControl = timecontrol_cv,
 					    tuneGrid = tuneGrid,
 					    method = "svmLinear",
 					    preProcess = c("center", "scale"),
 					    verbosity = 0)
 	  
-	  final_grid <- expand.grid(C =svm_daily_bleeding_count$bestTune$C,
-								sigma=svm_daily_bleeding_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C,
+								sigma=svm$bestTune$sigma )  
 	 
 	 #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
@@ -707,11 +700,11 @@ openxlsx:::addWorksheet(wb, "Daily")
 	  #metrics
 	  rmse <- paste("RMSE of SVM daily model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_daily))
 	  mae <- paste("MAE of SVM daily model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_daily))
-	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Daily", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Daily", withFilter = FALSE, startRow = 29)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Daily", withFilter = FALSE, startRow = 30)
 	  #save model
 	  saveRDS(object = svm_daily_bleeding_count, file = paste("./results/svm_linear_daily_bleeding_count_", site.name, ".rda", sep = ""))
-	  rm(svm_daily_bleeding_count)
+	  rm(svm_daily_bleeding_count, svm, preds, rmse, mae)
 	  }, silent=TRUE)
 
 	 
@@ -785,7 +778,7 @@ print("Models for Two-day count")
 	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 2)
 	  ##save model
 	  saveRDS(object = poisson_two_day_total_count,file = paste("./results/poisson_two_day_total_count_",site.name,".rda",sep = ""))
-	  rm(poisson_two_day_total_count)
+	  rm(poisson_two_day_total_count, preds, rmse, mae)
 	}, silent=TRUE)
 	  
 	  
@@ -841,7 +834,7 @@ print("Models for Two-day count")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 4)
 	  #save model
 	  saveRDS(object = forest_two_day_total_count,file = paste("./results/forest_two_day_total_count_",site.name,".rda",sep = ""))
-	  rm(forest_two_day_total_count)
+	  rm(forest_two_day_total_count, forest, preds, rmse, mae)
 	  }, silent=TRUE)
 
 	  
@@ -893,7 +886,7 @@ print("Models for Two-day count")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 6)
 	  #save model
 	  saveRDS(object = xgb_two_day_total_count,file = paste("./results/xgb_two_day_total_count_",site.name,".rda",sep = ""))
-	  rm(xgb_two_day_total_count)
+	  rm(xgb_two_day_total_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 
 
@@ -903,14 +896,14 @@ print("Models for Two-day count")
 	try({
 	  set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-	  svm_two_day_total_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 					   trControl = timecontrol_cv_two_day,
 					   tuneGrid = tuneGrid,method = "svmRadial",
 					   preProcess = c("center","scale"),
 					   verbosity = 0)
 	  
 	  
-	  final_grid <- expand.grid(C =svm_two_day_total_count$bestTune$C,sigma=svm_two_day_total_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 
@@ -920,8 +913,7 @@ print("Models for Two-day count")
 					   verbosity = 0)
 
 	  
-          #predict
-
+      #predict
 	  preds <- predict(svm_two_day_total_count, newdata = as.data.frame(test_features_two_day), type = "raw")
 	  #metrics
 	  rmse <- paste("RMSE of SVM two_day model for total count", RMSE(pred = preds,obs = test_total_count_two_day))
@@ -931,7 +923,7 @@ print("Models for Two-day count")
 	  # save model
 	  # not OS agnostic consider file.path() instead
 	  saveRDS(object = svm_two_day_total_count, file = paste("./results/svm_two_day_total_count_", site.name, ".rda", sep = ""))
-	  rm(svm_two_day_total_count)
+	  rm(svm_two_day_total_count, svm, preds, rmse, mae)
 
 	}, silent=TRUE)	  
 	
@@ -942,7 +934,7 @@ print("Models for Two-day count")
 	try({
 	  set.seed(1492)
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	  svm_two_day_total_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 					   trControl = timecontrol_cv_two_day,
 					   tuneGrid = tuneGrid,
 					   method = "svmLinear",
@@ -950,7 +942,7 @@ print("Models for Two-day count")
 					   verbosity = 0)
 	  
 	  
-	  final_grid <- expand.grid(C =svm_two_day_total_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 
@@ -966,12 +958,12 @@ print("Models for Two-day count")
 	  #metrics
 	  rmse <- paste("RMSE of SVM two_day model for total count", RMSE(pred = preds,obs = test_total_count_two_day))
 	  mae <- paste("MAE of SVM two_day model for total count", MAE(pred = preds,obs = test_total_count_two_day))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 7)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 8)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 9)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 10)
 	  # save model
 	  # not OS agnostic consider file.path() instead
 	  saveRDS(object = svm_two_day_total_count, file = paste("./results/svm_linear_two_day_total_count_", site.name, ".rda", sep = ""))
-	  rm(svm_two_day_total_count)
+	  rm(svm_two_day_total_count, svm, preds, rmse, mae)
 
 	}, silent=TRUE)		
 	
@@ -1003,11 +995,11 @@ print("Models for Two-day count")
 	  # metrics
 	  rmse <- paste("RMSE of poisson two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 	  mae <- paste("MAE of poisson two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
-	  openxlsx:::writeData(wb = wb, x = rmse, sheet = "Two-day", withFilter = FALSE, startRow = 9)
-	  openxlsx:::writeData(wb = wb, x = mae, sheet = "Two-day", withFilter = FALSE, startRow = 10)
+	  openxlsx:::writeData(wb = wb, x = rmse, sheet = "Two-day", withFilter = FALSE, startRow = 11)
+	  openxlsx:::writeData(wb = wb, x = mae, sheet = "Two-day", withFilter = FALSE, startRow = 12)
 	  ##save model
 	  saveRDS(object = poisson_two_day_ischmeic_count,file = paste("./results/poisson_two_day_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(poisson_two_day_ischmeic_count)
+	  rm(poisson_two_day_ischmeic_count, preds, rmse, mae)
     }, silent=TRUE)
 	  
 	  
@@ -1055,11 +1047,11 @@ print("Models for Two-day count")
 	  #metrics
 	  rmse <- paste("RMSE of random forest two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 	  mae <- paste("MAE of random forest two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
-	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 11)
-	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 12)
+	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 13)
+	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 14)
 	  #save model
 	  saveRDS(object = forest_two_day_ischmeic_count,file = paste("./results/forest_two_day_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(forest_two_day_ischmeic_count)
+	  rm(forest_two_day_ischmeic_count, forest, preds, rmse, mae)
 	  }, silent=TRUE)
 	  
 	print("Xgboost")
@@ -1107,11 +1099,11 @@ print("Models for Two-day count")
 	  # metrics
 	  rmse <- paste("RMSE of XGB two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 	  mae <- paste("MAE of XGB two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 13)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 14)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 15)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 16)
 	  # save model
 	  saveRDS(object = xgb_two_day_ischemic_count,file = paste("./results/xgb_two_day_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(xgb_two_day_ischemic_count)
+	  rm(xgb_two_day_ischemic_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Support Vector Regression") 
@@ -1121,7 +1113,7 @@ print("Models for Two-day count")
 		  set.seed(1492)
 		  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
 
-		  svm_two_day_ischemic_count <- train(X_train, y_train, 
+		  svm <- train(X_train, y_train, 
 							  trControl = timecontrol_cv_two_day,
 							  tuneGrid = tuneGrid,
 							  method = "svmRadial",
@@ -1130,7 +1122,7 @@ print("Models for Two-day count")
 		
 		  
 		  
-		  final_grid <- expand.grid(C =svm_two_day_ischemic_count$bestTune$C,sigma=svm_two_day_ischemic_count$bestTune$sigma )  
+		  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_two_day_ischemic_count <- train(X_train, y_train, 
@@ -1145,11 +1137,11 @@ print("Models for Two-day count")
 		  # metrics
 		  rmse <- paste("RMSE of SVM two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 		  mae <- paste("MAE of SVM two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 15)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 16)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 17)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 18)
 		  # save model
 		  saveRDS(object = svm_two_day_ischemic_count,file = paste("./results/svm_two_day_ischemic_count_",site.name,".rda",sep = ""))
-		  rm(svm_two_day_ischemic_count)
+		  rm(svm_two_day_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 
@@ -1160,7 +1152,7 @@ print("Models for Two-day count")
 		  set.seed(1492)
 		  tuneGrid <- expand.grid(C = c(0.25, .5, 1))
 
-		  svm_two_day_ischemic_count <- train(X_train, y_train, 
+		  svm <- train(X_train, y_train, 
 							  trControl = timecontrol_cv_two_day,
 							  tuneGrid = tuneGrid,
 							  method = "svmLinear",
@@ -1169,7 +1161,7 @@ print("Models for Two-day count")
 		
 		  
 		  
-		  final_grid <- expand.grid(C =svm_two_day_ischemic_count$bestTune$C)  
+		  final_grid <- expand.grid(C =svm$bestTune$C)  
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_two_day_ischemic_count <- train(X_train, y_train, 
@@ -1184,11 +1176,11 @@ print("Models for Two-day count")
 		  # metrics
 		  rmse <- paste("RMSE of SVM two_day model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_two_day))
 		  mae <- paste("MAE of SVM two_day model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 15)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 16)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 19)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 20)
 		  # save model
 		  saveRDS(object = svm_two_day_ischemic_count,file = paste("./results/svm_linear_two_day_ischemic_count_",site.name,".rda",sep = ""))
-		  rm(svm_two_day_ischemic_count)
+		  rm(svm_two_day_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 
@@ -1218,11 +1210,11 @@ print("Models for Two-day count")
 		  #metrics
 		  rmse<-paste("RMSE of poisson two_day model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_two_day))
 		  mae<- paste("MAE of poisson two_day model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 17)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 18)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 21)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 22)
 		  ##save model
 		  saveRDS(object = poisson_two_day_bleeding_count,file = paste("./results/poisson_two_day_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(poisson_two_day_bleeding_count)
+		  rm(poisson_two_day_bleeding_count, preds, rmse, mae)
 	  }, silent=TRUE)
 	### ARIMA
 
@@ -1266,11 +1258,11 @@ print("Models for Two-day count")
 		  #metrics
 		  rmse <- paste("RMSE of RF two_day model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_two_day))
 		  mae <- paste("MAE of RF two_day model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 19)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 20)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 23)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 24)
 		  #save model
 		  saveRDS(object = forest_two_day_bleeding_count,file = paste("./results/forest_two_day_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(forest_two_day_bleeding_count)
+		  rm(forest_two_day_bleeding_count, forest, preds, rmse, mae)
 	}, silent=TRUE)	
 	print("Xgboost")
 	
@@ -1317,11 +1309,11 @@ print("Models for Two-day count")
 		  #metrics
 		  rmse <- paste("RMSE of XGB two_day model for bleeding count", RMSE(pred = preds,obs = test_bleeding_count_two_day))
 		  mae <- paste("MAE of XGB two_day model for bleeding count", MAE(pred = preds,obs = test_bleeding_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 21)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 22)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE,startRow = 25)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE,startRow = 26)
 		  #save model
 		  saveRDS(object = xgb_two_day_bleeding_count, file = paste("./results/xgb_two_day_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(xgb_two_day_bleeding_count)
+		  rm(xgb_two_day_bleeding_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -1332,13 +1324,13 @@ print("Models for Two-day count")
 	try({
 	set.seed(1492)
 		  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-		  svm_two_day_bleeding_count <- train(X_train, y_train,
+		  svm <- train(X_train, y_train,
 							  trControl = timecontrol_cv_two_day,
 							  tuneGrid = tuneGrid,method = "svmRadial",
 							  preProcess = c("center","scale"),
 							  verbosity = 0)
 
-		  final_grid <- expand.grid(C =svm_two_day_bleeding_count$bestTune$C,sigma=svm_two_day_bleeding_count$bestTune$sigma )  
+		  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_two_day_bleeding_count <- train(X_train, y_train,
@@ -1354,11 +1346,11 @@ print("Models for Two-day count")
 		  # metrics
 		  rmse <- paste("RMSE of SVM two_day model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_two_day))
 		  mae <- paste("MAE of SVM two_day model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 23)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 24)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 27)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 28)
 		  #save model
 		  saveRDS(object = svm_two_day_bleeding_count,file = paste("./results/svm_two_day_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(svm_two_day_bleeding_count)
+		  rm(svm_two_day_bleeding_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -1368,13 +1360,13 @@ print("Support Vector Regression linear kernel")
 	try({
 	set.seed(1492)
 		  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-		  svm_two_day_bleeding_count <- train(X_train, y_train,
+		  svm <- train(X_train, y_train,
 							  trControl = timecontrol_cv_two_day,
 							  tuneGrid = tuneGrid,method = "svmLinear",
 							  preProcess = c("center","scale"),
 							  verbosity = 0)
 
-		  final_grid <- expand.grid(C =svm_two_day_bleeding_count$bestTune$C)  
+		  final_grid <- expand.grid(C =svm$bestTune$C)  
 		  # final svr model with chosen hyper parameter
 		  print("fitting SVR based on chosen hyperparameter")
 		  svm_two_day_bleeding_count <- train(X_train, y_train,
@@ -1390,11 +1382,11 @@ print("Support Vector Regression linear kernel")
 		  # metrics
 		  rmse <- paste("RMSE of SVM two_day model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_two_day))
 		  mae <- paste("MAE of SVM two_day model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_two_day))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 23)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 24)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Two-day", withFilter = FALSE, startRow = 29)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Two-day", withFilter = FALSE, startRow = 30)
 		  #save model
 		  saveRDS(object = svm_two_day_bleeding_count,file = paste("./results/svm_linear_two_day_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(svm_two_day_bleeding_count)
+		  rm(svm_two_day_bleeding_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
  
@@ -1448,7 +1440,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 2)
 	  ##save model
 	  saveRDS(object = poisson_weekly_total_count,file = paste("./results/poisson_weekly_total_count_",site.name,".rda",sep = ""))
-	  rm(poisson_weekly_total_count)
+	  rm(poisson_weekly_total_count, preds, rmse, mae)
 	}, silent=TRUE)
 	### ARIMA
 
@@ -1499,7 +1491,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 4)
 	  #save model
 	  saveRDS(object = forest_weekly_total_count, file = paste("./results/forest_weekly_total_count_",site.name,".rda",sep = ""))
-	  rm(forest_weekly_total_count)
+	  rm(forest_weekly_total_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -1555,7 +1547,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 6)
 		  #save model
 		  saveRDS(object = xgb_weekly_total_count,file = paste("./results/xgb_weekly_total_count_",site.name,".rda",sep = ""))
-	  rm(xgb_weekly_total_count)
+	  rm(xgb_weekly_total_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE) 
 	
 	
@@ -1567,14 +1559,14 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
 
-	  svm_weekly_total_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					  trControl = svr_trcontrol,
 					  tuneGrid = tuneGrid,
 					  method = "svmRadial",
 					  preProcess = c("center","scale"), 
 					  verbosity = 0)
   
-	  final_grid <- expand.grid(C =svm_weekly_total_count$bestTune$C,sigma=svm_weekly_total_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_total_count <- train(X_train, y_train,
@@ -1593,7 +1585,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 8)
 	  # save model
 	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_weekly_total_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_total_count)
+	  rm(svm_weekly_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -1605,14 +1597,14 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
 
-	  svm_weekly_total_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 					  trControl = svr_trcontrol,
 					  tuneGrid = tuneGrid,
 					  method = "svmLinear",
 					  preProcess = c("center","scale"), 
 					  verbosity = 0)
   
-	  final_grid <- expand.grid(C =svm_weekly_total_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_total_count <- train(X_train, y_train,
@@ -1627,12 +1619,12 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  # metrics
 	  rmse <- paste("RMSE of SVM weekly model for total count",RMSE(pred = preds,obs = test_total_count_weekly))
 	  mae <- paste("MAE of SVM weekly model for total count",MAE(pred = preds,obs = test_total_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 7)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 8)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 9)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 10)
 	  # save model
 	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_linear_weekly_total_count_",site.name,".rda",sep = ""))
 	  saveRDS(object = svm_weekly_total_count,file = paste("./results/svm_linear_weekly_total_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_total_count)
+	  rm(svm_weekly_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	  
 
@@ -1655,11 +1647,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse<-paste("RMSE of poisson weekly model for ischemic count",RMSE(pred = preds,obs = test_ischemic_count_weekly))
 	  mae<- paste("MAE of poisson weekly model for ischemic count",MAE(pred = preds,obs = test_ischemic_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 9)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 10)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 11)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 12)
 	  ##save model
 	  saveRDS(object = poisson_weekly_ischmeic_count,file = paste("./results/poisson_weekly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(poisson_weekly_ischmeic_count)
+	  rm(poisson_weekly_ischmeic_count, preds, rmse, mae)
 	}, silent=TRUE)
 	### ARIMA
 
@@ -1702,11 +1694,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 		  #metrics
 		  rmse<-paste("RMSE of random forest weekly model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_weekly))
 		  mae<- paste("MAE of random forest weekly model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_weekly))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 11)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 12)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 13)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 14)
 		  #save model
 		  saveRDS(object = forest_weekly_ischmeic_count,file = paste("./results/forest_weekly_ischemic_count_",site.name,".rda",sep = ""))
-		  rm(forest_weekly_ischmeic_count)
+		  rm(forest_weekly_ischmeic_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 	print("Xgboost")
 	### XGB
@@ -1752,11 +1744,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse <- paste("RMSE of XGB weekly model for ischemic count", RMSE(pred = preds,obs = test_ischemic_count_weekly))
 	  mae <- paste("MAE of XGB weekly model for ischemic count", MAE(pred = preds,obs = test_ischemic_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 13)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 14)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 15)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 16)
 	  #save model
 	  saveRDS(object = xgb_weekly_ischemic_count,file = paste("./results/xgb_weekly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(xgb_weekly_ischemic_count)
+	  rm(xgb_weekly_ischemic_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 
@@ -1768,14 +1760,14 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, 0.5, 1), sigma = 0.1)
 
-	  svm_weekly_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                     trControl = svr_trcontrol,
 	                                     tuneGrid = tuneGrid,
 	                                     method = "svmRadial",
 	                                     preProcess = c("center","scale"),
 	                                     verbosity = 0)
 
-	  final_grid <- expand.grid(C =svm_weekly_ischemic_count$bestTune$C,sigma=svm_weekly_ischemic_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_ischemic_count <- train(X_train, y_train,
@@ -1790,11 +1782,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse <- paste("RMSE of SVM weekly model for ischemic count",RMSE(pred = preds, obs = test_ischemic_count_weekly))
 	  mae <- paste("MAE of SVM weekly model for ischemic count",MAE(pred = preds, obs = test_ischemic_count_weekly))
-	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 15)
-	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 16)
+	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 17)
+	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 18)
 	  #save model
 	  saveRDS(object = svm_weekly_ischemic_count,file = paste("./results/svm_weekly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_ischemic_count)
+	  rm(svm_weekly_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -1806,14 +1798,14 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
 
-	  svm_weekly_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                     trControl = svr_trcontrol,
 	                                     tuneGrid = tuneGrid,
 	                                     method = "svmLinear",
 	                                     preProcess = c("center","scale"),
 	                                     verbosity = 0)
 
-	  final_grid <- expand.grid(C =svm_weekly_ischemic_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_ischemic_count <- train(X_train, y_train,
@@ -1828,11 +1820,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse <- paste("RMSE of SVM weekly model for ischemic count",RMSE(pred = preds, obs = test_ischemic_count_weekly))
 	  mae <- paste("MAE of SVM weekly model for ischemic count",MAE(pred = preds, obs = test_ischemic_count_weekly))
-	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 15)
-	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 16)
+	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 19)
+	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 20)
 	  #save model
 	  saveRDS(object = svm_weekly_ischemic_count,file = paste("./results/svm_linear_weekly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_ischemic_count)
+	  rm(svm_weekly_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 	 
@@ -1857,11 +1849,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse<-paste("RMSE of poisson two_day model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_weekly))
 	  mae<- paste("MAE of poisson two_day model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 17)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 18)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 21)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 22)
 	  ##save model
 	  saveRDS(object = poisson_weekly_bleeding_count,file = paste("./results/poisson_weekly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(poisson_weekly_bleeding_count)
+	  rm(poisson_weekly_bleeding_count, preds, rmse, mae)
 	 }, silent=TRUE)
 	### ARIMA
 
@@ -1905,11 +1897,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 		  #metrics
 		  rmse<-paste("RMSE of RF weekly model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_weekly))
 		  mae<- paste("MAE of RF weekly model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_weekly))
-		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 19)
-		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 20)
+		  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 23)
+		  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 24)
 		  #save model
 		  saveRDS(object = forest_weekly_bleeding_count,file = paste("./results/forest_weekly_bleeding_count_",site.name,".rda",sep = ""))
-		  rm(forest_weekly_bleeding_count)
+		  rm(forest_weekly_bleeding_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	print("Xgboost")
 	### XGB 
@@ -1948,11 +1940,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse<-paste("RMSE of XGB weekly model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_weekly))
 	  mae<- paste("MAE of XGB weekly model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 21)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 22)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE,startRow = 25)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE,startRow = 26)
 	  #save model
 	  saveRDS(object = xgb_weekly_bleeding_count,file = paste("./results/xgb_weekly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(xgb_weekly_bleeding_count)
+	  rm(xgb_weekly_bleeding_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 
@@ -1964,7 +1956,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
 
-	  svm_weekly_bleeding_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 	                                     trControl = svr_trcontrol,
 	                                     tuneGrid = tuneGrid,
 	                                     method = "svmRadial",
@@ -1972,7 +1964,7 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	                                     verbosity = 0)
 
 
-	  final_grid <- expand.grid(C =svm_weekly_bleeding_count$bestTune$C,sigma=svm_weekly_bleeding_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_bleeding_count <- train(X_train, y_train, 
@@ -1985,11 +1977,11 @@ openxlsx:::addWorksheet(wb, "Weekly")
 	  #metrics
 	  rmse <- paste("RMSE of SVM weekly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_weekly))
 	  mae<- paste("MAE of SVM weekly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 27)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 28)
 	  #save model
 	  saveRDS(object = svm_weekly_bleeding_count,file = paste("./results/svm_weekly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_bleeding_count)
+	  rm(svm_weekly_bleeding_count, svm, preds, rmse, mae)
 }, silent=TRUE)
 	 
 print("Support Vector Regression linear kernel") 
@@ -2000,7 +1992,7 @@ print("Support Vector Regression linear kernel")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
 
-	  svm_weekly_bleeding_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 	                                     trControl = svr_trcontrol,
 	                                     tuneGrid = tuneGrid,
 	                                     method = "svmLinear",
@@ -2008,7 +2000,7 @@ print("Support Vector Regression linear kernel")
 	                                     verbosity = 0)
 
 
-	  final_grid <- expand.grid(C =svm_weekly_bleeding_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_weekly_bleeding_count <- train(X_train, y_train, 
@@ -2021,11 +2013,11 @@ print("Support Vector Regression linear kernel")
 	  #metrics
 	  rmse <- paste("RMSE of SVM weekly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_weekly))
 	  mae<- paste("MAE of SVM weekly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_weekly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Weekly", withFilter = FALSE, startRow = 29)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Weekly", withFilter = FALSE, startRow = 30)
 	  #save model
 	  saveRDS(object = svm_weekly_bleeding_count,file = paste("./results/svm_linear_weekly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(svm_weekly_bleeding_count)
+	  rm(svm_weekly_bleeding_count, svm, preds, rmse, mae)
 }, silent=TRUE)  
 
 #4.####################################################Monthly#####################################################
@@ -2072,7 +2064,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE,startRow = 2)
 	  # save model
 	  saveRDS(object = poisson_monthly_total_count, file = paste("./results/poisson_monthly_total_count_", site.name,".rda", sep = ""))
-	  rm(poisson_monthly_total_count)
+	  rm(poisson_monthly_total_count, preds, rmse, mae)
     }, silent=TRUE)
 
 	print("Random Forest")
@@ -2123,7 +2115,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 4)
 	  #save model
 	  saveRDS(object = forest_monthly_total_count,file = paste("./results/forest_monthly_total_count_",site.name,".rda",sep = ""))
-	  rm(forest_monthly_total_count)
+	  rm(forest_monthly_total_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 
 	
@@ -2169,7 +2161,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  
 	  #save model
 	  saveRDS(object = xgb_monthly_total_count,file = paste("./results/xgb_monthly_total_count_",site.name,".rda",sep = ""))
-	  rm(xgb_monthly_total_count)
+	  rm(xgb_monthly_total_count, xgb_model, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	print("Support Vector Regression") 
@@ -2179,7 +2171,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-	  svm_monthly_total_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 	                                   trControl = svr_trcontrol, 
 	                                   tuneGrid = tuneGrid, 
 	                                   method = "svmRadial", 
@@ -2188,7 +2180,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 
 
 
-	  final_grid <- expand.grid(C =svm_monthly_total_count$bestTune$C,sigma=svm_monthly_total_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C, sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_total_count <- train(X_train, y_train,  
@@ -2204,7 +2196,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 8)
 	  #save model
 	  saveRDS(object = svm_monthly_total_count,file = paste("./results/svm_monthly_total_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_total_count)
+	  rm(svm_monthly_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -2215,7 +2207,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	  svm_monthly_total_count <- train(X_train, y_train, 
+	  svm <- train(X_train, y_train, 
 	                                   trControl = svr_trcontrol, 
 	                                   tuneGrid = tuneGrid, 
 	                                   method = "svmLinear", 
@@ -2224,7 +2216,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 
 
 
-	  final_grid <- expand.grid(C =svm_monthly_total_count$bestTune$C,sigma=svm_monthly_total_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_total_count <- train(X_train, y_train,  
@@ -2237,11 +2229,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse <- paste("RMSE of SVM monthly model for total count", RMSE(pred = preds,obs = test_total_count_monthly))
 	  mae <- paste("MAE of SVM monthly model for total count", MAE(pred = preds,obs = test_total_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 7)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 8)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 9)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 10)
 	  #save model
 	  saveRDS(object = svm_monthly_total_count,file = paste("./results/svm_linear_monthly_total_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_total_count)
+	  rm(svm_monthly_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	  
 
@@ -2264,11 +2256,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse<-paste("RMSE of poisson monthly model for ischemic count",RMSE(pred = preds,obs = test_ischemic_count_monthly))
 	  mae<- paste("MAE of poisson monthly model for ischemic count",MAE(pred = preds,obs = test_ischemic_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 9)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 10)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 11)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 12)
 	  ##save model
 	  saveRDS(object = poisson_monthly_ischmeic_count,file = paste("./results/poisson_monthly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(poisson_monthly_ischmeic_count)
+	  rm(poisson_monthly_ischmeic_count, preds, rmse, mae)
 	}, silent=TRUE)
 	### ARIMA
 
@@ -2312,11 +2304,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse<-paste("RMSE of random forest monthly model for ischemic count",RMSE(pred = preds,obs = test_ischemic_count_monthly))
 	  mae<- paste("MAE of random forest monthly model for ischemic count",MAE(pred = preds,obs = test_ischemic_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 11)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 12)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 13)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 14)
 	  #save model
 	  saveRDS(object = forest_monthly_ischmeic_count,file = paste("./results/forest_monthly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(forest_monthly_ischmeic_count)
+	  rm(forest_monthly_ischmeic_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 
 	print("Xgboost")
@@ -2357,11 +2349,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse<-paste("RMSE of XGB monthly model for ischemic count",RMSE(pred = preds,obs = test_ischemic_count_monthly))
 	  mae<- paste("MAE of XGB monthly model for ischemic count",MAE(pred = preds,obs = test_ischemic_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 13)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 14)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 15)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 16)
 	  #save model
 	  saveRDS(object = xgb_monthly_ischemic_count,file = paste("./results/xgb_monthly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(xgb_monthly_ischemic_count)
+	  rm(xgb_monthly_ischemic_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 	
 	print("Support Vector Regression") 
@@ -2371,7 +2363,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
-	  svm_monthly_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                      trControl = svr_trcontrol,
 	                                      tuneGrid = tuneGrid,
 	                                      method = "svmRadial",
@@ -2379,7 +2371,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	                                      verbosity = 0)
 
 
-	  final_grid <- expand.grid(C =svm_monthly_ischemic_count$bestTune$C,sigma=svm_monthly_ischemic_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C,sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_ischemic_count <- train(X_train, y_train,
@@ -2391,11 +2383,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  # metrics
 	  rmse <- paste("RMSE of SVM monthly model for ischemic count", RMSE(pred = preds, obs = test_ischemic_count_monthly))
 	  mae <- paste("MAE of SVM monthly model for ischemic count", MAE(pred = preds, obs = test_ischemic_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE, startRow = 15)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE, startRow = 16)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE, startRow = 17)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE, startRow = 18)
 	  #save model
 	  saveRDS(object = svm_monthly_ischemic_count,file = paste("./results/svm_monthly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_ischemic_count)
+	  rm(svm_monthly_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -2406,7 +2398,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  svr_trcontrol = trainControl(method = "cv",number = 5, repeats = 3,verboseIter = TRUE,returnData = FALSE)
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	  svm_monthly_ischemic_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                      trControl = svr_trcontrol,
 	                                      tuneGrid = tuneGrid,
 	                                      method = "svmLinear",
@@ -2414,7 +2406,7 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	                                      verbosity = 0)
 
 
-	  final_grid <- expand.grid(C =svm_monthly_ischemic_count$bestTune$C)  
+	  final_grid <- expand.grid(C =svm$bestTune$C)  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_ischemic_count <- train(X_train, y_train,
@@ -2427,11 +2419,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  # metrics
 	  rmse <- paste("RMSE of SVM monthly model for ischemic count", RMSE(pred = preds, obs = test_ischemic_count_monthly))
 	  mae <- paste("MAE of SVM monthly model for ischemic count", MAE(pred = preds, obs = test_ischemic_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE, startRow = 15)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE, startRow = 16)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE, startRow = 19)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE, startRow = 20)
 	  #save model
 	  saveRDS(object = svm_monthly_ischemic_count,file = paste("./results/svm_linear_monthly_ischemic_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_ischemic_count)
+	  rm(svm_monthly_ischemic_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 	print("Fitting models for Bleeding_count for monthly resolution")
@@ -2453,11 +2445,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse<-paste("RMSE of poisson Monthly model for bleeding count",RMSE(pred = preds,obs = test_bleeding_count_monthly))
 	  mae<- paste("MAE of poisson Monthly model for bleeding count",MAE(pred = preds,obs = test_bleeding_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 17)
-	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 18)
+	  openxlsx:::writeData(wb = wb,x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 21)
+	  openxlsx:::writeData(wb = wb,x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 22)
 	  ##save model
 	  saveRDS(object = poisson_monthly_bleeding_count,file = paste("./results/poisson_monthly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(poisson_monthly_bleeding_count)
+	  rm(poisson_monthly_bleeding_count, preds, rmse, mae)
 	}, silent=TRUE)
 	### ARIMA
 
@@ -2503,12 +2495,12 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  # metrics
 	  rmse<-paste("RMSE of RF monthly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_monthly))
 	  mae<- paste("MAE of RF monthly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_monthly))
-	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 19)
-	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 20)
+	  openxlsx:::writeData(wb = wb, x = rmse,sheet = "Monthly", withFilter = FALSE,startRow = 23)
+	  openxlsx:::writeData(wb = wb, x = mae,sheet = "Monthly", withFilter = FALSE,startRow = 24)
 	  
 	  # save model
 	  saveRDS(object = forest_monthly_bleeding_count,file = paste("./results/forest_monthly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(forest_monthly_bleeding_count)
+	  rm(forest_monthly_bleeding_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 	
 	
@@ -2560,11 +2552,11 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #metrics
 	  rmse<-paste("RMSE of XGB monthly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_monthly))
 	  mae<- paste("MAE of XGB monthly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE,startRow = 21)
-	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE,startRow = 22)
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE,startRow = 25)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE,startRow = 26)
 	  #save model
 	  saveRDS(object = xgb_monthly_bleeding_count,file = paste("./results/xgb_monthly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(xgb_monthly_bleeding_count)
+	  rm(xgb_monthly_bleeding_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 
@@ -2576,13 +2568,13 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(0.25, .5, 1),sigma = 0.1)
 
-	  svm_monthly_bleeding_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                      trControl = svr_trcontrol,
 	                                      tuneGrid = tuneGrid,
 	                                      method = "svmRadial",
 	                                      preProcess = c("center", "scale"), # features are already centered
 	                                      verbosity = 0)
-	  final_grid <- expand.grid(C =svm_monthly_bleeding_count$bestTune$C,sigma=svm_monthly_bleeding_count$bestTune$sigma )  
+	  final_grid <- expand.grid(C =svm$bestTune$C,sigma=svm$bestTune$sigma )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_bleeding_count <- train(X_train, y_train,
@@ -2595,12 +2587,12 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  # metrics
 	  rmse <- paste("RMSE of SVM monthly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_monthly))
 	  mae <- paste("MAE of SVM monthly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE, startRow = 27)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE, startRow = 28)
 	  # save model
 	  # path not OS agnostic. consider file.path()
 	  saveRDS(object = svm_monthly_bleeding_count,file = paste("./results/svm_monthly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_bleeding_count)
+	  rm(svm_monthly_bleeding_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	 
 	
@@ -2612,13 +2604,13 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  #grid space to search for the best hyper parameters
 	  tuneGrid <- expand.grid(C = c(2^(-6:6)))
 
-	  svm_monthly_bleeding_count <- train(X_train, y_train,
+	  svm <- train(X_train, y_train,
 	                                      trControl = svr_trcontrol,
 	                                      tuneGrid = tuneGrid,
 	                                      method = "svmLinear",
 	                                      preProcess = c("center", "scale"), # features are already centered
 	                                      verbosity = 0)
-	  final_grid <- expand.grid(C =svm_monthly_bleeding_count$bestTune$C )  
+	  final_grid <- expand.grid(C =svm$bestTune$C )  
 	  #final svr model with chosen hyper parameter
 	  print("fitting SVR based on chosen hyperparameter")
 	  svm_monthly_bleeding_count <- train(X_train, y_train,
@@ -2631,12 +2623,12 @@ openxlsx:::addWorksheet(wb, "Monthly")
 	  # metrics
 	  rmse <- paste("RMSE of SVM monthly model for bleeding count", RMSE(pred = preds, obs = test_bleeding_count_monthly))
 	  mae <- paste("MAE of SVM monthly model for bleeding count", MAE(pred = preds, obs = test_bleeding_count_monthly))
-	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE, startRow = 23)
-	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE, startRow = 24)
+	  openxlsx:::writeData(wb = wb,x = rmse, sheet = "Monthly", withFilter = FALSE, startRow = 29)
+	  openxlsx:::writeData(wb = wb,x = mae, sheet = "Monthly", withFilter = FALSE, startRow = 30)
 	  # save model
 	  # path not OS agnostic. consider file.path()
 	  saveRDS(object = svm_monthly_bleeding_count,file = paste("./results/svm_linear_monthly_bleeding_count_",site.name,".rda",sep = ""))
-	  rm(svm_monthly_bleeding_count)
+	  rm(svm_monthly_bleeding_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 	
 # save final output	
