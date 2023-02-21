@@ -141,6 +141,7 @@ for(output_counter in outputs){
 		
 		#save model
 		saveRDS(object = mod,file = paste("./results/gamboostNB_",output_counter,site.name,".rda",sep = ""))
+		rm(mod, cvr, pr_tr, pr_te)
    }, silent=TRUE)
     print(paste("Fitting Gamboost Poisson for",output_counter))
     
@@ -170,6 +171,7 @@ for(output_counter in outputs){
 		
 		#save model
 		saveRDS(object = mod,file = paste("./results/gamboostPO",output_counter,"_",site.name,".rda",sep = ""))
+		rm(mod, cvr, pr_tr, pr_te)
     }, silent=TRUE)
     ### ---------------------------------------------------------------------------
     ### MARS
@@ -191,6 +193,7 @@ for(output_counter in outputs){
     
     res_earth1 <- eval_fun(train$outcome, test$outcome,
                           pr_tr, pr_te, name = "earth1")
+	rm(mod, cvr, pr_tr, pr_te)					  
     #save model
     saveRDS(object = mod,file = paste("./results/earth1",output_counter,"_",site.name,".rda",sep = ""))
     
@@ -213,7 +216,7 @@ for(output_counter in outputs){
                        pr_tr, pr_te, name = "rf")
     #save model
     saveRDS(object = mod,file = paste("./results/rf",output_counter,"_",site.name,".rda",sep = ""))
-    
+    rm(mod, cvr, pr_tr, pr_te)
     ### ---------------------------------------------------------------------------
     
     res_list<- rbind(res_gamboostNB, res_gamboostPO,res_earth1,res_rf)
@@ -228,7 +231,7 @@ for(output_counter in outputs){
   
   #save residuals
   saveRDS(object = res_long,file = paste("./results/results",output_counter,"_",site.name,".rda",sep = ""))
-  
+ 
   try({
 	  ggplot(res_long, aes(x = model, y = value, colour = model)) + 
 		geom_point() + 
@@ -237,5 +240,16 @@ for(output_counter in outputs){
 	  
 	  ggsave(filename = paste("./results/predictions",output_counter,"_",site.name,".pdf",sep = ""), width = 5, height = 5)
   }, silent=TRUE)
+   rm(res_long, res_gamboostNB, res_gamboostPO, res_earth1, res_rf, res_list)
 }
 print("Modeling gamboost is done")
+
+print("Zip the files in the reults folder to be delivered")
+
+## zip all the files in the results folder to zip : to upload
+daily <- read.csv(file = file.path(getwd(),"data/daily_level.csv"))
+files2zip <- dir(file.path(getwd(),"/results"), full.names = TRUE)
+zip_file_name <- paste('westorm-step2-results-', conf$site, "-", Sys.Date(), "-coverage-", min(year), "-", max(year), "-totalcases-", sum(daily$total_count),  sep = "")
+zip(zipfile = file.path(getwd(), zip_file_name), files = files2zip, extras = '-j')
+print(paste("please upload the zip file:", zip_file_name))
+print("Execution is done")

@@ -222,14 +222,14 @@ openxlsx:::writeData(
   x = rmse,
   sheet = "Daily",
   withFilter = FALSE,
-  startRow = 3
+  startRow = 1
 )
 openxlsx:::writeData(
   wb = wb,
   x = mae,
   sheet = "Daily",
   withFilter = FALSE,
-  startRow = 4
+  startRow = 2
 )
 
 # save model
@@ -242,7 +242,7 @@ saveRDS(
     sep = ""
   )
 )
-rm(forest_daily_total_count)
+rm(forest_daily_total_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 print("Xgboost")
 ### XGB
@@ -312,14 +312,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 5
+	  startRow = 3
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 6
+	  startRow = 4
 	)
 
 	# save model
@@ -332,7 +332,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(xgb_daily_total_count)
+	rm(xgb_daily_total_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression")
@@ -341,7 +341,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_daily_total_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -354,7 +354,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_daily_total_count$bestTune$C, sigma = svm_daily_total_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	# final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_total_count <-
@@ -385,14 +385,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 7
+	  startRow = 5
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 8
+	  startRow = 6
 	)
 
 	# save model
@@ -405,7 +405,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_daily_total_count)
+	rm(svm_daily_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 
@@ -416,7 +416,7 @@ print("Support Vector Regression Linear kernel")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_daily_total_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -429,7 +429,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_daily_total_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	# final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_total_count <-
@@ -480,7 +480,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_daily_total_count)
+	rm(svm_daily_total_count, svm preds, rmse, mae)
 	}, silent=TRUE)
 
 
@@ -565,14 +565,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 11
+	  startRow = 9
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 12
+	  startRow = 10
 	)
 
 	# save model
@@ -585,7 +585,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(forest_daily_ischmeic_count)
+	rm(forest_daily_ischmeic_count, forest, preds, rmse, mae)
 	}, silent=TRUE)
 print("Xgboost")
 ### XGB
@@ -661,14 +661,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 13
+	  startRow = 11
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 14
+	  startRow = 12
 	)
 
 	# save model
@@ -682,7 +682,7 @@ try({
 	  )
 	)
 	# remove env object
-	rm(xgb_daily_ischemic_count)
+	rm(xgb_daily_ischemic_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 
@@ -692,7 +692,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_daily_ischemic_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -704,7 +704,7 @@ try({
 	  )
 
 	final_grid <-
-	  expand.grid(C = svm_daily_ischemic_count$bestTune$C, sigma = svm_daily_ischemic_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	# final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_ischemic_count <-
@@ -742,7 +742,7 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 15
+	  startRow = 13
 	)
 
 	openxlsx:::writeData(
@@ -750,7 +750,7 @@ try({
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 16
+	  startRow = 14
 	)
 
 	# save model
@@ -765,7 +765,7 @@ try({
 	)
 
 	# rm env object
-	rm(svm_daily_ischemic_count)
+	rm(svm_daily_ischemic_count, svm, preds, rmse, mae)
 
 	# check end time
 	End.time <- Sys.time()
@@ -779,7 +779,7 @@ print("Support Vector Regression Linear kernel")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_daily_ischemic_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -791,7 +791,7 @@ try({
 	  )
 
 	final_grid <-
-	  expand.grid(C = svm_daily_ischemic_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	# final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_ischemic_count <-
@@ -852,7 +852,7 @@ try({
 	)
 
 	# rm env object
-	rm(svm_daily_ischemic_count)
+	rm(svm_daily_ischemic_count, svm, preds, rmse, mae)
 
 	# check end time
 	End.time <- Sys.time()
@@ -931,14 +931,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 19
+	  startRow = 17
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 20
+	  startRow = 18
 	)
 	#save model
 	saveRDS(
@@ -950,7 +950,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(forest_daily_bleeding_count)
+	rm(forest_daily_bleeding_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 print("Xgboost")
 ### XGB
@@ -1025,14 +1025,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 21
+	  startRow = 19
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 22
+	  startRow = 20
 	)
 	#save model
 	saveRDS(
@@ -1044,7 +1044,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(xgb_daily_bleeding_count)
+	rm(xgb_daily_bleeding_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression")
@@ -1053,7 +1053,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_daily_bleeding_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1066,7 +1066,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_daily_bleeding_count$bestTune$C, sigma = svm_daily_bleeding_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_bleeding_count <-
@@ -1101,14 +1101,14 @@ try({
 	  x = rmse,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 23
+	  startRow = 21
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Daily",
 	  withFilter = FALSE,
-	  startRow = 24
+	  startRow = 22
 	)
 	#save model
 	saveRDS(
@@ -1120,7 +1120,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_daily_bleeding_count)
+	rm(svm_daily_bleeding_count, svm, preds, rmse, mae)
 
 
 	}, silent=TRUE)
@@ -1131,7 +1131,7 @@ print("Support Vector Regression Linear Kernel ")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_daily_bleeding_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1144,7 +1144,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_daily_bleeding_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_daily_bleeding_count <-
@@ -1198,7 +1198,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_daily_bleeding_count)
+	rm(svm_daily_bleeding_count, svm, preds, rmse, mae)
 
 
 	}, silent=TRUE)
@@ -1364,14 +1364,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 3
+	  startRow = 1
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 4
+	  startRow = 2
 	)
 	#save model
 	saveRDS(
@@ -1383,7 +1383,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(forest_two_day_total_count)
+	rm(forest_two_day_total_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 
 
@@ -1457,14 +1457,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 5
+	  startRow = 3
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 6
+	  startRow = 4
 	)
 	#save model
 	saveRDS(
@@ -1476,7 +1476,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(xgb_two_day_total_count)
+	rm(xgb_two_day_total_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression")
@@ -1485,7 +1485,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_two_day_total_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1498,7 +1498,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_total_count$bestTune$C, sigma = svm_two_day_total_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_total_count <-
@@ -1533,14 +1533,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 7
+	  startRow = 5
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 8
+	  startRow = 6
 	)
 	#save model
 	saveRDS(
@@ -1552,7 +1552,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_total_count)
+	rm(svm_two_day_total_count, svm, preds, rmse, mae)
 
 }, silent=TRUE)
 
@@ -1562,7 +1562,7 @@ print("Support Vector Regression Linear Kernel")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_two_day_total_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1575,7 +1575,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_total_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_total_count <-
@@ -1629,7 +1629,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_total_count)
+	rm(svm_two_day_total_count, svm, preds, rmse, mae)
 
 }, silent=TRUE)
 
@@ -1711,14 +1711,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 11
+	  startRow = 9
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 12
+	  startRow = 10
 	)
 	#save model
 	saveRDS(
@@ -1730,7 +1730,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(forest_two_day_ischmeic_count)
+	rm(forest_two_day_ischmeic_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Xgboost")
@@ -1805,14 +1805,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 13
+	  startRow = 11
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 14
+	  startRow = 12
 	)
 	#save model
 	saveRDS(
@@ -1824,7 +1824,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(xgb_two_day_ischemic_count)
+	rm(xgb_two_day_ischemic_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression")
@@ -1833,7 +1833,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_two_day_ischemic_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1846,7 +1846,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_ischemic_count$bestTune$C, sigma = svm_two_day_ischemic_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_ischemic_count <-
@@ -1881,14 +1881,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 15
+	  startRow = 13
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 16
+	  startRow = 14
 	)
 	#save model
 	saveRDS(
@@ -1900,7 +1900,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_ischemic_count)
+	rm(svm_two_day_ischemic_count, svm, preds, rmse, mae)
 
 }, silent=TRUE)
 
@@ -1911,7 +1911,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_two_day_ischemic_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -1924,7 +1924,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_ischemic_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_ischemic_count <-
@@ -1978,7 +1978,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_ischemic_count)
+	rm(svm_two_day_ischemic_count, svm, preds, rmse, mae)
 
 }, silent=TRUE)
 
@@ -2060,14 +2060,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 19
+	  startRow = 17
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 20
+	  startRow = 18
 	)
 	#save model
 	saveRDS(
@@ -2079,7 +2079,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(forest_two_day_bleeding_count)
+	rm(forest_two_day_bleeding_count, forest, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Xgboost")
@@ -2153,14 +2153,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 21
+	  startRow = 19
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 22
+	  startRow = 20
 	)
 	#save model
 	saveRDS(
@@ -2172,7 +2172,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(xgb_two_day_bleeding_count)
+	rm(xgb_two_day_bleeding_count, xgb_model, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression")
@@ -2181,7 +2181,7 @@ print("Support Vector Regression")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(0.25, .5, 1), sigma = 0.1)
-	svm_two_day_bleeding_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -2194,7 +2194,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_bleeding_count$bestTune$C, sigma = svm_two_day_bleeding_count$bestTune$sigma)
+	  expand.grid(C = svm$bestTune$C, sigma = svm$bestTune$sigma)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_bleeding_count <-
@@ -2229,14 +2229,14 @@ try({
 	  x = rmse,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 23
+	  startRow = 21
 	)
 	openxlsx:::writeData(
 	  wb = wb,
 	  x = mae,
 	  sheet = "Two-day",
 	  withFilter = FALSE,
-	  startRow = 24
+	  startRow = 22
 	)
 	# save model
 	saveRDS(
@@ -2248,7 +2248,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_bleeding_count)
+	rm(svm_two_day_bleeding_count, svm, preds, rmse, mae)
 }, silent=TRUE)
 
 print("Support Vector Regression Linear kernel")
@@ -2257,7 +2257,7 @@ print("Support Vector Regression Linear kernel")
 try({
 	set.seed(1492)
 	tuneGrid <- expand.grid(C = c(2^(-6:6)))
-	svm_two_day_bleeding_count <-
+	svm <-
 	  train(
 		X_train,
 		y_train,
@@ -2270,7 +2270,7 @@ try({
 
 
 	final_grid <-
-	  expand.grid(C = svm_two_day_bleeding_count$bestTune$C)
+	  expand.grid(C = svm$bestTune$C)
 	#final svr model with chosen hyper parameter
 	print("fitting SVR based on chosen hyperparameter")
 	svm_two_day_bleeding_count <-
@@ -2324,7 +2324,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_two_day_bleeding_count)
+	rm(svm_two_day_bleeding_count, svm, preds, rmse, mae)
 	
 }, silent=TRUE)
 openxlsx:::saveWorkbook(wb, "results/ModelMetrics_fixed_window_true_MIRACUM_WESTORM.xlsx", overwrite = TRUE)
