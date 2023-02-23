@@ -480,7 +480,7 @@ try({
 		sep = ""
 	  )
 	)
-	rm(svm_daily_total_count, svm preds, rmse, mae)
+	rm(svm_daily_total_count, svm, preds, rmse, mae)
 	}, silent=TRUE)
 
 
