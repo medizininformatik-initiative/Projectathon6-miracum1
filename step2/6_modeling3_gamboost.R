@@ -111,13 +111,23 @@ for(output_counter in outputs){
     
     print(paste("Fitting Gamboost for",output_counter))
     
+    unique_values <- daily %>% summarise_all(n_distinct) %>% t() %>% as.data.frame() 
+    colnames(unique_values) <- "count"
+    
+    bbs_vars <- rownames(unique_values)[(which(unique_values$count > 24))]
+    bols_vars <-  rownames(unique_values)[(which(unique_values$count <= 24))]
+    
     fts <- trimws(strsplit(frm, "\\+")[[1]])
-    frm_mboost <- paste(c(paste0("bbs(",fts[!fts%in%c("wday")],")"), "bols(wday)"),
+    
+    frm_mboost <- paste(c(paste0("bbs(",fts[fts %in% bbs_vars],")"), 
+                          paste0("bols(",fts[fts %in% bols_vars],")") 
+                          ),
                         collapse = " + ")
     
     
     try({
 		# NegBinomial model
+      
 		mod <- gamboost(formula = as.formula(paste0("outcome ~ ", frm_mboost)),
 						data = train, family = NBinomial(),
 						control = boost_control(mstop = 1000L,nu = 0.01))
