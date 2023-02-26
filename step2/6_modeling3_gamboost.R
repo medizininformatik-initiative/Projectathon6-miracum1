@@ -203,9 +203,10 @@ for(output_counter in outputs){
     
     res_earth1 <- eval_fun(train$outcome, test$outcome,
                           pr_tr, pr_te, name = "earth1")
-	rm(mod, cvr, pr_tr, pr_te)					  
+					  
     #save model
     saveRDS(object = mod,file = paste("./results/earth1",output_counter,"_",site.name,".rda",sep = ""))
+	rm(mod, cvr, pr_tr, pr_te)	
     
     ### ---------------------------------------------------------------------------
     ### random forest
