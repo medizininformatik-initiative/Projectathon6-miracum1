@@ -206,7 +206,7 @@ for(output_counter in outputs){
 						  
     #save model
     saveRDS(object = mod,file = paste("./results/earth1",output_counter,"_",site.name,".rda",sep = ""))
-	rm(mod, cvr, pr_tr, pr_te)
+	rm(mod, pr_tr, pr_te)
     
     ### ---------------------------------------------------------------------------
     ### random forest
@@ -227,7 +227,7 @@ for(output_counter in outputs){
                        pr_tr, pr_te, name = "rf")
     #save model
     saveRDS(object = mod,file = paste("./results/rf",output_counter,"_",site.name,".rda",sep = ""))
-    rm(mod, cvr, pr_tr, pr_te)
+    rm(mod, pr_tr, pr_te)
     ### ---------------------------------------------------------------------------
     
     res_list<- rbind(res_gamboostNB, res_gamboostPO,res_earth1,res_rf)
