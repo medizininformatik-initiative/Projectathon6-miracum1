@@ -11,11 +11,9 @@ start <- Sys.time()
 library(data.table)
 
 #create directories
-
-if(!dir.exists("Summary")){dir.create("Summary")}
 if(!dir.exists("errors")){dir.create("errors")}
-if(!dir.exists("Bundles")){dir.create("Bundles")}
-
+if(!dir.exists("data")){dir.create("data")}
+if(!dir.exists("results")){dir.create("results")}
 
 #read  config
 if(file.exists("config.yml")){
