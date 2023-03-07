@@ -203,10 +203,10 @@ for(output_counter in outputs){
     
     res_earth1 <- eval_fun(train$outcome, test$outcome,
                           pr_tr, pr_te, name = "earth1")
-						  
+					  
     #save model
     saveRDS(object = mod,file = paste("./results/earth1",output_counter,"_",site.name,".rda",sep = ""))
-	rm(mod, pr_tr, pr_te)
+	rm(mod, pr_tr, pr_te)	
     
     ### ---------------------------------------------------------------------------
     ### random forest
@@ -261,6 +261,6 @@ print("Zip the files in the reults folder to be delivered")
 daily <- read.csv(file = file.path(getwd(),"data/daily_level.csv"))
 files2zip <- dir(file.path(getwd(),"/results"), full.names = TRUE)
 zip_file_name <- paste('westorm-step2-results-', conf$site, "-", Sys.Date(), "-coverage-", min(year), "-", max(year), "-totalcases-", sum(daily$total_count),  sep = "")
-zip(zipfile = file.path(getwd(), zip_file_name), files = files2zip, extras = '-j')
-print(paste("please upload the zip file:", zip_file_name))
+zip(zipfile = file.path(getwd(),'results', zip_file_name), files = files2zip, extras = '-j')
+print(paste("please upload the zip file (/results) :", zip_file_name))
 print("Execution is done")
