@@ -30,16 +30,29 @@ if((conf$no_proxy)!= ""){Sys.setenv(no_proxy  = conf$no_proxy)}
 
 brackets = c("[", "]")
 sep = " || "
+code_systems <-
+  list(icd = "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+       ops = "",
+       loinc = "")
+codes <- list(
+  icd_1 = c("I60.0","I60.1","I60.2","I60.3","I60.4","I60.5","I60.6","I60.7","I60.8","I60.9","I61.0","I61.1","I61.2","I61.3","I61.4","I61.5","I61.6","I61.8","I61.9","I63.0","I63.1","I63.2","I63.3","I63.4","I63.5","I63.6","I63.8","I63.9","I67.80!"),
+  ops_1 = c("8-020.8","8-020.D","8-980","8-981","8-981.2","8-981.20","8-981.21","8-981.22","8-981.23","8-981.3","5-025","5-026","5-026.4","8-83B.8","8-84B.0","8-84B.2","8-84B.3","8-84B.4","8-84B.5","8-706","8-713.0","8-980","8-98F","8-98B"),
+  loinc_1 = c("777-3","26515-7","778-1","49497-1","32207-3","51631-0","32623-1","28542-9","6301-6","34714-6","5894-1","3173-2","14979-9","3243-3","14182-0","3255-7","48664-7","7799-0","48067-3","48065-7","2160-0","14682-9","62238-1","50210-4","77147-7","50384-7","2951-2","2823-3","2075-0","2601-3","14798-3","2498-4","3034-6","2276-4","20567-4","789-8","26453-1","790-6","787-2","30428-7","718-7","59260-0","55782-7","20509-6","20570-8","4544-3","71833-8","31100-1","2093-3","14647-2","18262-6","69419-0","2089-1","49132-4","13457-7","22748-8","39469-2","2085-9","14646-4","49130-8","2571-8","14927-8","1751-7","61151-7","2862-1","61152-5","54347-0","2345-7","14749-6","2339-0","2341-6","2340-8","15074-8","41651-1","39481-7","41652-9","39480-9","17856-6","4549-2","59261-8","4548-4","17855-8")
+)
+
 ############Data extraction#############################
 ##extract the condition resources of the list of stroke ICD's greather than 2015-01-01 and extract the associated patient, encounter, condition and procedure resource
 #configure the fhir search url
-encounter_request <- fhir_url(url = conf$serverbase,
-                              resource = "Encounter",
-                              parameters = c("date" = "ge2015-01-01",
-                                             "diagnosis:Condition.code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
-                                             "_include" = "Encounter:patient",
-                                             "_include"="Encounter:diagnosis"
-                              ))
+encounter_request <- fhir_url(
+  url = conf$serverbase,
+  resource = "Encounter",
+  parameters = c(
+    "date" = "ge2015-01-01",
+    "diagnosis:Condition.code" = paste(paste0(code_systems$icd, "|", codes$icd_1), collapse = ","),
+    "_include" = "Encounter:patient",
+    "_include" = "Encounter:diagnosis"
+  )
+)
 
 # design parameter for Patient, Encounter, condition and procedure  resources as per fhir_crack function requirement
 patients <- fhir_table_description(resource = "Patient",
@@ -119,7 +132,7 @@ print(end_time - start_time)
 condition_request_2 <- fhir_url(url = conf$serverbase, 
                               resource = "Condition", 
                               parameters = c("recorded-date" = "ge2015-01-01",
-                                             "code"="I60.0,I60.1,I60.2,I60.3,I60.4,I60.5,I60.6,I60.7,I60.8,I60.9,I61.0,I61.1,I61.2,I61.3,I61.4,I61.5,I61.6,I61.8,I61.9,I63.0,I63.1,I63.2,I63.3,I63.4,I63.5,I63.6,I63.8,I63.9,I67.80!",
+                                             "code" = paste(paste0(code_systems$icd, "|", codes$icd_1), collapse = ","),
                                              "_include" = "Condition:encounter",
                                              "_include"="Condition:subject"
                               ))
@@ -204,11 +217,12 @@ df.conditions$patient_id <- sub("Patient/", "", df.conditions$patient_id)
 
 df.conditions <- df.conditions[grepl("icd-10", system)]
 
-icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9'
-               ,'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9'
-               ,'I63.0','I63.1','I63.2','I63.3','I63.4','I63.5','I63.6','I63.8','I63.9','I67.80!')
+# icd_codes <- c('I60.0','I60.1','I60.2','I60.3','I60.4','I60.5','I60.6','I60.7','I60.8','I60.9'
+#                ,'I61.0','I61.1','I61.2',  'I61.3','I61.4','I61.5','I61.6','I61.8','I61.9'
+#                ,'I63.0','I63.1','I63.2','I63.3','I63.4','I63.5','I63.6','I63.8','I63.9','I67.80!')
+# icd_codes <- codes$icd_1
 
-df.conditions <- df.conditions[c(which(df.conditions$icd %in% icd_codes) )]
+df.conditions <- df.conditions[c(which(df.conditions$icd %in% codes$icd_1) )]
 
 df.conditions$recorded_date <- as.POSIXct(df.conditions$recorded_date ,format="%Y-%m-%dT%H:%M:%S")
 
@@ -282,8 +296,10 @@ if(nrow(df.procedure) > 0){
   
   
   #Filter resources with needed ops code 
-  ops_codes <- c("8-020.8|8-020.D|8-980|8-981|8-981.2|8-981.20|8-981.21|8-981.22|8-981.23|8-981.3|5-025|5-026|5-026.4|8-83B.8|8-84B.0|8-84B.2|8-84B.3|8-84B.4|8-84B.5|8-706|8-713.0|8-980|8-98F|8-98B")
-  df.procedure <- df.procedure %>% filter(str_detect(ops, ops_codes))
+  # ops_codes <- c("8-020.8|8-020.D|8-980|8-981|8-981.2|8-981.20|8-981.21|8-981.22|8-981.23|8-981.3|5-025|5-026|5-026.4|8-83B.8|8-84B.0|8-84B.2|8-84B.3|8-84B.4|8-84B.5|8-706|8-713.0|8-980|8-98F|8-98B")
+  # ops_codes <- codes$ops_1
+  
+  df.procedure <- df.procedure %>% filter(str_detect(ops, paste(codes$ops_1, collapse = "|")))
   df.procedure$performed_date <- as.POSIXct(df.procedure$performed_date ,format="%Y-%m-%dT%H:%M:%S")
   df.procedure <- setDT(df.procedure)[setDT(df.encounters.trunc), 
                on = .(patient_id, performed_date >= admission_date, performed_date < discharge_date), 
@@ -347,8 +363,8 @@ if(nrow(df.procedure) > 0){
 #extract observation resource for the required patient ids and loinc codes
 
 patient_ids <- unique(df.encounters$patient_id)
-loincs_string <- "777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0,48067-3,48065-7,2160-0,14682-9,62238-1,50210-4,77147-7,50384-7,2951-2,2823-3,2075-0,2601-3,14798-3,2498-4,3034-6,2276-4,20567-4,789-8,26453-1,790-6,787-2,30428-7,718-7,59260-0,55782-7,20509-6,20570-8,4544-3,71833-8,31100-1,2093-3,14647-2,18262-6,69419-0,2089-1,49132-4,13457-7,22748-8,39469-2,2085-9,14646-4,49130-8,2571-8,14927-8,1751-7,61151-7,2862-1,61152-5,54347-0,2345-7,14749-6,2339-0,2341-6,2340-8,15074-8,41651-1,39481-7,41652-9,39480-9,17856-6,4549-2,59261-8,4548-4,17855-8"
-nchar_loincs <- nchar(loincs_string)
+# loincs_string <- "777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0,48067-3,48065-7,2160-0,14682-9,62238-1,50210-4,77147-7,50384-7,2951-2,2823-3,2075-0,2601-3,14798-3,2498-4,3034-6,2276-4,20567-4,789-8,26453-1,790-6,787-2,30428-7,718-7,59260-0,55782-7,20509-6,20570-8,4544-3,71833-8,31100-1,2093-3,14647-2,18262-6,69419-0,2089-1,49132-4,13457-7,22748-8,39469-2,2085-9,14646-4,49130-8,2571-8,14927-8,1751-7,61151-7,2862-1,61152-5,54347-0,2345-7,14749-6,2339-0,2341-6,2340-8,15074-8,41651-1,39481-7,41652-9,39480-9,17856-6,4549-2,59261-8,4548-4,17855-8"
+nchar_loincs <- nchar(paste(codes$loinc_1, collapse = ","))
 nchar_for_ids <- 900 - (nchar(conf$serverbase)+nchar_loincs)
 n <- length(patient_ids)
 list <- split(patient_ids, ceiling(seq_along(patient_ids)/n)) 
@@ -384,43 +400,48 @@ time_tmp_start <- Sys.time()
 for (name in names(list)) {
   x <- list[[name]]
   
-  time_tmp_elapsed <-
-    difftime(Sys.time(), time_tmp_start, units = "secs")
-  time_tmp_elapsed_print <-
-    ifelse(
-      test = time_tmp_elapsed > 60,
-      yes = ifelse(
-        test = time_tmp_elapsed > 3600,
-        yes = paste0(round(time_tmp_elapsed / 3600, digits = 2), " h"),
-        no = paste0(round(time_tmp_elapsed / 60, digits = 2), " min")
-      ),
-      no = paste0(round(time_tmp_elapsed, digits = 2), " sec")
-    )
-  time_tmp_remaining <-
-    (time_tmp_elapsed / as.numeric(name)) * (length(list) - as.numeric(name))
-  time_tmp_remaining_print <- ifelse(
-    test = time_tmp_remaining > 60,
-    yes = ifelse(
-      test = time_tmp_remaining > 3600,
-      yes = paste0(round(time_tmp_remaining / 3600, digits = 2), " h"),
-      no = paste0(round(time_tmp_remaining / 60, digits = 2), " min")
-    ),
-    no = paste0(round(time_tmp_remaining, digits = 2), " sec")
-  )
-  print(
-    paste0(
-      "Iteration ",
-      name,
-      " of ",
-      length(list),
-      " (",
-      round((as.numeric(name) / length(list)) * 100, digits = 2),
-      " %), Time elapsed: ",
-      time_tmp_elapsed_print,
-      " (Remaining: ~ ",
-      time_tmp_remaining_print,
-      ")"
-    )
+  # time_tmp_elapsed <-
+  #   difftime(Sys.time(), time_tmp_start, units = "secs")
+  # time_tmp_elapsed_print <-
+  #   ifelse(
+  #     test = time_tmp_elapsed > 60,
+  #     yes = ifelse(
+  #       test = time_tmp_elapsed > 3600,
+  #       yes = paste0(round(time_tmp_elapsed / 3600, digits = 2), " h"),
+  #       no = paste0(round(time_tmp_elapsed / 60, digits = 2), " min")
+  #     ),
+  #     no = paste0(round(time_tmp_elapsed, digits = 2), " sec")
+  #   )
+  # time_tmp_remaining <-
+  #   (time_tmp_elapsed / as.numeric(name)) * (length(list) - as.numeric(name))
+  # time_tmp_remaining_print <- ifelse(
+  #   test = time_tmp_remaining > 60,
+  #   yes = ifelse(
+  #     test = time_tmp_remaining > 3600,
+  #     yes = paste0(round(time_tmp_remaining / 3600, digits = 2), " h"),
+  #     no = paste0(round(time_tmp_remaining / 60, digits = 2), " min")
+  #   ),
+  #   no = paste0(round(time_tmp_remaining, digits = 2), " sec")
+  # )
+  # print(
+  #   paste0(
+  #     "Iteration ",
+  #     name,
+  #     " of ",
+  #     length(list),
+  #     " (",
+  #     round((as.numeric(name) / length(list)) * 100, digits = 2),
+  #     " %), Time elapsed: ",
+  #     time_tmp_elapsed_print,
+  #     " (Remaining: ~ ",
+  #     time_tmp_remaining_print,
+  #     ")"
+  #   )
+  # )
+  DIZtools::time_diff_print(
+    older_timestamp = time_tmp_start,
+    iteration = name,
+    iterations = length(list)
   )
   
   
@@ -431,7 +452,7 @@ for (name in names(list)) {
   obs_request <- fhir_url(url = conf$serverbase,
                           resource = "Observation",
                           parameters = c(subject = ids
-                                         ,"code" = loincs_string))
+                                         ,"code" = paste(paste0(code_systems$loinc, "|", codes$loinc_1), collapse = ",")))
                                          # ,"code" = "777-3,26515-7,778-1,49497-1,32207-3,51631-0,32623-1,28542-9,6301-6,34714-6,5894-1,3173-2,14979-9,3243-3,14182-0,3255-7,48664-7,7799-0"))
   obs_bundles <- fhir_search(obs_request,
                              username = conf$username,

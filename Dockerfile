@@ -23,6 +23,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   apt-get clean && apt-get autoclean && apt-get autoremove -y
 
 RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
+  remotes \
   fhircrackr \
   config \
   dplyr \
@@ -34,6 +35,8 @@ RUN install2.r --error --deps TRUE --skipinstalled -n $NCPUS \
   ## clear caches:
   rm -rf /tmp/downloaded_packages && \
   rm -rf /var/lib/apt/lists/*
+
+RUN R -q -e 'remotes::install_github(repo = "miracum/misc-diztools", ref = "dev")'
 
 # COPY config_default.yml config_default.yml
 COPY miracum_select.R miracum_select.R
