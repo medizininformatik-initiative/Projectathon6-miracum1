@@ -400,44 +400,6 @@ time_tmp_start <- Sys.time()
 for (name in names(list)) {
   x <- list[[name]]
   
-  # time_tmp_elapsed <-
-  #   difftime(Sys.time(), time_tmp_start, units = "secs")
-  # time_tmp_elapsed_print <-
-  #   ifelse(
-  #     test = time_tmp_elapsed > 60,
-  #     yes = ifelse(
-  #       test = time_tmp_elapsed > 3600,
-  #       yes = paste0(round(time_tmp_elapsed / 3600, digits = 2), " h"),
-  #       no = paste0(round(time_tmp_elapsed / 60, digits = 2), " min")
-  #     ),
-  #     no = paste0(round(time_tmp_elapsed, digits = 2), " sec")
-  #   )
-  # time_tmp_remaining <-
-  #   (time_tmp_elapsed / as.numeric(name)) * (length(list) - as.numeric(name))
-  # time_tmp_remaining_print <- ifelse(
-  #   test = time_tmp_remaining > 60,
-  #   yes = ifelse(
-  #     test = time_tmp_remaining > 3600,
-  #     yes = paste0(round(time_tmp_remaining / 3600, digits = 2), " h"),
-  #     no = paste0(round(time_tmp_remaining / 60, digits = 2), " min")
-  #   ),
-  #   no = paste0(round(time_tmp_remaining, digits = 2), " sec")
-  # )
-  # print(
-  #   paste0(
-  #     "Iteration ",
-  #     name,
-  #     " of ",
-  #     length(list),
-  #     " (",
-  #     round((as.numeric(name) / length(list)) * 100, digits = 2),
-  #     " %), Time elapsed: ",
-  #     time_tmp_elapsed_print,
-  #     " (Remaining: ~ ",
-  #     time_tmp_remaining_print,
-  #     ")"
-  #   )
-  # )
   DIZtools::time_diff_print(
     older_timestamp = time_tmp_start,
     iteration = name,
