@@ -11,7 +11,8 @@ Dieses Repository beinhaltet Skripte für das zweistufige Verfahren:
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
 ### BREAKING NEWS
-+ **Finaler Abschluss** der Testphase [31.03.2023](#march-31-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für HAPI und BLAZE FHIR Servers inkl. A) `dockerhub` Image, B) `docker compose` und C) lokale base R mit Shell-Skript.  
++ **Finaler Abschluss** der Testphase [31.03.2023](#march-31-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für HAPI und BLAZE FHIR Servers inkl. 
+  + A) `dockerhub` Image, B) `docker compose` oder C) lokale base R mit Shell-Skript.  
   + Die finale Ergebnisse im `step2/results` Folder werden als `.zip` Datei mit standortspezifischen Namen generiert. Diese soll über DSF oder CarusCloud an die Datentransferstelle (entsprechend der Step1 credentials) übertragen werden. 
 
 + Abschluss der Testphase [20.02.2023](#feb-20-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2).  
@@ -147,7 +148,7 @@ In der neuesten Version der Skripte [March 7, 2023](https://github.com/medizinin
 
 ```
 paste('westorm-step2-results-', conf$site, "-", Sys.Date(), "-coverage-", min(year), "-", max(year), "-totalcases-", sum(daily$total_count),  sep = "")
-
+```
 
 Diese `<name>.zip` Datei sollte an die Datenmanagement Stelle (Dresden) über **DSF** oder **CarusCloud** versandt werden.  
 
