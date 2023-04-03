@@ -1,5 +1,5 @@
 # 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
-Datum: 20.02.2023
+Datum: 03.04.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -11,6 +11,8 @@ Dieses Repository beinhaltet Skripte für das zweistufige Verfahren:
 Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter sind die verwendeten CodeSysteme/Ressourcen/Profile und der konzeptionelle Ablauf der Abfrage beschrieben.
 
 ### BREAKING NEWS
++ **Finaler Abschluss** der Testphase [31.03.2023](#march-31-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für HAPI und BLAZE FHIR Servers inkl. A) `dockerhub` Image, B) `docker compose` und C) lokale base R mit Shell-Skript.  
+
 + Abschluss der Testphase [20.02.2023](#feb-20-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2).  
 
 + Freigabe [13.01.2023](#jan-01-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für die statistischen Analysen mittels Federated Learning. 
@@ -123,6 +125,13 @@ docker run --name projectathon6-miracum1-step2 \
 
 Zum Stoppen des Containers `docker compose stop`. Um ihn erneut zu starten, `docker compose start`.
 
+#### C) Lokale Ausführung in base R mit Shell-Skript
+Die gleiche Schritte wie oben [Ausführung in R]() beschrieben: 
+1. Der Inhalt dieses Repository auf einen Rechner (PC, Server) geladen werden, von dem aus der REST-Endpunkt des gewünschten FHIR-Servers (z.B. FHIR-Server der Clinical Domain im DIZ) erreichbar ist. 
+2. Auf diesem Rechner muss `base R` (aber nicht notwendigerweise RStudio) installiert sein.
+3. Im `master` branch des Repos soll im Folder [step2](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) befindliche Datei `./config_default.yml` muss nach `./config.yml` kopiert werden und lokal angepasst werden (serverbase, ggf. Authentifizierung - Username and password, proxy configs); Erklärungen dazu finden sich direkt in dieser Datei. Eine Authentifizierung mit Basic Authentication. Dafür müssen in `config.yml` die Variable `authentication` und die zugehörigen Zugangsdaten (`password`/`username`) angepasst werden.
+  4. Wenn die App über `runMiracum_select.bat` (unter Windows) gestartet wird, sollte in dieser der Pfad zur Datei `Rscript.exe` geprüft und ggf. angepasst werden (z.B. `C:\Program Files\R\R-4.0.4\bin\Rscript.exe`).
+
 
 ### Output folder 
 
@@ -136,6 +145,21 @@ Keine diese Datenbeinhalten persönliche indetifiers. Die Modelle fitten die `co
 ---
 
 ## Changelog Step2
+
+#### March 31, 2023
+
+All 15 participating sites has succesfully tested certain versions of the script. 
+**Thank you for Your efforts!**
+
+We provide 3 versions (as mentioned in the readme text above): 
++ A) Pull image from Docker Hub 
++ B) Docker compose 
++ C) Local run using base R and batch script (`.sh`) 
+
+All scripts are available for both HAPI (`master` branch) and BLAZE FHIR (`blaze_update` branch) servers.
+
+The current version of the sricpts creates a `step2/results` containing a `.zip` file of all model outputs.   
+
 
 #### Feb 20, 2023
 
