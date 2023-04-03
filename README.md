@@ -12,6 +12,7 @@ Das Readme beschreibt zunächst die technischen Details der Verwendung. Darunter
 
 ### BREAKING NEWS
 + **Finaler Abschluss** der Testphase [31.03.2023](#march-31-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2) für HAPI und BLAZE FHIR Servers inkl. A) `dockerhub` Image, B) `docker compose` und C) lokale base R mit Shell-Skript.  
+  + Die finale Ergebnisse im `step2/results` Folder werden als `.zip` Datei mit standortspezifischen Namen generiert. Diese soll über DSF oder CarusCloud an die Datentransferstelle (entsprechend der Step1 credentials) übertragen werden. 
 
 + Abschluss der Testphase [20.02.2023](#feb-20-2023) der [Step2 Skripte](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/tree/master/step2).  
 
@@ -135,12 +136,20 @@ Die gleiche Schritte wie oben [Ausführung in R]() beschrieben:
 
 ### Output folder 
 
-Im `results` folder sollen insgesamt `101 Dateien`sein:
+Im `step2/results` folder sollen insgesamt `101 Dateien`sein:
 + 2 excel files with multiple sheets
-+ 3 PDF files with plots/images of model performance
-+ Multiple .RData/.Rda Dateien mit den jeweiligen ML-Modelobjekt was die Modelinskripte (4_modeling1, 5_modeling2, 6_modeling3) erstellen.
++ 3 PDF files with `plots/images` of model performance
++ Multiple `.RData/.Rda` Dateien mit den jeweiligen ML-Modelobjekt was die Modelinskripte (4_modeling1, 5_modeling2, 6_modeling3) erstellen.
 
 Keine diese Datenbeinhalten persönliche indetifiers. Die Modelle fitten die `count` (Anzahl der Fälle).
+
+In der neuesten Version der Skripte [March 7, 2023](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/commit/441e616701d5e3b1d98f089fa31ca256b0cc2ae9) werden die obige Dateien als `.zip` Datei komprimiert und mit einem standortspezifischen Namen versehen. 
+
+```
+paste('westorm-step2-results-', conf$site, "-", Sys.Date(), "-coverage-", min(year), "-", max(year), "-totalcases-", sum(daily$total_count),  sep = "")
+
+
+Diese `<name>.zip` Datei sollte an die Datenmanagement Stelle (Dresden) über **DSF** oder **CarusCloud** versandt werden.  
 
 ---
 
