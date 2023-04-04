@@ -1,5 +1,5 @@
 # 6. Projectathon der MII: MIRACUM - "WEather-based Stroke event and Outcome Risk Modeling" (WE-STORM)
-Datum: 03.04.2023
+Datum: 04.04.2023
 
 Autoren: [Nandhini.Santhanam@medma.uni-heidelberg.de](mailto:nandhini.santhanam@medma.uni-heidelberg.de) & [Maros@uni-heidelberg.de](mailto:Maros@uni-heidelberg.de)
 
@@ -155,6 +155,14 @@ Diese `<name>.zip` Datei sollte an die Datenmanagement Stelle (Dresden) über **
 ---
 
 ## Changelog Step2
+
+#### Apr 4, 2023 
+
+Novel [issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/25), kindly raised by [@FloSeidl](https://github.com/FloSeidel), which is caused by not properly working `R.utils::zip()` function in the last (`6_modeling3_gamboost.R`) [script](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/master/step2/6_modeling3_gamboost.R) ([lines 260-264](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/blob/f59af4a4fb1953aa9bd54885f98d9920ab2aba8a/step2/6_modeling3_gamboost.R#L260), which occured at Charité Berlin on a Windows Server during a local run in RStudio (v4.2.2). 
+
+The [issue](https://github.com/medizininformatik-initiative/Projectathon6-miracum1/issues/25) could be fixed by installing the `zip` library and using the `zip::zipr()` function. 
+
+A simple alternative solution would be the manual zip compression of the 101 output files in the `results` folder.
 
 #### March 31, 2023
 
