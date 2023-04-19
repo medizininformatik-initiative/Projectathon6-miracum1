@@ -241,7 +241,7 @@ for(output_counter in outputs){
            measure = gsub("(.*)_(train|test)", "\\1", name))
   
   #save residuals
-  saveRDS(object = res_long,file = paste("./results/results",output_counter,"_",site.name,".rda",sep = ""))
+  saveRDS(object = res_long,file = paste("./results",output_counter,"_",site.name,".rda",sep = ""))
  
   try({
 	  ggplot(res_long, aes(x = model, y = value, colour = model)) + 
