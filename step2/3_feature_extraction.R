@@ -37,6 +37,9 @@ if(length(which(is.na(df.stroke.cohort$admission_date))) > 0){
 print(paste("Stroke cohort rows after removing missing dates:", nrow(df.stroke.cohort)))
 df.stroke.cohort$admission_date <- as.character(as.Date(df.stroke.cohort$admission_date))
 
+#############################filter admission date between 2015 and 2021################
+
+df.stroke.cohort <- df.stroke.cohort[c(which(as.Date(df.stroke.cohort$admission_date) >= '2015-01-01' & as.Date(df.stroke.cohort$admission_date) <= '2021-12-31' )),]
 
 ###################extract latitude and longitude ###################
 print("extracting lat and long based on PLZ")
